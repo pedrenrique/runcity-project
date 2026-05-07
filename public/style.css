@@ -9,6 +9,7 @@ body {
   background-color: #f0f0f0;
 }
 
+/* Tela inicial */
 .container {
   display: flex;
   flex-direction: column;
@@ -28,6 +29,21 @@ p {
   font-size: clamp(1rem, 3vw, 1.5rem);
 }
 
+.seletor-tempo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.select-tempo {
+  font-size: clamp(1rem, 4vw, 1.3rem);
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  border: 2px solid green;
+  text-align: center;
+}
+
 .btn-iniciar {
   background-color: green;
   color: white;
@@ -40,8 +56,123 @@ p {
   max-width: 400px;
 }
 
+/* Tela da corrida */
+.barra-topo {
+  width: 100%;
+  background-color: green;
+  color: white;
+  text-align: center;
+  padding: 0.8rem;
+  font-size: clamp(1.5rem, 6vw, 2rem);
+  font-weight: bold;
+  letter-spacing: 2px;
+}
+
+#mapa {
+  width: 100vw;
+  height: calc(100vh - 130px);
+}
+
+.hud {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.8rem 1.5rem;
+  background-color: white;
+}
+
 .btn-parar {
   background-color: red;
+  color: white;
+  padding: 0.6rem 1.5rem;
+  font-size: clamp(0.9rem, 3vw, 1.1rem);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+/* Pop-up resultado */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.escondido {
+  display: none;
+}
+
+.popup {
+  background-color: white;
+  border-radius: 16px;
+  padding: 2rem;
+  width: 90%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  text-align: center;
+}
+
+.popup h2 {
+  font-size: clamp(1.3rem, 5vw, 1.8rem);
+}
+
+.vencedor {
+  background-color: #f0fff0;
+  border: 2px solid green;
+  border-radius: 12px;
+  padding: 1rem 2rem;
+  width: 100%;
+}
+
+.label {
+  font-size: 0.85rem;
+  color: gray;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.nome-vencedor {
+  font-size: clamp(1.2rem, 4vw, 1.5rem);
+  font-weight: bold;
+  color: green;
+}
+
+.area {
+  font-size: clamp(1rem, 3vw, 1.2rem);
+}
+
+.ranking {
+  width: 100%;
+  text-align: left;
+}
+
+.ranking ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.ranking li {
+  font-size: clamp(0.9rem, 3vw, 1.1rem);
+  padding: 0.4rem 0;
+  border-bottom: 1px solid #eee;
+}
+
+.btn-continuar {
+  background-color: green;
   color: white;
   padding: 1rem 2rem;
   font-size: clamp(1rem, 4vw, 1.3rem);
@@ -49,19 +180,4 @@ p {
   border-radius: 8px;
   cursor: pointer;
   width: 100%;
-  max-width: 400px;
-}
-
-#mapa {
-  width: 100vw;
-  height: 60vh;
-}
-
-.hud {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 1rem;
-  gap: 0.5rem;
-  text-align: center;
 }

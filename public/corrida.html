@@ -4,30 +4,75 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>RunCity - Corrida</title>
-
-  <!-- Leaflet CSS -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <link rel="stylesheet" href="libs/leaflet.css"/>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
+  <div class="barra-topo">
+    <span id="cronometro">00:00</span>
+  </div>
+
   <div id="mapa"></div>
 
   <div class="hud">
-    <p>Tempo restante: <strong>10:00</strong></p>
     <p>Territórios: <strong>0</strong></p>
     <a href="index.html">
       <button class="btn-parar">Encerrar</button>
     </a>
   </div>
 
-  <!-- Leaflet JS -->
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script>
-    // Inicializa o mapa centralizado em Belo Horizonte
-    const mapa = L.map('mapa').setView([-19.9167, -43.9345], 16);
+  <!-- Pop-up resultado -->
+  <div id="overlay" class="overlay escondido">
+    <div class="popup">
+      <h2>🏁 Corrida Encerrada!</h2>
 
-    // Camada de ruas do OpenStreetMap (gratuito)
+      <div class="vencedor">
+        <p class="label">Vencedor</p>
+        <p class="nome-vencedor">Jogador 1</p>
+        <p class="area">1.250 m²</p>
+      </div>
+
+      <div class="ranking">
+        <p class="label">Ranking</p>
+        <ul>
+          <li><span class="pos">🥇</span> Jogador 1 — 1.250 m²</li>
+          <li><span class="pos">🥈</span> Jogador 2 — 980 m²</li>
+          <li><span class="pos">🥉</span> Jogador 3 — 640 m²</li>
+        </ul>
+      </div>
+
+      <button class="btn-continuar" onclick="window.location.href='index.html'">
+        Continuar
+      </button>
+    </div>
+  </div>
+
+  <script src="libs/leaflet.js"></script>
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const minutos = parseInt(params.get('tempo')) || 10;
+    let segundosRestantes = minutos * 60;
+
+    function atualizarCronometro() {
+      const m = Math.floor(segundosRestantes / 60).toString().padStart(2, '0');
+      const s = (segundosRestantes % 60).toString().padStart(2, '0');
+      document.getElementById('cronometro').textContent = `${m}:${s}`;
+
+      if (segundosRestantes <= 0) {
+        clearInterval(intervalo);
+        document.getElementById('overlay').classList.remove('escondido');
+        return;
+      }
+
+      segundosRestantes--;
+    }
+
+    atualizarCronometro();
+    const intervalo = setInterval(atualizarCronometro, 1000);
+
+    const mapa = L.map('mapa', { zoomControl: false }).setView([-19.9167, -43.9345], 16);
+
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenStreetMap'
     }).addTo(mapa);

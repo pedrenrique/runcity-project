@@ -10,9 +10,26 @@
   <div class="container">
     <h1>RunCity</h1>
     <p>Transforme cada corrida em uma batalha de território</p>
-    <a href="corrida.html">
-      <button class="btn-iniciar">Iniciar Disputa</button>
-    </a>
+
+    <div class="seletor-tempo">
+      <p>Duração da corrida</p>
+      <select id="tempo" class="select-tempo">
+        <option value="1">5 minutos</option>
+        <option value="10" selected>10 minutos</option>
+        <option value="15">15 minutos</option>
+        <option value="20">20 minutos</option>
+        <option value="30">30 minutos</option>
+      </select>
+    </div>
+
+    <button class="btn-iniciar" onclick="iniciar()">Iniciar Disputa</button>
   </div>
+
+  <script>
+    function iniciar() {
+      const tempo = document.getElementById('tempo').value;
+      window.location.href = `corrida.html?tempo=${tempo}`;
+    }
+  </script>
 </body>
 </html>
