@@ -4,16 +4,34 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>RunCity - Corrida</title>
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="container">
-    <h1>Corrida em andamento</h1>
+
+  <div id="mapa"></div>
+
+  <div class="hud">
     <p>Tempo restante: <strong>10:00</strong></p>
-    <p>Territórios capturados: <strong>0</strong></p>
+    <p>Territórios: <strong>0</strong></p>
     <a href="index.html">
-      <button class="btn-parar">Encerrar Corrida</button>
+      <button class="btn-parar">Encerrar</button>
     </a>
   </div>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    // Inicializa o mapa centralizado em Belo Horizonte
+    const mapa = L.map('mapa').setView([-19.9167, -43.9345], 16);
+
+    // Camada de ruas do OpenStreetMap (gratuito)
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap'
+    }).addTo(mapa);
+  </script>
+
 </body>
 </html>
