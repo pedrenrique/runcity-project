@@ -320,9 +320,9 @@
         <div class="mypos-lbl">Sua posição</div>
         <div class="ritem me">
           <div class="rpos" style="color:var(--p-l);">3</div>
-          <div class="rav" style="background:var(--p-dim);color:var(--p-l);border-color:var(--p);">JS</div>
+          <div class="rav" id="meuAv" style="background:var(--p-dim);color:var(--p-l);border-color:var(--p);">--</div>
           <div class="rinfo">
-            <div class="rname">João Silva <span class="you-tag">Você</span></div>
+            <div class="rname"><span id="meuNome">--</span> <span class="you-tag">Você</span></div>
             <div class="rsub">
               <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
               São Paulo · 8 vitórias
@@ -367,7 +367,15 @@
 
 <script src="auth.js"></script>
 <script>
-  RC.requerLogin();
+  /* preenche o bloco "Sua posição" com o usuário logado */
+  (async () => {
+    const u = await RC.requerLogin();
+    if (!u) return;
+    const nome = u.nome || 'Você';
+    const iniciais = nome.trim().split(/\s+/).map(s => s[0]).slice(0,2).join('').toUpperCase() || '?';
+    document.getElementById('meuNome').textContent = nome;
+    document.getElementById('meuAv').textContent   = iniciais;
+  })();
 
   /* ── Dados ── */
   const dados = [
