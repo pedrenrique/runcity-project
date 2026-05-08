@@ -4,237 +4,267 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>RunCity — Ranking</title>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      font-family: 'Outfit', sans-serif;
-      background: #0a0818;
-      color: #e0d8ff;
-      min-height: 100vh;
-      padding: 24px 16px 72px;
+      font-family: Arial, sans-serif;
+      background: #f0f0f0;
+      color: #222;
+      padding-bottom: 56px;
     }
 
-    .barra-nav-dark {
+    .topo {
+      background: #222;
+      color: white;
+      padding: 0.75rem 1rem;
+      font-size: 1rem;
+      font-weight: bold;
+      letter-spacing: 0.5px;
+    }
+
+    .conteudo {
+      padding: 0.8rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .rank-item {
+      background: white;
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      border: 1px solid transparent;
+    }
+
+    .rank-item.eu {
+      border-color: green;
+      background: #f0fff0;
+    }
+
+    .rank-pos {
+      font-size: 1rem;
+      font-weight: bold;
+      min-width: 28px;
+      text-align: center;
+      color: #bbb;
+    }
+
+    .rank-pos.ouro   { color: #e6a817; }
+    .rank-pos.prata  { color: #909090; }
+    .rank-pos.bronze { color: #a07840; }
+
+    .rank-avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: #e8f5e9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.78rem;
+      font-weight: bold;
+      color: green;
+      flex-shrink: 0;
+    }
+
+    .rank-avatar.eu {
+      background: #e8f5e9;
+      border: 2px solid green;
+    }
+
+    .rank-info { flex: 1; }
+
+    .rank-nome {
+      font-size: 0.9rem;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .tag-voce {
+      background: green;
+      color: white;
+      font-size: 0.6rem;
+      font-weight: bold;
+      padding: 1px 5px;
+      border-radius: 3px;
+    }
+
+    .rank-cidade {
+      font-size: 0.72rem;
+      color: #888;
+      margin-top: 2px;
+    }
+
+    .rank-score {
+      text-align: right;
+    }
+
+    .rank-m2 {
+      font-size: 0.9rem;
+      font-weight: bold;
+      color: green;
+    }
+
+    .rank-vitorias {
+      font-size: 0.7rem;
+      color: #aaa;
+      margin-top: 2px;
+    }
+
+    .rodape {
+      text-align: center;
+      color: #aaa;
+      font-size: 0.72rem;
+      padding: 0.5rem 0;
+    }
+
+    /* Nav */
+    .barra-nav {
       position: fixed;
       bottom: 0; left: 0; right: 0;
       display: flex;
-      background: #0a0818;
-      border-top: 1px solid #2a1848;
-      z-index: 100;
+      background: #222;
     }
 
-    .barra-nav-dark a {
+    .barra-nav a {
       flex: 1;
       display: flex;
       align-items: center;
       justify-content: center;
       padding: 0.65rem 0;
-      color: #5e5280;
+      color: #888;
       text-decoration: none;
-      font-size: 13px;
+      font-size: 0.8rem;
       font-weight: 600;
     }
 
-    .barra-nav-dark a.nav-ativo { color: #a084fd; }
-
-    .top-bar {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 28px;
-    }
-
-    .back-link {
-      color: #a084fd;
-      text-decoration: none;
-      font-size: 14px;
-      font-weight: 600;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .back-link:hover { text-decoration: underline; }
-
-    h1 {
-      font-size: 22px;
-      font-weight: 700;
-      color: #e0d8ff;
-    }
-
-    .rank-list {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      max-width: 480px;
-      margin: 0 auto;
-    }
-
-    .rank-item {
-      background: #140e2e;
-      border: 1px solid #2a1848;
-      border-radius: 12px;
-      padding: 14px 16px;
-      display: flex;
-      align-items: center;
-      gap: 14px;
-    }
-
-    .rank-pos {
-      font-size: 18px;
-      font-weight: 700;
-      color: #5e5280;
-      width: 24px;
-      text-align: center;
-    }
-
-    .rank-avatar {
-      width: 40px; height: 40px;
-      border-radius: 50%;
-      background: #2a1848;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 14px;
-      font-weight: 700;
-      color: #a084fd;
-      flex-shrink: 0;
-    }
-
-    .rank-info { flex: 1; }
-    .rank-name { font-size: 15px; font-weight: 700; }
-    .rank-city { font-size: 12px; color: #5e5280; margin-top: 2px; }
-
-    .rank-score {
-      font-size: 15px;
-      font-weight: 700;
-      color: #a084fd;
-      text-align: right;
-    }
-
-    .rank-score span {
-      display: block;
-      font-size: 11px;
-      color: #5e5280;
-      font-weight: 400;
-    }
-
-    .rank-item.me {
-      border-color: #7c5cfc;
-      background: rgba(124,92,252,.08);
-    }
-
-    .you-tag {
-      background: #7c5cfc;
-      color: #fff;
-      font-size: 9px;
-      font-weight: 700;
-      padding: 2px 6px;
-      border-radius: 4px;
-      margin-left: 6px;
-      vertical-align: middle;
-    }
+    .barra-nav a.ativo { color: #4caf50; }
   </style>
 </head>
 <body>
 
-  <div class="top-bar">
-    <a class="back-link" href="index.html">← Início</a>
-    <h1>Ranking</h1>
-  </div>
+  <div class="topo">Ranking</div>
 
-  <div class="rank-list">
+  <div class="conteudo">
 
     <div class="rank-item">
-      <div class="rank-pos">1</div>
+      <div class="rank-pos ouro">1</div>
       <div class="rank-avatar">AC</div>
       <div class="rank-info">
-        <div class="rank-name">Ana Costa</div>
-        <div class="rank-city">São Paulo</div>
+        <div class="rank-nome">Ana Costa</div>
+        <div class="rank-cidade">São Paulo</div>
       </div>
-      <div class="rank-score">127.4k m² <span>34 vitórias</span></div>
+      <div class="rank-score">
+        <div class="rank-m2">127.4k m²</div>
+        <div class="rank-vitorias">34 vitórias</div>
+      </div>
     </div>
 
     <div class="rank-item">
-      <div class="rank-pos">2</div>
+      <div class="rank-pos prata">2</div>
       <div class="rank-avatar">PL</div>
       <div class="rank-info">
-        <div class="rank-name">Pedro Lopes</div>
-        <div class="rank-city">São Paulo</div>
+        <div class="rank-nome">Pedro Lopes</div>
+        <div class="rank-cidade">São Paulo</div>
       </div>
-      <div class="rank-score">98.2k m² <span>21 vitórias</span></div>
+      <div class="rank-score">
+        <div class="rank-m2">98.2k m²</div>
+        <div class="rank-vitorias">21 vitórias</div>
+      </div>
     </div>
 
-    <div class="rank-item me">
-      <div class="rank-pos">3</div>
-      <div class="rank-avatar" style="background:rgba(124,92,252,.15); color:#a084fd;">JS</div>
+    <div class="rank-item eu">
+      <div class="rank-pos bronze">3</div>
+      <div class="rank-avatar eu">JS</div>
       <div class="rank-info">
-        <div class="rank-name">João Silva <span class="you-tag">Você</span></div>
-        <div class="rank-city">São Paulo</div>
+        <div class="rank-nome">João Silva <span class="tag-voce">Você</span></div>
+        <div class="rank-cidade">São Paulo</div>
       </div>
-      <div class="rank-score">48.3k m² <span>8 vitórias</span></div>
+      <div class="rank-score">
+        <div class="rank-m2">48.3k m²</div>
+        <div class="rank-vitorias">8 vitórias</div>
+      </div>
     </div>
 
     <div class="rank-item">
       <div class="rank-pos">4</div>
       <div class="rank-avatar">MR</div>
       <div class="rank-info">
-        <div class="rank-name">Mariana Rocha</div>
-        <div class="rank-city">Belo Horizonte</div>
+        <div class="rank-nome">Mariana Rocha</div>
+        <div class="rank-cidade">Belo Horizonte</div>
       </div>
-      <div class="rank-score">45.1k m² <span>12 vitórias</span></div>
+      <div class="rank-score">
+        <div class="rank-m2">45.1k m²</div>
+        <div class="rank-vitorias">12 vitórias</div>
+      </div>
     </div>
 
     <div class="rank-item">
       <div class="rank-pos">5</div>
       <div class="rank-avatar">CM</div>
       <div class="rank-info">
-        <div class="rank-name">Carlos Melo</div>
-        <div class="rank-city">São Paulo</div>
+        <div class="rank-nome">Carlos Melo</div>
+        <div class="rank-cidade">São Paulo</div>
       </div>
-      <div class="rank-score">39.8k m² <span>7 vitórias</span></div>
+      <div class="rank-score">
+        <div class="rank-m2">39.8k m²</div>
+        <div class="rank-vitorias">7 vitórias</div>
+      </div>
     </div>
 
     <div class="rank-item">
       <div class="rank-pos">6</div>
       <div class="rank-avatar">FD</div>
       <div class="rank-info">
-        <div class="rank-name">Fernanda Dias</div>
-        <div class="rank-city">Rio de Janeiro</div>
+        <div class="rank-nome">Fernanda Dias</div>
+        <div class="rank-cidade">Rio de Janeiro</div>
       </div>
-      <div class="rank-score">32.0k m² <span>5 vitórias</span></div>
+      <div class="rank-score">
+        <div class="rank-m2">32.0k m²</div>
+        <div class="rank-vitorias">5 vitórias</div>
+      </div>
     </div>
 
     <div class="rank-item">
       <div class="rank-pos">7</div>
       <div class="rank-avatar">RT</div>
       <div class="rank-info">
-        <div class="rank-name">Rafael Torres</div>
-        <div class="rank-city">São Paulo</div>
+        <div class="rank-nome">Rafael Torres</div>
+        <div class="rank-cidade">São Paulo</div>
       </div>
-      <div class="rank-score">28.4k m² <span>4 vitórias</span></div>
+      <div class="rank-score">
+        <div class="rank-m2">28.4k m²</div>
+        <div class="rank-vitorias">4 vitórias</div>
+      </div>
     </div>
 
     <div class="rank-item">
       <div class="rank-pos">8</div>
       <div class="rank-avatar">LN</div>
       <div class="rank-info">
-        <div class="rank-name">Luiza Neves</div>
-        <div class="rank-city">São Paulo</div>
+        <div class="rank-nome">Luiza Neves</div>
+        <div class="rank-cidade">São Paulo</div>
       </div>
-      <div class="rank-score">21.0k m² <span>3 vitórias</span></div>
+      <div class="rank-score">
+        <div class="rank-m2">21.0k m²</div>
+        <div class="rank-vitorias">3 vitórias</div>
+      </div>
     </div>
+
+    <div class="rodape">Atualizado em tempo real · São Paulo</div>
 
   </div>
 
-  <p style="text-align:center; color:#5e5280; font-size:12px; margin-top:24px;">
-    Atualizado em tempo real · São Paulo
-  </p>
-
-  <nav class="barra-nav-dark">
+  <nav class="barra-nav">
     <a href="perfil.html">Perfil</a>
     <a href="index.html">Jogar</a>
-    <a href="ranking.html" class="nav-ativo">Ranking</a>
+    <a href="ranking.html" class="ativo">Ranking</a>
   </nav>
 
 </body>
