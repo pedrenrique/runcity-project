@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RunCity — Perfil</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Outfit', sans-serif;
+      background: #0a0818;
+      color: #e0d8ff;
+      min-height: 100vh;
+      padding: 24px 16px;
+      max-width: 480px;
+      margin: 0 auto;
+    }
+
+    .top-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 28px;
+    }
+
+    .back-link {
+      color: #a084fd;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .back-link:hover { text-decoration: underline; }
+
+    h1 { font-size: 22px; font-weight: 700; color: #e0d8ff; }
+
+    /* avatar */
+    .profile-header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 24px 0 20px;
+      text-align: center;
+    }
+
+    .avatar {
+      width: 80px; height: 80px;
+      border-radius: 50%;
+      background: rgba(124,92,252,.15);
+      border: 3px solid #7c5cfc;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px;
+      font-weight: 800;
+      color: #a084fd;
+      margin-bottom: 14px;
+    }
+
+    .profile-name { font-size: 22px; font-weight: 800; margin-bottom: 4px; }
+    .profile-role { font-size: 13px; color: #a084fd; margin-bottom: 6px; }
+    .profile-city { font-size: 12px; color: #5e5280; }
+
+    /* stats */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin: 20px 0;
+    }
+
+    .stat {
+      background: #140e2e;
+      border: 1px solid #2a1848;
+      border-radius: 12px;
+      padding: 12px 6px;
+      text-align: center;
+    }
+
+    .stat-val { font-size: 18px; font-weight: 800; color: #a084fd; }
+    .stat-lbl { font-size: 9px; font-weight: 700; color: #5e5280; margin-top: 4px; text-transform: uppercase; letter-spacing: .5px; }
+
+    /* histórico */
+    h2 { font-size: 12px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: #5e5280; margin-bottom: 12px; }
+
+    .hist-list { display: flex; flex-direction: column; gap: 8px; }
+
+    .hist-item {
+      background: #140e2e;
+      border: 1px solid #2a1848;
+      border-radius: 12px;
+      padding: 13px 14px;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .hist-icon {
+      width: 36px; height: 36px;
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    .hist-icon.solo    { background: rgba(124,92,252,.12); color: #a084fd; }
+    .hist-icon.partida { background: rgba(232,160,32,.1); color: #e8a020; }
+
+    .hist-info { flex: 1; }
+    .hist-type { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: #9488c0; }
+    .hist-date { font-size: 11px; color: #5e5280; margin-top: 1px; }
+
+    .hist-meta { text-align: right; }
+    .hist-m2 { font-size: 16px; font-weight: 800; color: #a084fd; }
+    .hist-sub { font-size: 10px; color: #5e5280; margin-top: 1px; }
+
+    .result-tag {
+      display: inline-block;
+      margin-top: 3px;
+      padding: 2px 7px;
+      border-radius: 5px;
+      font-size: 10px;
+      font-weight: 800;
+    }
+    .result-tag.gold   { background: rgba(232,160,32,.12); color: #e8a020; border: 1px solid rgba(232,160,32,.3); }
+    .result-tag.purple { background: rgba(124,92,252,.12); color: #c4b5fd; border: 1px solid rgba(124,92,252,.25); }
+
+    .ranking-link {
+      display: block;
+      text-align: center;
+      margin-top: 24px;
+      color: #a084fd;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .ranking-link:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+
+  <div class="top-bar">
+    <a class="back-link" href="/">← Início</a>
+    <h1>Perfil</h1>
+  </div>
+
+  <div class="profile-header">
+    <div class="avatar">JS</div>
+    <div class="profile-name">João Silva</div>
+    <div class="profile-role">Corredor Urbano · Nível 5</div>
+    <div class="profile-city">São Paulo, SP</div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat">
+      <div class="stat-val">48.3k</div>
+      <div class="stat-lbl">m² total</div>
+    </div>
+    <div class="stat">
+      <div class="stat-val">23</div>
+      <div class="stat-lbl">corridas</div>
+    </div>
+    <div class="stat">
+      <div class="stat-val">8</div>
+      <div class="stat-lbl">vitórias</div>
+    </div>
+    <div class="stat">
+      <div class="stat-val">87km</div>
+      <div class="stat-lbl">percurso</div>
+    </div>
+  </div>
+
+  <h2>Histórico de corridas</h2>
+
+  <div class="hist-list">
+
+    <div class="hist-item">
+      <div class="hist-icon solo">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      </div>
+      <div class="hist-info">
+        <div class="hist-type">Solo</div>
+        <div class="hist-date">24 Mar 2026</div>
+      </div>
+      <div class="hist-meta">
+        <div class="hist-m2">4.120 m²</div>
+        <div class="hist-sub">5.2 km · 28:14</div>
+      </div>
+    </div>
+
+    <div class="hist-item">
+      <div class="hist-icon partida">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+      </div>
+      <div class="hist-info">
+        <div class="hist-type">Partida</div>
+        <div class="hist-date">22 Mar 2026</div>
+      </div>
+      <div class="hist-meta">
+        <div class="hist-m2">2.690 m²</div>
+        <span class="result-tag gold">1º lugar</span>
+      </div>
+    </div>
+
+    <div class="hist-item">
+      <div class="hist-icon solo">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      </div>
+      <div class="hist-info">
+        <div class="hist-type">Solo</div>
+        <div class="hist-date">20 Mar 2026</div>
+      </div>
+      <div class="hist-meta">
+        <div class="hist-m2">5.340 m²</div>
+        <div class="hist-sub">6.1 km · 34:51</div>
+      </div>
+    </div>
+
+    <div class="hist-item">
+      <div class="hist-icon partida">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+      </div>
+      <div class="hist-info">
+        <div class="hist-type">Partida</div>
+        <div class="hist-date">18 Mar 2026</div>
+      </div>
+      <div class="hist-meta">
+        <div class="hist-m2">1.800 m²</div>
+        <span class="result-tag purple">3º lugar</span>
+      </div>
+    </div>
+
+  </div>
+
+  <a class="ranking-link" href="ranking.html">Ver ranking completo →</a>
+
+</body>
+</html>

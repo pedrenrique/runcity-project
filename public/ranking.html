@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RunCity — Ranking</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Outfit', sans-serif;
+      background: #0a0818;
+      color: #e0d8ff;
+      min-height: 100vh;
+      padding: 24px 16px;
+    }
+
+    .top-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 28px;
+    }
+
+    .back-link {
+      color: #a084fd;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .back-link:hover { text-decoration: underline; }
+
+    h1 {
+      font-size: 22px;
+      font-weight: 700;
+      color: #e0d8ff;
+    }
+
+    .rank-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-width: 480px;
+      margin: 0 auto;
+    }
+
+    .rank-item {
+      background: #140e2e;
+      border: 1px solid #2a1848;
+      border-radius: 12px;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .rank-pos {
+      font-size: 18px;
+      font-weight: 700;
+      color: #5e5280;
+      width: 24px;
+      text-align: center;
+    }
+
+    .rank-avatar {
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      background: #2a1848;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px;
+      font-weight: 700;
+      color: #a084fd;
+      flex-shrink: 0;
+    }
+
+    .rank-info { flex: 1; }
+    .rank-name { font-size: 15px; font-weight: 700; }
+    .rank-city { font-size: 12px; color: #5e5280; margin-top: 2px; }
+
+    .rank-score {
+      font-size: 15px;
+      font-weight: 700;
+      color: #a084fd;
+      text-align: right;
+    }
+
+    .rank-score span {
+      display: block;
+      font-size: 11px;
+      color: #5e5280;
+      font-weight: 400;
+    }
+
+    .rank-item.me {
+      border-color: #7c5cfc;
+      background: rgba(124,92,252,.08);
+    }
+
+    .you-tag {
+      background: #7c5cfc;
+      color: #fff;
+      font-size: 9px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+      margin-left: 6px;
+      vertical-align: middle;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="top-bar">
+    <a class="back-link" href="/">← Início</a>
+    <h1>Ranking</h1>
+  </div>
+
+  <div class="rank-list">
+
+    <div class="rank-item">
+      <div class="rank-pos">1</div>
+      <div class="rank-avatar">AC</div>
+      <div class="rank-info">
+        <div class="rank-name">Ana Costa</div>
+        <div class="rank-city">São Paulo</div>
+      </div>
+      <div class="rank-score">127.4k m² <span>34 vitórias</span></div>
+    </div>
+
+    <div class="rank-item">
+      <div class="rank-pos">2</div>
+      <div class="rank-avatar">PL</div>
+      <div class="rank-info">
+        <div class="rank-name">Pedro Lopes</div>
+        <div class="rank-city">São Paulo</div>
+      </div>
+      <div class="rank-score">98.2k m² <span>21 vitórias</span></div>
+    </div>
+
+    <div class="rank-item me">
+      <div class="rank-pos">3</div>
+      <div class="rank-avatar" style="background:rgba(124,92,252,.15); color:#a084fd;">JS</div>
+      <div class="rank-info">
+        <div class="rank-name">João Silva <span class="you-tag">Você</span></div>
+        <div class="rank-city">São Paulo</div>
+      </div>
+      <div class="rank-score">48.3k m² <span>8 vitórias</span></div>
+    </div>
+
+    <div class="rank-item">
+      <div class="rank-pos">4</div>
+      <div class="rank-avatar">MR</div>
+      <div class="rank-info">
+        <div class="rank-name">Mariana Rocha</div>
+        <div class="rank-city">Belo Horizonte</div>
+      </div>
+      <div class="rank-score">45.1k m² <span>12 vitórias</span></div>
+    </div>
+
+    <div class="rank-item">
+      <div class="rank-pos">5</div>
+      <div class="rank-avatar">CM</div>
+      <div class="rank-info">
+        <div class="rank-name">Carlos Melo</div>
+        <div class="rank-city">São Paulo</div>
+      </div>
+      <div class="rank-score">39.8k m² <span>7 vitórias</span></div>
+    </div>
+
+    <div class="rank-item">
+      <div class="rank-pos">6</div>
+      <div class="rank-avatar">FD</div>
+      <div class="rank-info">
+        <div class="rank-name">Fernanda Dias</div>
+        <div class="rank-city">Rio de Janeiro</div>
+      </div>
+      <div class="rank-score">32.0k m² <span>5 vitórias</span></div>
+    </div>
+
+    <div class="rank-item">
+      <div class="rank-pos">7</div>
+      <div class="rank-avatar">RT</div>
+      <div class="rank-info">
+        <div class="rank-name">Rafael Torres</div>
+        <div class="rank-city">São Paulo</div>
+      </div>
+      <div class="rank-score">28.4k m² <span>4 vitórias</span></div>
+    </div>
+
+    <div class="rank-item">
+      <div class="rank-pos">8</div>
+      <div class="rank-avatar">LN</div>
+      <div class="rank-info">
+        <div class="rank-name">Luiza Neves</div>
+        <div class="rank-city">São Paulo</div>
+      </div>
+      <div class="rank-score">21.0k m² <span>3 vitórias</span></div>
+    </div>
+
+  </div>
+
+  <p style="text-align:center; color:#5e5280; font-size:12px; margin-top:24px;">
+    Atualizado em tempo real · São Paulo
+  </p>
+
+</body>
+</html>
