@@ -4,31 +4,241 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>RunCity</title>
+  <link rel="stylesheet" href="libs/leaflet.css"/>
   <link rel="stylesheet" href="style.css">
 </head>
-<body>
-  <div class="container">
-    <h1>RunCity</h1>
-    <p>Transforme cada corrida em uma batalha de território</p>
+<body class="tela-lobby">
 
-    <div class="seletor-tempo">
-      <p>Duração da corrida</p>
-      <select id="tempo" class="select-tempo">
-        <option value="1">5 minutos</option>
-        <option value="10" selected>10 minutos</option>
-        <option value="15">15 minutos</option>
-        <option value="20">20 minutos</option>
-        <option value="30">30 minutos</option>
-      </select>
-    </div>
-
-    <button class="btn-iniciar" onclick="iniciar()">Iniciar Disputa</button>
+  <!-- nome da sala -->
+  <div class="barra-lobby">
+    <span class="lobby-titulo" id="lobby-titulo">RunCity</span>
+    <div class="lobby-jogadores" id="lobby-jogadores"></div>
   </div>
 
+  <!-- botão Preparar -->
+  <div class="mapa-lobby-wrapper">
+    <div id="mapa-lobby"></div>
+    <button class="btn-preparar" onclick="abrirPreparar()">Preparar</button>
+  </div>
+
+  <!-- Botões de ação -->
+  <div class="acoes-lobby">
+    <button class="btn-acao" onclick="abrirConvidar()">Convidar amigo</button>
+    <button class="btn-acao" onclick="abrirEntrarSala()">Entrar em uma sala</button>
+    <button class="btn-acao" onclick="abrirCriarSala()">Criar sala</button>
+  </div>
+
+  <!-- Barra de navegação -->
+  <nav class="barra-nav">
+    <a href="perfil.html" class="nav-item">Perfil</a>
+    <a href="index.html" class="nav-item nav-ativo">Jogar</a>
+    <a href="ranking.html" class="nav-item">Ranking</a>
+  </nav>
+
+  <!-- Preparar -->
+  <div id="popup-preparar" class="overlay escondido">
+    <div class="popup">
+      <h2>Preparar</h2>
+      <ul class="lista-popup" id="lista-prontos"></ul>
+      <div class="popup-acoes">
+        <button class="btn-pronto" id="btn-meu-pronto" onclick="togglePronto()">Estou Pronto</button>
+        <button class="btn-iniciar-sala escondido" id="btn-iniciar-sala" onclick="iniciarCorrida()">Iniciar</button>
+      </div>
+      <button class="btn-fechar" onclick="fechar('popup-preparar')">Fechar</button>
+    </div>
+  </div>
+
+  <!-- Convidar amigo -->
+  <div id="popup-convidar" class="overlay escondido">
+    <div class="popup">
+      <h2>Convidar amigo</h2>
+      <ul class="lista-popup" id="lista-amigos"></ul>
+      <button class="btn-fechar" onclick="fechar('popup-convidar')">Fechar</button>
+    </div>
+  </div>
+
+  <!-- Pop-up: Entrar em uma sala -->
+  <div id="popup-entrar-sala" class="overlay escondido">
+    <div class="popup">
+      <h2>Salas disponíveis</h2>
+      <ul class="lista-popup" id="lista-salas"></ul>
+      <button class="btn-fechar" onclick="fechar('popup-entrar-sala')">Fechar</button>
+    </div>
+  </div>
+
+  <!-- Pop-up: Criar sala -->
+  <div id="popup-criar-sala" class="overlay escondido">
+    <div class="popup">
+      <h2>Criar sala</h2>
+      <div class="form-criar-sala">
+        <input type="text" id="input-nome-sala" placeholder="Nome da sala" class="input-sala"/>
+        <select id="select-tempo-sala" class="select-tempo">
+          <option value="1">5 minutos</option>
+          <option value="10" selected>10 minutos</option>
+          <option value="15">15 minutos</option>
+          <option value="20">20 minutos</option>
+          <option value="30">30 minutos</option>
+        </select>
+        <button class="btn-iniciar" onclick="criarSala()">Criar</button>
+      </div>
+      <button class="btn-fechar" onclick="fechar('popup-criar-sala')">Fechar</button>
+    </div>
+  </div>
+
+  <script src="libs/leaflet.js"></script>
   <script>
-    function iniciar() {
-      const tempo = document.getElementById('tempo').value;
+    const estado = {
+      sala: null,
+      jogadores: [{ nome: 'Você', pronto: false }],
+      ehCriador: false,
+      convidados: []
+    };
+
+    const amigosOnline = ['Ana', 'Bruno', 'Carlos', 'Diana'];
+    const salasPublicas = [
+      { nome: 'Sala do João', tempo: 10, jogadores: 2 },
+      { nome: 'Corrida da Tarde', tempo: 5, jogadores: 1 },
+      { nome: 'Maratona Urbana', tempo: 15, jogadores: 3 },
+    ];
+
+    const mapa = L.map('mapa-lobby', {
+      zoomControl: false,
+      dragging: false,
+      scrollWheelZoom: false,
+      doubleClickZoom: false,
+      touchZoom: false
+    }).setView([-19.9167, -43.9345], 15);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap'
+    }).addTo(mapa);
+
+    function fechar(id) {
+      document.getElementById(id).classList.add('escondido');
+    }
+
+    function atualizarBarra() {
+      const titulo = document.getElementById('lobby-titulo');
+      const jogadoresEl = document.getElementById('lobby-jogadores');
+      if (estado.sala) {
+        titulo.textContent = estado.sala.nome;
+        jogadoresEl.innerHTML = estado.jogadores
+          .map(j => `<span class="tag-jogador${j.pronto ? ' pronto' : ''}">${j.nome}</span>`)
+          .join('');
+      } else {
+        titulo.textContent = 'RunCity';
+        jogadoresEl.innerHTML = '';
+      }
+    }
+
+    // Preparar
+    function abrirPreparar() {
+      const lista = document.getElementById('lista-prontos');
+      lista.innerHTML = estado.jogadores.map(j => {
+        const criador = j.nome === 'Você' && estado.ehCriador ? ' <small>(criador)</small>' : '';
+        return `
+          <li class="item-popup">
+            <span>${j.nome}${criador}</span>
+            <span class="status-pronto ${j.pronto ? 'confirmado' : 'aguardando'}">
+              ${j.pronto ? '&#10003; Pronto' : '&#8226; Aguardando'}
+            </span>
+          </li>`;
+      }).join('');
+
+      const btnIniciar = document.getElementById('btn-iniciar-sala');
+      const podeIniciar = estado.ehCriador || !estado.sala;
+      btnIniciar.classList.toggle('escondido', !podeIniciar);
+
+      const eu = estado.jogadores.find(j => j.nome === 'Você');
+      const btnPronto = document.getElementById('btn-meu-pronto');
+      btnPronto.textContent = eu.pronto ? 'Cancelar Pronto' : 'Estou Pronto';
+      btnPronto.classList.toggle('ativo', eu.pronto);
+
+      document.getElementById('popup-preparar').classList.remove('escondido');
+    }
+
+    function togglePronto() {
+      const eu = estado.jogadores.find(j => j.nome === 'Você');
+      eu.pronto = !eu.pronto;
+      atualizarBarra();
+      abrirPreparar();
+    }
+
+    function iniciarCorrida() {
+      const tempo = estado.sala ? estado.sala.tempo : 10;
       window.location.href = `corrida.html?tempo=${tempo}`;
+    }
+
+    // Convidar amigo
+    function abrirConvidar() {
+      const lista = document.getElementById('lista-amigos');
+      lista.innerHTML = amigosOnline.map(nome => {
+        const convidado = estado.convidados.includes(nome);
+        return `
+          <li class="item-popup">
+            <span>${nome}</span>
+            <button class="btn-acao-lista${convidado ? ' convidado' : ''}"
+              onclick="convidarAmigo('${nome}', this)"
+              ${convidado ? 'disabled' : ''}>
+              ${convidado ? 'Convidado' : 'Convidar'}
+            </button>
+          </li>`;
+      }).join('');
+      document.getElementById('popup-convidar').classList.remove('escondido');
+    }
+
+    function convidarAmigo(nome, btn) {
+      if (!estado.sala) {
+        estado.sala = { nome: 'Minha Sala', tempo: 10 };
+        estado.ehCriador = true;
+      }
+      estado.convidados.push(nome);
+      estado.jogadores.push({ nome, pronto: false });
+      btn.textContent = 'Convidado';
+      btn.disabled = true;
+      btn.classList.add('convidado');
+      atualizarBarra();
+    }
+
+    // Entrar em sala
+    function abrirEntrarSala() {
+      const lista = document.getElementById('lista-salas');
+      lista.innerHTML = salasPublicas.map((sala, i) => `
+        <li class="item-popup">
+          <div>
+            <strong>${sala.nome}</strong>
+            <small>${sala.tempo} min · ${sala.jogadores} jogador${sala.jogadores > 1 ? 'es' : ''}</small>
+          </div>
+          <button class="btn-acao-lista" onclick="entrarSala(${i})">Entrar</button>
+        </li>`).join('');
+      document.getElementById('popup-entrar-sala').classList.remove('escondido');
+    }
+
+    function entrarSala(i) {
+      const sala = salasPublicas[i];
+      estado.sala = { nome: sala.nome, tempo: sala.tempo };
+      estado.ehCriador = false;
+      estado.jogadores = [
+        ...Array.from({ length: sala.jogadores }, (_, k) => ({ nome: `Jogador ${k + 1}`, pronto: false })),
+        { nome: 'Você', pronto: false }
+      ];
+      atualizarBarra();
+      fechar('popup-entrar-sala');
+    }
+
+    // Criar sala
+    function abrirCriarSala() {
+      document.getElementById('popup-criar-sala').classList.remove('escondido');
+    }
+
+    function criarSala() {
+      const nome = document.getElementById('input-nome-sala').value.trim() || 'Minha Sala';
+      const tempo = parseInt(document.getElementById('select-tempo-sala').value);
+      estado.sala = { nome, tempo };
+      estado.ehCriador = true;
+      estado.jogadores = [{ nome: 'Você', pronto: false }];
+      atualizarBarra();
+      fechar('popup-criar-sala');
     }
   </script>
 </body>

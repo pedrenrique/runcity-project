@@ -16,8 +16,25 @@
   <div id="mapa"></div>
 
   <div class="hud">
-    <p>Territórios: <strong>0</strong></p>
-    <a href="index.html">
+    <div class="ranking-live">
+      <span class="ranking-titulo">Ranking</span>
+      <ul class="ranking-lista" id="ranking-lista">
+        <li><span class="ranking-pos">1º</span><span class="ranking-nome">Você</span><span class="ranking-area">0 m²</span></li>
+        <li><span class="ranking-pos">2º</span><span class="ranking-nome">Jogador 2</span><span class="ranking-area">0 m²</span></li>
+        <li><span class="ranking-pos">3º</span><span class="ranking-nome">Jogador 3</span><span class="ranking-area">0 m²</span></li>
+      </ul>
+    </div>
+    <div class="hud-stats">
+      <div class="stat">
+        <span class="stat-valor" id="ritmo-medio">--:--</span>
+        <span class="stat-label">Ritmo Médio</span>
+      </div>
+      <div class="stat">
+        <span class="stat-valor" id="area">0</span>
+        <span class="stat-label">m²</span>
+      </div>
+    </div>
+    <a href="index.html" style="width:100%">
       <button class="btn-parar">Encerrar</button>
     </a>
   </div>

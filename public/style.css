@@ -70,26 +70,101 @@ p {
 
 #mapa {
   width: 100vw;
-  height: calc(100vh - 130px);
+  height: calc(100vh - 240px);
 }
 
 .hud {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   align-items: center;
-  justify-content: space-between;
-  padding: 0.8rem 1.5rem;
+  padding: 0.5rem 1rem;
+  gap: 0.5rem;
   background-color: white;
+}
+
+.ranking-live {
+  width: 100%;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid #eee;
+}
+
+.ranking-titulo {
+  display: block;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: gray;
+  margin-bottom: 0.25rem;
+}
+
+.ranking-lista {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.ranking-lista li {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: clamp(0.75rem, 2.5vw, 0.88rem);
+}
+
+.ranking-pos {
+  font-weight: bold;
+  color: green;
+  min-width: 22px;
+}
+
+.ranking-nome {
+  flex: 1;
+}
+
+.ranking-area {
+  color: gray;
+  font-size: 0.78rem;
+}
+
+.hud-stats {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  width: 100%;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid #eee;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+}
+
+.stat-valor {
+  font-size: clamp(1.1rem, 4vw, 1.4rem);
+  font-weight: bold;
+  color: #222;
+}
+
+.stat-label {
+  font-size: clamp(0.6rem, 2.2vw, 0.75rem);
+  color: gray;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 2px;
 }
 
 .btn-parar {
   background-color: red;
   color: white;
-  padding: 0.6rem 1.5rem;
+  padding: 0.55rem 1.5rem;
   font-size: clamp(0.9rem, 3vw, 1.1rem);
   border: none;
   border-radius: 8px;
   cursor: pointer;
+  width: 100%;
 }
 
 /* Pop-up resultado */
@@ -180,4 +255,229 @@ p {
   border-radius: 8px;
   cursor: pointer;
   width: 100%;
+}
+
+/* === Lobby (index.html) === */
+body.tela-lobby {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.barra-lobby {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.55rem 1rem;
+  background-color: #222;
+  color: white;
+  min-height: 48px;
+  flex-shrink: 0;
+}
+
+.lobby-titulo {
+  font-size: clamp(0.9rem, 3.5vw, 1.1rem);
+  font-weight: bold;
+}
+
+.lobby-jogadores {
+  display: flex;
+  gap: 0.3rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.tag-jogador {
+  background-color: #444;
+  border-radius: 10px;
+  padding: 0.15rem 0.5rem;
+  font-size: 0.7rem;
+  color: #ccc;
+}
+
+.tag-jogador.pronto {
+  background-color: green;
+  color: white;
+}
+
+.mapa-lobby-wrapper {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+
+#mapa-lobby {
+  width: 100%;
+  height: 100%;
+}
+
+.btn-preparar {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 500;
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  background-color: green;
+  color: white;
+  font-size: 0.82rem;
+  font-weight: bold;
+  border: 3px solid white;
+  cursor: pointer;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.45);
+}
+
+.acoes-lobby {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding: 0.45rem 0.8rem;
+  background-color: white;
+  flex-shrink: 0;
+}
+
+.btn-acao {
+  background-color: #333;
+  color: white;
+  padding: 0.55rem;
+  font-size: clamp(0.82rem, 3vw, 0.95rem);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  width: 100%;
+}
+
+.barra-nav {
+  display: flex;
+  background-color: #222;
+  flex-shrink: 0;
+}
+
+.nav-item {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.65rem 0;
+  color: #888;
+  text-decoration: none;
+  font-size: clamp(0.75rem, 2.5vw, 0.85rem);
+  font-weight: 600;
+}
+
+.nav-item.nav-ativo {
+  color: #4caf50;
+}
+
+/* Pop-up lobby */
+.lista-popup {
+  list-style: none;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.item-popup {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #eee;
+  font-size: clamp(0.82rem, 3vw, 0.95rem);
+  gap: 0.5rem;
+}
+
+.item-popup small {
+  display: block;
+  font-size: 0.72rem;
+  color: gray;
+  margin-top: 2px;
+}
+
+.status-pronto.confirmado { color: green; font-weight: bold; font-size: 0.85rem; }
+.status-pronto.aguardando { color: #aaa; font-size: 0.85rem; }
+
+.popup-acoes {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  width: 100%;
+}
+
+.btn-pronto {
+  padding: 0.65rem;
+  background-color: #555;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: clamp(0.88rem, 3vw, 1rem);
+  width: 100%;
+}
+
+.btn-pronto.ativo { background-color: green; }
+
+.btn-iniciar-sala {
+  padding: 0.65rem;
+  background-color: green;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: clamp(0.88rem, 3vw, 1rem);
+  width: 100%;
+}
+
+.btn-fechar {
+  padding: 0.45rem;
+  background-color: transparent;
+  color: gray;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.82rem;
+  width: 100%;
+}
+
+.btn-acao-lista {
+  background-color: green;
+  color: white;
+  padding: 0.3rem 0.75rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.btn-acao-lista.convidado {
+  background-color: #bbb;
+  cursor: default;
+}
+
+.form-criar-sala {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  width: 100%;
+}
+
+.input-sala {
+  padding: 0.6rem 0.8rem;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  font-size: clamp(0.9rem, 3vw, 1rem);
+  width: 100%;
+}
+
+.input-sala:focus {
+  outline: none;
+  border-color: green;
 }

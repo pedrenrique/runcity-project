@@ -13,8 +13,31 @@
       background: #0a0818;
       color: #e0d8ff;
       min-height: 100vh;
-      padding: 24px 16px;
+      padding: 24px 16px 72px;
     }
+
+    .barra-nav-dark {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      display: flex;
+      background: #0a0818;
+      border-top: 1px solid #2a1848;
+      z-index: 100;
+    }
+
+    .barra-nav-dark a {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.65rem 0;
+      color: #5e5280;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .barra-nav-dark a.nav-ativo { color: #a084fd; }
 
     .top-bar {
       display: flex;
@@ -207,6 +230,12 @@
   <p style="text-align:center; color:#5e5280; font-size:12px; margin-top:24px;">
     Atualizado em tempo real · São Paulo
   </p>
+
+  <nav class="barra-nav-dark">
+    <a href="perfil.html">Perfil</a>
+    <a href="index.html">Jogar</a>
+    <a href="ranking.html" class="nav-ativo">Ranking</a>
+  </nav>
 
 </body>
 </html>
