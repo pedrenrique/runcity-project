@@ -328,6 +328,21 @@ body.tela-lobby {
   border: 3px solid white;
   cursor: pointer;
   box-shadow: 0 2px 12px rgba(0,0,0,0.45);
+  transition: background-color 0.2s, box-shadow 0.2s;
+}
+
+.btn-preparar.inativo {
+  background-color: #888;
+  border-color: #bbb;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.lobby-titulo-sala {
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-underline-offset: 3px;
 }
 
 .acoes-lobby {

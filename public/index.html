@@ -18,7 +18,7 @@
   <!-- botão Preparar -->
   <div class="mapa-lobby-wrapper">
     <div id="mapa-lobby"></div>
-    <button class="btn-preparar" onclick="abrirPreparar()">Preparar</button>
+    <button class="btn-preparar inativo" id="btn-preparar" onclick="abrirPreparar()" disabled>Preparar</button>
   </div>
 
   <!-- Botões de ação -->
@@ -48,6 +48,18 @@
     </div>
   </div>
 
+  <!-- Sair da sala -->
+  <div id="popup-sair-sala" class="overlay escondido">
+    <div class="popup">
+      <h2>Sair da sala</h2>
+      <p style="color:gray; font-size:0.9rem;">Desconectar de "<span id="nome-sala-sair"></span>"?</p>
+      <div class="popup-acoes" style="margin-top:0.5rem">
+        <button class="btn-iniciar-sala" style="background-color:#c0392b" onclick="sairDaSala()">Sair</button>
+        <button class="btn-fechar" onclick="fechar('popup-sair-sala')">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Convidar amigo -->
   <div id="popup-convidar" class="overlay escondido">
     <div class="popup">
@@ -57,7 +69,7 @@
     </div>
   </div>
 
-  <!-- Pop-up: Entrar em uma sala -->
+  <!-- Entrar em uma sala -->
   <div id="popup-entrar-sala" class="overlay escondido">
     <div class="popup">
       <h2>Salas disponíveis</h2>
@@ -66,14 +78,14 @@
     </div>
   </div>
 
-  <!-- Pop-up: Criar sala -->
+  <!-- Criar sala -->
   <div id="popup-criar-sala" class="overlay escondido">
     <div class="popup">
       <h2>Criar sala</h2>
       <div class="form-criar-sala">
         <input type="text" id="input-nome-sala" placeholder="Nome da sala" class="input-sala"/>
         <select id="select-tempo-sala" class="select-tempo">
-          <option value="1">5 minutos</option>
+          <option value="5">5 minutos</option>
           <option value="10" selected>10 minutos</option>
           <option value="15">15 minutos</option>
           <option value="20">20 minutos</option>
@@ -94,6 +106,7 @@
       convidados: []
     };
 
+    <!-- Essa parte é apenas para testar o front -->
     const amigosOnline = ['Ana', 'Bruno', 'Carlos', 'Diana'];
     const salasPublicas = [
       { nome: 'Sala do João', tempo: 10, jogadores: 2 },
@@ -120,19 +133,44 @@
     function atualizarBarra() {
       const titulo = document.getElementById('lobby-titulo');
       const jogadoresEl = document.getElementById('lobby-jogadores');
+      const btnPreparar = document.getElementById('btn-preparar');
+
       if (estado.sala) {
         titulo.textContent = estado.sala.nome;
+        titulo.classList.add('lobby-titulo-sala');
+        titulo.onclick = tentarSair;
         jogadoresEl.innerHTML = estado.jogadores
           .map(j => `<span class="tag-jogador${j.pronto ? ' pronto' : ''}">${j.nome}</span>`)
           .join('');
+        btnPreparar.disabled = false;
+        btnPreparar.classList.remove('inativo');
       } else {
         titulo.textContent = 'RunCity';
+        titulo.classList.remove('lobby-titulo-sala');
+        titulo.onclick = null;
         jogadoresEl.innerHTML = '';
+        btnPreparar.disabled = true;
+        btnPreparar.classList.add('inativo');
       }
+    }
+
+    function tentarSair() {
+      document.getElementById('nome-sala-sair').textContent = estado.sala.nome;
+      document.getElementById('popup-sair-sala').classList.remove('escondido');
+    }
+
+    function sairDaSala() {
+      estado.sala = null;
+      estado.ehCriador = false;
+      estado.jogadores = [{ nome: 'Você', pronto: false }];
+      estado.convidados = [];
+      atualizarBarra();
+      fechar('popup-sair-sala');
     }
 
     // Preparar
     function abrirPreparar() {
+      if (!estado.sala) return;
       const lista = document.getElementById('lista-prontos');
       lista.innerHTML = estado.jogadores.map(j => {
         const criador = j.nome === 'Você' && estado.ehCriador ? ' <small>(criador)</small>' : '';
