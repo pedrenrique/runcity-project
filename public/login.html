@@ -428,6 +428,7 @@
   </div>
 </div>
 
+<script src="auth.js"></script>
 <script>
   /* ── Tabs ── */
   function trocarAba(el) {
@@ -444,55 +445,77 @@
     input.type = input.type === 'password' ? 'text' : 'password';
   }
 
-  /* ── Submissão (mock por enquanto, fetch entra no próximo passo) ── */
+  /* ── Submissão ── */
+  function travar(form, travado) {
+    const btn = form.querySelector('.btn-primary');
+    btn.disabled = travado;
+    btn.textContent = travado ? 'Aguarde…' : (form.id === 'form-login' ? 'Entrar' : 'Criar conta');
+  }
+
+  function mostrarErro(idErro, msg) {
+    const e = document.getElementById(idErro);
+    e.textContent = msg;
+    e.classList.add('show');
+  }
+
   function entrar(ev) {
     ev.preventDefault();
     const f = ev.target;
-    const email = f.email.value.trim();
+    const email = f.email.value.trim().toLowerCase();
     const senha = f.senha.value;
-    const erro = document.getElementById('erro-login');
+    document.getElementById('erro-login').classList.remove('show');
 
     if (!email || !senha) {
-      erro.textContent = 'Preencha e-mail e senha.';
-      erro.classList.add('show');
+      mostrarErro('erro-login', 'Preencha e-mail e senha.');
       return;
     }
 
-    erro.classList.remove('show');
-    showToast('Entrando…');
-    // TODO: trocar por fetch quando o servidor estiver pronto
-    setTimeout(() => { window.location.href = 'index.html'; }, 700);
+    // sem backend ainda — autenticação 100% local. Sobrevive entre reloads via localStorage.
+    const users = RC._users.ler();
+    const u = users.find(x => x.email === email);
+    if (!u || u.senha !== senha) {
+      mostrarErro('erro-login', 'E-mail ou senha incorretos.');
+      return;
+    }
+
+    const { senha: _, ...userPub } = u;
+    RC.setSessao(RC._gerarToken(), userPub);
+    showToast('Bem-vindo, ' + userPub.nome.split(' ')[0] + '!');
+    setTimeout(() => { window.location.href = 'index.html'; }, 500);
   }
 
   function cadastrar(ev) {
     ev.preventDefault();
     const f = ev.target;
     const nome = f.nome.value.trim();
-    const email = f.email.value.trim();
+    const email = f.email.value.trim().toLowerCase();
     const senha = f.senha.value;
     const conf = f.confirmar.value;
-    const erro = document.getElementById('erro-cadastro');
+    document.getElementById('erro-cadastro').classList.remove('show');
 
-    if (!nome || !email || !senha) {
-      erro.textContent = 'Preencha todos os campos.';
-      erro.classList.add('show');
-      return;
-    }
-    if (senha.length < 6) {
-      erro.textContent = 'A senha precisa ter pelo menos 6 caracteres.';
-      erro.classList.add('show');
-      return;
-    }
-    if (senha !== conf) {
-      erro.textContent = 'As senhas não conferem.';
-      erro.classList.add('show');
+    if (!nome || !email || !senha) return mostrarErro('erro-cadastro', 'Preencha todos os campos.');
+    if (senha.length < 6)         return mostrarErro('erro-cadastro', 'A senha precisa ter pelo menos 6 caracteres.');
+    if (senha !== conf)           return mostrarErro('erro-cadastro', 'As senhas não conferem.');
+
+    const users = RC._users.ler();
+    if (users.some(u => u.email === email)) {
+      mostrarErro('erro-cadastro', 'Já existe uma conta com esse e-mail.');
       return;
     }
 
-    erro.classList.remove('show');
-    showToast('Conta criada! Entrando…');
-    // TODO: trocar por fetch quando o servidor estiver pronto
-    setTimeout(() => { window.location.href = 'index.html'; }, 800);
+    const novo = { id: RC._gerarId(), nome, email, senha, criadoEm: new Date().toISOString() };
+    users.push(novo);
+    RC._users.salvar(users);
+
+    const { senha: _, ...userPub } = novo;
+    RC.setSessao(RC._gerarToken(), userPub);
+    showToast('Conta criada! Bora correr.');
+    setTimeout(() => { window.location.href = 'index.html'; }, 600);
+  }
+
+  /* se já tiver sessão válida, pula a tela */
+  if (RC.getToken() && RC.getUser()) {
+    window.location.replace('index.html');
   }
 
   /* ── Toast ── */

@@ -218,6 +218,18 @@
     }
     .map-btn:hover { background:var(--p-mid); transform:translateY(-1px); }
 
+    .logout-btn {
+      width:100%; margin-top:8px;
+      background:transparent; border:1px solid var(--brd2);
+      color:var(--t2); padding:11px;
+      border-radius:13px;
+      font-size:12px; font-weight:600; font-family:var(--ff-b);
+      cursor:pointer; letter-spacing:.4px;
+      display:flex; align-items:center; justify-content:center; gap:7px;
+      transition:all .22s;
+    }
+    .logout-btn:hover { color:var(--err); border-color:rgba(239,68,68,.35); background:rgba(239,68,68,.05); }
+
     /* ── CONQUISTAS ── */
     .ach-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:12px; }
     .ach { background:var(--c0); border:1px solid var(--brd2); border-radius:13px; padding:14px 8px; text-align:center; transition:all .22s; }
@@ -384,6 +396,15 @@
             </svg>
             Ver meu território na cidade
           </button>
+
+          <button class="logout-btn" onclick="RC.logout()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>
+              <polyline points="16 17 21 12 16 7"/>
+              <line x1="21" y1="12" x2="9" y2="12"/>
+            </svg>
+            Sair da conta
+          </button>
         </div>
 
         <!-- Conquistas pane -->
@@ -452,7 +473,18 @@
   </div>
 </div>
 
+<script src="auth.js"></script>
 <script>
+  /* ── Sessão ── */
+  (async () => {
+    const u = await RC.requerLogin();
+    if (!u) return;
+    // preenche o cabeçalho com dados reais
+    const iniciais = (u.nome || '?').trim().split(/\s+/).map(s => s[0]).slice(0,2).join('').toUpperCase();
+    document.querySelector('.av').textContent = iniciais || '?';
+    document.querySelector('.p-name').textContent = (u.nome || '').toUpperCase();
+  })();
+
   /* ── ABAS ── */
   function mudarAba(id, el) {
     document.querySelectorAll('.ptab').forEach(t => t.classList.remove('active'));

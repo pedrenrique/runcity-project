@@ -68,7 +68,10 @@
   </div>
 
   <script src="libs/leaflet.js"></script>
+  <script src="auth.js"></script>
   <script>
+    RC.requerLogin();
+
     const params = new URLSearchParams(window.location.search);
     const minutos = parseInt(params.get('tempo')) || 10;
     let segundosRestantes = minutos * 60;

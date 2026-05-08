@@ -98,7 +98,10 @@
   </div>
 
   <script src="libs/leaflet.js"></script>
+  <script src="auth.js"></script>
   <script>
+    RC.requerLogin();
+
     const estado = {
       sala: null,
       jogadores: [{ nome: 'Você', pronto: false }],
