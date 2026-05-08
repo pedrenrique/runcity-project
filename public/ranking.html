@@ -1,271 +1,369 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>RunCity — Ranking</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --p:     #7c5cfc;
+      --p-l:   #a084fd;
+      --p-ll:  #c4b5fd;
+      --p-dim: rgba(124,92,252,.1);
+      --p-mid: rgba(124,92,252,.22);
+      --gold:  #e8a020;
+      --silver:#8ca0b8;
+      --bronze:#a0724a;
+      --ok:  #22c55e;
+      --err: #ef4444;
+      --bg:  #08061a;
+      --c0:  #100e24;
+      --c1:  #170f32;
+      --brd: #231848;
+      --brd2:#190e38;
+      --t1:  #ede8ff;
+      --t2:  #5e5280;
+      --t3:  #9488c0;
+      --ff-d:'Bebas Neue', sans-serif;
+      --ff-b:'Outfit', sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      font-family: Arial, sans-serif;
-      background: #f0f0f0;
-      color: #222;
-      padding-bottom: 56px;
-    }
-
-    .topo {
-      background: #222;
-      color: white;
-      padding: 0.75rem 1rem;
-      font-size: 1rem;
-      font-weight: bold;
-      letter-spacing: 0.5px;
-    }
-
-    .conteudo {
-      padding: 0.8rem;
+      background: #050410;
+      font-family: var(--ff-b);
+      min-height: 100vh;
       display: flex;
       flex-direction: column;
-      gap: 0.4rem;
-    }
-
-    .rank-item {
-      background: white;
-      border-radius: 8px;
-      padding: 0.75rem 1rem;
-      display: flex;
       align-items: center;
-      gap: 0.75rem;
-      border: 1px solid transparent;
+      padding: 32px 20px 60px;
     }
 
-    .rank-item.eu {
-      border-color: green;
-      background: #f0fff0;
-    }
-
-    .rank-pos {
-      font-size: 1rem;
-      font-weight: bold;
-      min-width: 28px;
-      text-align: center;
-      color: #bbb;
-    }
-
-    .rank-pos.ouro   { color: #e6a817; }
-    .rank-pos.prata  { color: #909090; }
-    .rank-pos.bronze { color: #a07840; }
-
-    .rank-avatar {
-      width: 38px;
-      height: 38px;
-      border-radius: 50%;
-      background: #e8f5e9;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.78rem;
-      font-weight: bold;
-      color: green;
+    /* ── phone frame ── */
+    .phone {
+      width: 390px;
+      height: 844px;
+      background: var(--bg);
+      border-radius: 46px;
+      border: 1.5px solid var(--brd);
+      overflow: hidden;
+      position: relative;
+      box-shadow: 0 40px 100px rgba(0,0,0,.65);
       flex-shrink: 0;
     }
 
-    .rank-avatar.eu {
-      background: #e8f5e9;
-      border: 2px solid green;
+    .pscroll { width:100%; height:100%; overflow-y:auto; overflow-x:hidden; }
+    .pscroll::-webkit-scrollbar { width:2px; }
+    .pscroll::-webkit-scrollbar-thumb { background:var(--brd); border-radius:2px; }
+    .pbody { padding-bottom: 84px; }
+
+    /* ── status bar ── */
+    .sbar { display:flex; justify-content:space-between; align-items:center; padding:14px 24px 6px; color:var(--t1); }
+    .sbar-time { font-size:15px; font-weight:700; }
+    .sbar-right { display:flex; align-items:center; gap:6px; font-size:12px; font-weight:700; }
+
+    /* ── screen header ── */
+    .shdr {
+      display:flex; align-items:center; gap:12px;
+      padding:10px 20px 14px;
+      position:sticky; top:0; z-index:50;
+      background:var(--bg); border-bottom:1px solid var(--brd2);
     }
 
-    .rank-info { flex: 1; }
-
-    .rank-nome {
-      font-size: 0.9rem;
-      font-weight: bold;
-      display: flex;
-      align-items: center;
-      gap: 0.4rem;
+    .back {
+      width:36px; height:36px; border-radius:50%;
+      background:var(--c0); border:1px solid var(--brd);
+      display:flex; align-items:center; justify-content:center;
+      text-decoration:none; color:var(--t1); transition:all .2s;
+      flex-shrink:0;
     }
+    .back:hover { background:var(--p-dim); border-color:var(--p-mid); color:var(--p-l); transform:translateX(-2px); }
 
-    .tag-voce {
-      background: green;
-      color: white;
-      font-size: 0.6rem;
-      font-weight: bold;
-      padding: 1px 5px;
-      border-radius: 3px;
+    .shdr-title { font-family:var(--ff-d); font-size:22px; letter-spacing:2px; color:var(--t1); flex:1; }
+
+    /* ── segmented control ── */
+    .seg-wrap { padding:12px 20px 8px; }
+    .seg {
+      display:flex; background:var(--c0); border-radius:10px;
+      padding:3px; border:1px solid var(--brd2); gap:2px;
     }
-
-    .rank-cidade {
-      font-size: 0.72rem;
-      color: #888;
-      margin-top: 2px;
+    .seg-opt {
+      flex:1; text-align:center; padding:8px 4px; border-radius:8px;
+      font-size:12px; font-weight:700; cursor:pointer;
+      transition:all .2s; color:var(--t2); border:1px solid transparent;
     }
+    .seg-opt.active { background:var(--p-dim); color:var(--p-ll); border-color:var(--p-mid); }
 
-    .rank-score {
-      text-align: right;
+    /* ── period pills ── */
+    .pills { display:flex; gap:7px; padding:6px 20px 16px; overflow-x:auto; }
+    .pills::-webkit-scrollbar { display:none; }
+    .pill {
+      flex-shrink:0; padding:6px 14px; border-radius:20px;
+      font-size:11px; font-weight:700; cursor:pointer;
+      transition:all .2s; border:1px solid var(--brd); color:var(--t2);
     }
+    .pill.active { background:var(--p); border-color:var(--p); color:#fff; }
 
-    .rank-m2 {
-      font-size: 0.9rem;
-      font-weight: bold;
-      color: green;
+    /* ── pódio ── */
+    .podium-wrap { padding:0 20px 18px; }
+    .podium {
+      display:flex; align-items:flex-end; gap:4px;
+      background:linear-gradient(170deg, var(--c1) 0%, var(--c0) 40%, var(--bg) 100%);
+      border:1px solid var(--brd2); border-radius:20px;
+      padding:24px 10px 0;
     }
-
-    .rank-vitorias {
-      font-size: 0.7rem;
-      color: #aaa;
-      margin-top: 2px;
+    .pd { flex:1; display:flex; flex-direction:column; align-items:center; }
+    .pd-av {
+      width:48px; height:48px; border-radius:50%;
+      display:flex; align-items:center; justify-content:center;
+      font-family:var(--ff-d); font-size:16px; border:2px solid;
     }
+    .pd-name { font-size:11px; font-weight:700; color:var(--t1); margin:8px 0 3px; text-align:center; line-height:1.2; }
+    .pd-score { font-family:var(--ff-d); font-size:13px; text-align:center; margin-bottom:8px; }
+    .pd-score small { font-family:var(--ff-b); font-size:9px; color:var(--t2); display:block; }
+    .pd-plat { width:100%; border-radius:6px 6px 0 0; display:flex; align-items:center; justify-content:center; }
+    .pd-num { font-family:var(--ff-d); font-size:24px; }
 
-    .rodape {
-      text-align: center;
-      color: #aaa;
-      font-size: 0.72rem;
-      padding: 0.5rem 0;
+    .p1 { transform:translateY(-14px); }
+    .p1 .pd-av { width:60px;height:60px;font-size:20px;background:rgba(232,160,32,.12);color:var(--gold);border-color:var(--gold); }
+    .p1 .pd-score { color:var(--gold);font-size:15px; }
+    .p1 .pd-num  { color:var(--gold);font-size:30px; }
+    .p1 .pd-plat { height:68px; background:linear-gradient(180deg,rgba(232,160,32,.18),rgba(232,160,32,.03)); }
+
+    .p2 .pd-av  { background:rgba(140,160,184,.1);color:var(--silver);border-color:var(--silver); }
+    .p2 .pd-score { color:var(--silver); }
+    .p2 .pd-num   { color:var(--silver); }
+    .p2 .pd-plat  { height:50px; background:linear-gradient(180deg,rgba(140,160,184,.14),rgba(140,160,184,.02)); }
+
+    .p3 .pd-av  { background:rgba(160,114,74,.1);color:var(--bronze);border-color:var(--bronze); }
+    .p3 .pd-score { color:var(--bronze); }
+    .p3 .pd-num   { color:var(--bronze); }
+    .p3 .pd-plat  { height:38px; background:linear-gradient(180deg,rgba(160,114,74,.14),rgba(160,114,74,.02)); }
+
+    /* ── rank list ── */
+    .rlst { padding:0 20px; display:flex; flex-direction:column; gap:6px; }
+    .ritem {
+      display:flex; align-items:center; gap:10px;
+      padding:12px 14px; background:var(--c0);
+      border-radius:13px; border:1px solid var(--brd2);
+      cursor:pointer; transition:all .2s; position:relative; overflow:hidden;
     }
+    .ritem::before { content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:transparent;transition:background .2s; }
+    .ritem:hover { border-color:var(--brd); transform:translateX(3px); }
+    .ritem:hover::before { background:var(--p); }
+    .ritem.me { border-color:var(--p-mid); background:var(--p-dim); }
+    .ritem.me::before { background:var(--p); }
 
-    /* Nav */
-    .barra-nav {
-      position: fixed;
-      bottom: 0; left: 0; right: 0;
-      display: flex;
-      background: #222;
+    .rpos { font-family:var(--ff-d); font-size:20px; color:var(--t2); width:24px; text-align:center; flex-shrink:0; }
+    .rav  { width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--ff-d);font-size:13px;flex-shrink:0;border:2px solid; }
+    .rinfo { flex:1; min-width:0; }
+    .rname { font-size:14px; font-weight:700; color:var(--t1); }
+    .rsub  { font-size:11px; color:var(--t2); margin-top:1px; }
+    .rmeta { text-align:right; flex-shrink:0; }
+    .rm2   { font-family:var(--ff-d); font-size:16px; color:var(--p-l); }
+    .rkm   { font-size:10px; color:var(--t2); margin-top:1px; }
+    .you-tag { background:var(--p);color:#fff;font-size:9px;font-weight:800;padding:2px 6px;border-radius:4px;vertical-align:middle;margin-left:5px; }
+    .trend { font-size:11px; font-weight:800; margin-left:2px; }
+    .trend.up { color:var(--ok); }
+    .trend.dn { color:var(--err); }
+
+    /* ── minha posição ── */
+    .mypos { padding:14px 20px 0; }
+    .mypos-lbl { font-size:10px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--t2);margin-bottom:8px; }
+
+    /* ── nav ── */
+    .nav { position:absolute;bottom:0;left:0;right:0;height:78px;background:var(--bg);border-top:1px solid var(--brd);display:flex;z-index:100; }
+    .nit { flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;cursor:pointer;transition:color .2s;color:var(--t2);position:relative;text-decoration:none; }
+    .nit::after { content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:0;height:2px;background:var(--p);border-radius:0 0 2px 2px;transition:width .22s; }
+    .nit.active { color:var(--p-l); }
+    .nit.active::after { width:22px; }
+    .nit:hover { color:var(--t3); }
+    .nlbl { font-size:9px;font-weight:700;letter-spacing:.6px;text-transform:uppercase; }
+
+    @media (max-width:440px) {
+      .phone { width:100vw; height:100vh; border-radius:0; border:none; }
+      body { padding:0; }
     }
-
-    .barra-nav a {
-      flex: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 0.65rem 0;
-      color: #888;
-      text-decoration: none;
-      font-size: 0.8rem;
-      font-weight: 600;
-    }
-
-    .barra-nav a.ativo { color: #4caf50; }
   </style>
 </head>
 <body>
 
-  <div class="topo">Ranking</div>
+<div class="phone">
+  <div class="pscroll">
 
-  <div class="conteudo">
-
-    <div class="rank-item">
-      <div class="rank-pos ouro">1</div>
-      <div class="rank-avatar">AC</div>
-      <div class="rank-info">
-        <div class="rank-nome">Ana Costa</div>
-        <div class="rank-cidade">São Paulo</div>
-      </div>
-      <div class="rank-score">
-        <div class="rank-m2">127.4k m²</div>
-        <div class="rank-vitorias">34 vitórias</div>
+    <div class="sbar">
+      <span class="sbar-time" id="relogio">--:--</span>
+      <div class="sbar-right">
+        <svg width="16" height="12" viewBox="0 0 24 18" fill="currentColor">
+          <rect x="0" y="10" width="4" height="8" rx="1"/>
+          <rect x="6.5" y="7" width="4" height="11" rx="1"/>
+          <rect x="13" y="3" width="4" height="15" rx="1"/>
+          <rect x="19.5" y="0" width="4" height="18" rx="1" opacity=".35"/>
+        </svg>
+        <svg width="22" height="11" viewBox="0 0 33 18" fill="currentColor">
+          <rect x="0" y="0" width="29" height="18" rx="3" fill="none" stroke="currentColor" stroke-width="1.5"/>
+          <rect x="30" y="5" width="3" height="8" rx="1"/>
+          <rect x="2" y="2" width="19" height="14" rx="2"/>
+        </svg>
       </div>
     </div>
 
-    <div class="rank-item">
-      <div class="rank-pos prata">2</div>
-      <div class="rank-avatar">PL</div>
-      <div class="rank-info">
-        <div class="rank-nome">Pedro Lopes</div>
-        <div class="rank-cidade">São Paulo</div>
+    <div class="pbody">
+
+      <div class="shdr">
+        <a class="back" href="index.html" title="Início">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 12H5"/><path d="M12 5l-7 7 7 7"/>
+          </svg>
+        </a>
+        <div class="shdr-title">Ranking</div>
+        <div style="width:36px;height:36px;border-radius:50%;background:var(--c0);border:1px solid var(--brd);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--t3);">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+          </svg>
+        </div>
       </div>
-      <div class="rank-score">
-        <div class="rank-m2">98.2k m²</div>
-        <div class="rank-vitorias">21 vitórias</div>
+
+      <div class="seg-wrap">
+        <div class="seg" id="scopeG">
+          <div class="seg-opt active" onclick="seg('scopeG',this)">Cidade</div>
+          <div class="seg-opt" onclick="seg('scopeG',this)">Global</div>
+          <div class="seg-opt" onclick="seg('scopeG',this)">Amigos</div>
+        </div>
       </div>
+
+      <div class="pills">
+        <div class="pill active" onclick="pill(this)">Esta semana</div>
+        <div class="pill" onclick="pill(this)">Este mês</div>
+        <div class="pill" onclick="pill(this)">Total</div>
+      </div>
+
+      <div class="podium-wrap">
+        <div class="podium">
+          <div class="pd p2">
+            <div class="pd-av">PL</div>
+            <div class="pd-name">Pedro<br>Lopes</div>
+            <div class="pd-score">98.2k<small>m²</small></div>
+            <div class="pd-plat"><span class="pd-num">2</span></div>
+          </div>
+          <div class="pd p1">
+            <div style="position:relative;display:inline-block;">
+              <div style="position:absolute;top:-12px;left:50%;transform:translateX(-50%);">
+                <svg width="22" height="14" viewBox="0 0 36 22" fill="var(--gold)">
+                  <polygon points="2,22 8,4 18,14 28,4 34,22"/>
+                  <circle cx="2" cy="4" r="2.5"/><circle cx="18" cy="2" r="2.5"/><circle cx="34" cy="4" r="2.5"/>
+                </svg>
+              </div>
+              <div class="pd-av" style="margin-top:8px;">AC</div>
+            </div>
+            <div class="pd-name" style="font-size:12px;font-weight:800;">Ana<br>Costa</div>
+            <div class="pd-score">127.4k<small>m²</small></div>
+            <div class="pd-plat"><span class="pd-num">1</span></div>
+          </div>
+          <div class="pd p3">
+            <div class="pd-av" style="background:var(--p-dim);color:var(--p-l);border-color:var(--p);">JS</div>
+            <div class="pd-name">João<br>Silva</div>
+            <div class="pd-score" style="color:var(--bronze);">48.3k<small>m²</small></div>
+            <div class="pd-plat"><span class="pd-num">3</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="rlst" id="rankList"></div>
+
+      <div class="mypos">
+        <div class="mypos-lbl">Sua posição</div>
+        <div class="ritem me">
+          <div class="rpos" style="color:var(--p-l);">3</div>
+          <div class="rav" style="background:var(--p-dim);color:var(--p-l);border-color:var(--p);">JS</div>
+          <div class="rinfo">
+            <div class="rname">João Silva <span class="you-tag">Você</span></div>
+            <div class="rsub">São Paulo · 8 vitórias</div>
+          </div>
+          <div class="rmeta">
+            <div class="rm2">48.3k m²</div>
+            <div class="rkm">87 km</div>
+          </div>
+          <div class="trend up">↑</div>
+        </div>
+      </div>
+
     </div>
 
-    <div class="rank-item eu">
-      <div class="rank-pos bronze">3</div>
-      <div class="rank-avatar eu">JS</div>
-      <div class="rank-info">
-        <div class="rank-nome">João Silva <span class="tag-voce">Você</span></div>
-        <div class="rank-cidade">São Paulo</div>
-      </div>
-      <div class="rank-score">
-        <div class="rank-m2">48.3k m²</div>
-        <div class="rank-vitorias">8 vitórias</div>
-      </div>
-    </div>
-
-    <div class="rank-item">
-      <div class="rank-pos">4</div>
-      <div class="rank-avatar">MR</div>
-      <div class="rank-info">
-        <div class="rank-nome">Mariana Rocha</div>
-        <div class="rank-cidade">Belo Horizonte</div>
-      </div>
-      <div class="rank-score">
-        <div class="rank-m2">45.1k m²</div>
-        <div class="rank-vitorias">12 vitórias</div>
-      </div>
-    </div>
-
-    <div class="rank-item">
-      <div class="rank-pos">5</div>
-      <div class="rank-avatar">CM</div>
-      <div class="rank-info">
-        <div class="rank-nome">Carlos Melo</div>
-        <div class="rank-cidade">São Paulo</div>
-      </div>
-      <div class="rank-score">
-        <div class="rank-m2">39.8k m²</div>
-        <div class="rank-vitorias">7 vitórias</div>
-      </div>
-    </div>
-
-    <div class="rank-item">
-      <div class="rank-pos">6</div>
-      <div class="rank-avatar">FD</div>
-      <div class="rank-info">
-        <div class="rank-nome">Fernanda Dias</div>
-        <div class="rank-cidade">Rio de Janeiro</div>
-      </div>
-      <div class="rank-score">
-        <div class="rank-m2">32.0k m²</div>
-        <div class="rank-vitorias">5 vitórias</div>
-      </div>
-    </div>
-
-    <div class="rank-item">
-      <div class="rank-pos">7</div>
-      <div class="rank-avatar">RT</div>
-      <div class="rank-info">
-        <div class="rank-nome">Rafael Torres</div>
-        <div class="rank-cidade">São Paulo</div>
-      </div>
-      <div class="rank-score">
-        <div class="rank-m2">28.4k m²</div>
-        <div class="rank-vitorias">4 vitórias</div>
-      </div>
-    </div>
-
-    <div class="rank-item">
-      <div class="rank-pos">8</div>
-      <div class="rank-avatar">LN</div>
-      <div class="rank-info">
-        <div class="rank-nome">Luiza Neves</div>
-        <div class="rank-cidade">São Paulo</div>
-      </div>
-      <div class="rank-score">
-        <div class="rank-m2">21.0k m²</div>
-        <div class="rank-vitorias">3 vitórias</div>
-      </div>
-    </div>
-
-    <div class="rodape">Atualizado em tempo real · São Paulo</div>
+    <nav class="nav">
+      <a class="nit" href="index.html">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <div class="nlbl">Início</div>
+      </a>
+      <a class="nit" href="corrida.html">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        <div class="nlbl">Correr</div>
+      </a>
+      <a class="nit" href="corrida.html">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        <div class="nlbl">Jogar</div>
+      </a>
+      <a class="nit active" href="ranking.html">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        <div class="nlbl">Ranking</div>
+      </a>
+      <a class="nit" href="perfil.html">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <div class="nlbl">Perfil</div>
+      </a>
+    </nav>
 
   </div>
+</div>
 
-  <nav class="barra-nav">
-    <a href="perfil.html">Perfil</a>
-    <a href="index.html">Jogar</a>
-    <a href="ranking.html" class="ativo">Ranking</a>
-  </nav>
+<script>
+  const dados = [
+    { pos:4, n:"Mariana Rocha", city:"BH",  m2:"45.1k", km:134, wins:12, av:"MR", c:"#f97316", t:"up" },
+    { pos:5, n:"Carlos Melo",   city:"SP",  m2:"39.8k", km:98,  wins:7,  av:"CM", c:"#38bdf8", t:"up" },
+    { pos:6, n:"Fernanda Dias", city:"RJ",  m2:"32.0k", km:76,  wins:5,  av:"FD", c:"#c084fc", t:"dn" },
+    { pos:7, n:"Rafael Torres", city:"SP",  m2:"28.4k", km:65,  wins:4,  av:"RT", c:"#fb923c", t:"dn" },
+    { pos:8, n:"Luiza Neves",   city:"SP",  m2:"21.0k", km:52,  wins:3,  av:"LN", c:"#2dd4bf", t:"up" },
+  ];
 
+  const list = document.getElementById('rankList');
+  dados.forEach(r => {
+    const el = document.createElement('div');
+    el.className = 'ritem';
+    el.innerHTML = `
+      <div class="rpos">${r.pos}</div>
+      <div class="rav" style="background:${r.c}18;color:${r.c};border-color:${r.c}65;">${r.av}</div>
+      <div class="rinfo">
+        <div class="rname">${r.n}</div>
+        <div class="rsub">${r.city} · ${r.wins} vitórias</div>
+      </div>
+      <div class="rmeta">
+        <div class="rm2">${r.m2} m²</div>
+        <div class="rkm">${r.km} km</div>
+      </div>
+      <div class="trend ${r.t}">${r.t==='up'?'↑':'↓'}</div>
+    `;
+    list.appendChild(el);
+  });
+
+  function seg(id, el) {
+    document.querySelectorAll(`#${id} .seg-opt`).forEach(o => o.classList.remove('active'));
+    el.classList.add('active');
+  }
+
+  function pill(el) {
+    el.closest('.pills').querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+    el.classList.add('active');
+  }
+
+  function tick() {
+    const d = new Date();
+    document.getElementById('relogio').textContent =
+      String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+  }
+  tick(); setInterval(tick, 30000);
+</script>
 </body>
 </html>

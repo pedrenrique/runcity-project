@@ -1,270 +1,332 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>RunCity — Perfil</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --p:     #7c5cfc;
+      --p-l:   #a084fd;
+      --p-ll:  #c4b5fd;
+      --p-d:   #5b3fd8;
+      --p-dim: rgba(124,92,252,.1);
+      --p-mid: rgba(124,92,252,.22);
+      --p-glow:rgba(124,92,252,.38);
+      --gold:  #e8a020;
+      --ok:    #22c55e;
+      --bg:    #08061a;
+      --c0:    #100e24;
+      --c1:    #170f32;
+      --brd:   #231848;
+      --brd2:  #190e38;
+      --t1:    #ede8ff;
+      --t2:    #5e5280;
+      --t3:    #9488c0;
+      --ff-d:  'Bebas Neue', sans-serif;
+      --ff-b:  'Outfit', sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
 
     body {
-      font-family: Arial, sans-serif;
-      background: #f0f0f0;
-      color: #222;
-      padding-bottom: 56px;
-    }
-
-    .topo {
-      background: #222;
-      color: white;
-      padding: 0.75rem 1rem;
-      font-size: 1rem;
-      font-weight: bold;
-      letter-spacing: 0.5px;
-    }
-
-    .conteudo {
-      padding: 0.8rem;
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-    }
-
-    .card {
-      background: white;
-      border-radius: 8px;
-      padding: 1rem;
-    }
-
-    /* Avatar */
-    .perfil-header {
+      background: #050410;
+      font-family: var(--ff-b);
+      min-height: 100vh;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 0.3rem;
-      padding: 0.8rem 0;
+      padding: 32px 20px 60px;
     }
 
-    .avatar {
-      width: 72px;
-      height: 72px;
-      border-radius: 50%;
-      background: #e8f5e9;
-      border: 3px solid green;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.4rem;
-      font-weight: bold;
-      color: green;
-      margin-bottom: 0.4rem;
-    }
-
-    .perfil-nome { font-size: 1.15rem; font-weight: bold; }
-    .perfil-nivel { font-size: 0.8rem; color: green; margin-top: 2px; }
-    .perfil-cidade { font-size: 0.75rem; color: #888; margin-top: 2px; }
-
-    /* Stats */
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 0.4rem;
-    }
-
-    .stat-card {
-      background: white;
-      border-radius: 8px;
-      padding: 0.65rem 0.3rem;
-      text-align: center;
-    }
-
-    .stat-val {
-      font-size: 1.05rem;
-      font-weight: bold;
-      color: green;
-    }
-
-    .stat-lbl {
-      font-size: 0.58rem;
-      color: #888;
-      text-transform: uppercase;
-      letter-spacing: 0.4px;
-      margin-top: 3px;
-    }
-
-    /* Seção título */
-    .secao-titulo {
-      font-size: 0.68rem;
-      color: #888;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      padding: 0 0.2rem;
-    }
-
-    /* Histórico */
-    .hist-item {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      padding: 0.65rem 0;
-      border-bottom: 1px solid #f0f0f0;
-    }
-
-    .hist-item:last-child { border-bottom: none; }
-
-    .hist-icone {
-      width: 34px;
-      height: 34px;
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.75rem;
-      font-weight: bold;
+    .phone {
+      width: 390px; height: 844px;
+      background: var(--bg);
+      border-radius: 46px;
+      border: 1.5px solid var(--brd);
+      overflow: hidden; position: relative;
+      box-shadow: 0 40px 100px rgba(0,0,0,.65);
       flex-shrink: 0;
     }
 
-    .hist-icone.solo    { background: #e8f5e9; color: green; }
-    .hist-icone.partida { background: #fff8e1; color: #e6a817; }
+    .pscroll { width:100%;height:100%;overflow-y:auto;overflow-x:hidden; }
+    .pscroll::-webkit-scrollbar { width:2px; }
+    .pscroll::-webkit-scrollbar-thumb { background:var(--brd);border-radius:2px; }
+    .pbody { padding-bottom:84px; }
 
-    .hist-info { flex: 1; }
-    .hist-tipo { font-size: 0.68rem; font-weight: bold; text-transform: uppercase; color: #888; letter-spacing: 0.5px; }
-    .hist-data { font-size: 0.72rem; color: #aaa; margin-top: 2px; }
+    .sbar { display:flex;justify-content:space-between;align-items:center;padding:14px 24px 6px;color:var(--t1); }
+    .sbar-time { font-size:15px;font-weight:700; }
+    .sbar-right { display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700; }
 
-    .hist-meta { text-align: right; }
-    .hist-m2 { font-size: 1rem; font-weight: bold; color: #222; }
-    .hist-sub { font-size: 0.7rem; color: #aaa; margin-top: 2px; }
+    .shdr { display:flex;align-items:center;gap:12px;padding:10px 20px 14px;position:sticky;top:0;z-index:50;background:var(--bg);border-bottom:1px solid var(--brd2); }
+    .back { width:36px;height:36px;border-radius:50%;background:var(--c0);border:1px solid var(--brd);display:flex;align-items:center;justify-content:center;text-decoration:none;color:var(--t1);transition:all .2s;flex-shrink:0; }
+    .back:hover { background:var(--p-dim);border-color:var(--p-mid);color:var(--p-l);transform:translateX(-2px); }
+    .shdr-title { font-family:var(--ff-d);font-size:22px;letter-spacing:2px;color:var(--t1);flex:1; }
+    .icon-btn { width:36px;height:36px;border-radius:50%;background:var(--c0);border:1px solid var(--brd);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--t3);transition:all .2s; }
+    .icon-btn:hover { border-color:var(--p-mid);color:var(--p-l); }
 
-    .tag {
-      display: inline-block;
-      margin-top: 3px;
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-size: 0.68rem;
-      font-weight: bold;
+    /* hero */
+    .p-hero { padding:20px 20px 16px;text-align:center;position:relative; }
+    .p-hero::before { content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:280px;height:200px;background:radial-gradient(ellipse,var(--p-glow) 0%,transparent 68%);opacity:.12;pointer-events:none; }
+    .av-wrap { display:inline-block;position:relative;margin-bottom:16px; }
+    .av { width:84px;height:84px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--ff-d);font-size:26px;background:var(--p-dim);color:var(--p-l);border:3px solid var(--p);box-shadow:0 0 0 5px var(--p-dim),0 0 30px var(--p-glow); }
+    .lv { position:absolute;bottom:0;right:-8px;background:var(--p);color:#fff;font-size:11px;font-weight:800;padding:3px 9px;border-radius:20px;border:2px solid var(--bg);white-space:nowrap; }
+    .p-name { font-family:var(--ff-d);font-size:28px;letter-spacing:2px;color:var(--t1);margin-bottom:5px; }
+    .p-role { font-size:12px;font-weight:600;color:var(--p-l);margin-bottom:8px; }
+    .p-loc  { display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--t2);font-weight:500; }
+
+    /* xp */
+    .xp { padding:0 20px 16px; }
+    .xp-hdr { display:flex;justify-content:space-between;margin-bottom:7px; }
+    .xp-l { font-size:11px;font-weight:700;color:var(--t2); }
+    .xp-v { font-size:11px;font-weight:700;color:var(--p-l); }
+    .xp-track { height:5px;background:var(--c0);border-radius:3px;overflow:hidden;border:1px solid var(--brd2); }
+    .xp-fill { height:100%;width:65%;background:linear-gradient(90deg,var(--p-d),var(--p-l));border-radius:3px; }
+
+    /* stats */
+    .stats { display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:0 20px 14px; }
+    .stile { background:var(--c0);border:1px solid var(--brd2);border-radius:12px;padding:12px 6px;text-align:center; }
+    .sv { font-family:var(--ff-d);font-size:18px;color:var(--p-l);line-height:1; }
+    .sl { font-size:9px;font-weight:700;color:var(--t2);margin-top:5px;text-transform:uppercase;letter-spacing:.5px; }
+
+    /* abas */
+    .ptabs { display:flex;padding:0 20px 10px;gap:4px;position:sticky;top:64px;z-index:40;background:var(--bg);padding-top:10px; }
+    .ptab { flex:1;text-align:center;padding:9px 5px;border-radius:9px;font-size:11px;font-weight:700;letter-spacing:.5px;cursor:pointer;transition:all .2s;color:var(--t2);text-transform:uppercase;border:1px solid transparent; }
+    .ptab.active { background:var(--p-dim);color:var(--p-ll);border-color:var(--p-mid); }
+
+    .tbody { padding:0 20px; }
+    .pane { display:none; }
+    .pane.active { display:block; }
+
+    /* stats pane */
+    .bcard { background:var(--c0);border:1px solid var(--brd2);border-radius:14px;padding:16px;margin-bottom:8px; }
+    .bc-lbl { font-size:10px;font-weight:700;color:var(--t2);letter-spacing:1.2px;text-transform:uppercase;margin-bottom:7px; }
+    .bc-val { font-family:var(--ff-d);font-size:32px;letter-spacing:1px;color:var(--p-l);line-height:1; }
+    .bc-sub { font-size:11px;color:var(--t2);margin-top:5px; }
+    .card-row { display:flex;gap:8px;margin-bottom:8px; }
+    .card-row .bcard { flex:1;margin-bottom:0; }
+    .card-row .bc-val { font-size:24px; }
+
+    /* conquistas */
+    .ach-grid { display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px; }
+    .ach { background:var(--c0);border:1px solid var(--brd2);border-radius:13px;padding:14px 8px;text-align:center;transition:all .22s; }
+    .ach.on { border-color:var(--p-mid);background:var(--p-dim); }
+    .ach.on:hover { transform:translateY(-3px);box-shadow:0 10px 28px rgba(124,92,252,.2); }
+    .ach.off { opacity:.35; }
+    .ach-ico { margin-bottom:8px;display:flex;justify-content:center; }
+    .ach-name { font-size:10px;font-weight:700;color:var(--t1);line-height:1.3; }
+    .ach-foot { text-align:center;font-size:11px;color:var(--t2);padding-bottom:4px; }
+
+    /* histórico */
+    .hist { display:flex;flex-direction:column;gap:7px; }
+    .hitem { background:var(--c0);border:1px solid var(--brd2);border-radius:13px;padding:12px 14px;display:flex;gap:12px;align-items:center; }
+    .hico { width:38px;height:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0; }
+    .hico.solo    { background:var(--p-dim);color:var(--p-l); }
+    .hico.partida { background:rgba(232,160,32,.1);color:var(--gold); }
+    .hinfo { flex:1; }
+    .htype { font-size:10px;font-weight:800;color:var(--t3);letter-spacing:1px;text-transform:uppercase; }
+    .hdate { font-size:11px;color:var(--t2);margin-top:1px; }
+    .hmeta { text-align:right;flex-shrink:0; }
+    .hm2 { font-family:var(--ff-d);font-size:17px;color:var(--p-l); }
+    .hsub { font-size:10px;color:var(--t2);margin-top:1px; }
+    .rtag { display:inline-block;margin-top:3px;padding:2px 7px;border-radius:5px;font-size:10px;font-weight:800; }
+    .rtag.gold   { background:rgba(232,160,32,.12);color:var(--gold);border:1px solid rgba(232,160,32,.28); }
+    .rtag.purple { background:var(--p-dim);color:var(--p-ll);border:1px solid var(--p-mid); }
+
+    /* nav */
+    .nav { position:absolute;bottom:0;left:0;right:0;height:78px;background:var(--bg);border-top:1px solid var(--brd);display:flex;z-index:100; }
+    .nit { flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;cursor:pointer;transition:color .2s;color:var(--t2);position:relative;text-decoration:none; }
+    .nit::after { content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:0;height:2px;background:var(--p);border-radius:0 0 2px 2px;transition:width .22s; }
+    .nit.active { color:var(--p-l); }
+    .nit.active::after { width:22px; }
+    .nit:hover { color:var(--t3); }
+    .nlbl { font-size:9px;font-weight:700;letter-spacing:.6px;text-transform:uppercase; }
+
+    @media (max-width:440px) {
+      .phone { width:100vw;height:100vh;border-radius:0;border:none; }
+      body { padding:0; }
     }
-
-    .tag.ouro   { background: #fff8e1; color: #e6a817; border: 1px solid #f0d070; }
-    .tag.bronze { background: #f5f0eb; color: #a07840; border: 1px solid #d0b090; }
-
-    /* Nav */
-    .barra-nav {
-      position: fixed;
-      bottom: 0; left: 0; right: 0;
-      display: flex;
-      background: #222;
-    }
-
-    .barra-nav a {
-      flex: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 0.65rem 0;
-      color: #888;
-      text-decoration: none;
-      font-size: 0.8rem;
-      font-weight: 600;
-    }
-
-    .barra-nav a.ativo { color: #4caf50; }
   </style>
 </head>
 <body>
 
-  <div class="topo">Perfil</div>
+<div class="phone">
+  <div class="pscroll">
 
-  <div class="conteudo">
-
-    <div class="card">
-      <div class="perfil-header">
-        <div class="avatar">JS</div>
-        <div class="perfil-nome">João Silva</div>
-        <div class="perfil-nivel">Corredor Urbano · Nível 5</div>
-        <div class="perfil-cidade">São Paulo, SP</div>
+    <div class="sbar">
+      <span class="sbar-time" id="relogio">--:--</span>
+      <div class="sbar-right">
+        <svg width="22" height="11" viewBox="0 0 33 18" fill="currentColor"><rect x="0" y="0" width="29" height="18" rx="3" fill="none" stroke="currentColor" stroke-width="1.5"/><rect x="30" y="5" width="3" height="8" rx="1"/><rect x="2" y="2" width="19" height="14" rx="2"/></svg>
       </div>
     </div>
 
-    <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-val">48.3k</div>
-        <div class="stat-lbl">m² total</div>
+    <div class="pbody">
+
+      <div class="shdr">
+        <a class="back" href="javascript:history.back()" title="Voltar">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="M12 5l-7 7 7 7"/></svg>
+        </a>
+        <div class="shdr-title">Perfil</div>
+        <div class="icon-btn" title="Configurações">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+        </div>
       </div>
-      <div class="stat-card">
-        <div class="stat-val">23</div>
-        <div class="stat-lbl">corridas</div>
+
+      <div class="p-hero">
+        <div class="av-wrap">
+          <div class="av">JS</div>
+          <div class="lv">Nível 5</div>
+        </div>
+        <div class="p-name">JOÃO SILVA</div>
+        <div class="p-role">Corredor Urbano</div>
+        <div class="p-loc">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          São Paulo, SP
+        </div>
       </div>
-      <div class="stat-card">
-        <div class="stat-val">8</div>
-        <div class="stat-lbl">vitórias</div>
+
+      <div class="xp">
+        <div class="xp-hdr">
+          <span class="xp-l">Nível 5 → 6</span>
+          <span class="xp-v">6.500 / 10.000 XP</span>
+        </div>
+        <div class="xp-track"><div class="xp-fill"></div></div>
       </div>
-      <div class="stat-card">
-        <div class="stat-val">87km</div>
-        <div class="stat-lbl">percurso</div>
+
+      <div class="stats">
+        <div class="stile"><div class="sv">48.3k</div><div class="sl">m² total</div></div>
+        <div class="stile"><div class="sv">23</div><div class="sl">corridas</div></div>
+        <div class="stile"><div class="sv">8</div><div class="sl">vitórias</div></div>
+        <div class="stile"><div class="sv">87km</div><div class="sl">percurso</div></div>
+      </div>
+
+      <div class="ptabs">
+        <div class="ptab active" onclick="mudarAba('stats',this)">Stats</div>
+        <div class="ptab" onclick="mudarAba('conquistas',this)">Conquistas</div>
+        <div class="ptab" onclick="mudarAba('historico',this)">Histórico</div>
+      </div>
+
+      <div class="tbody">
+
+        <div class="pane active" id="pane-stats">
+          <div class="bcard">
+            <div class="bc-lbl">Melhor corrida</div>
+            <div class="bc-val">5.12k m²</div>
+            <div class="bc-sub">24 Mar 2026 · Solo</div>
+          </div>
+          <div class="card-row">
+            <div class="bcard">
+              <div class="bc-lbl">Maior área ativa</div>
+              <div class="bc-val">2.4k m²</div>
+              <div class="bc-sub">Vila Madalena</div>
+            </div>
+            <div class="bcard">
+              <div class="bc-lbl">Taxa de vitória</div>
+              <div class="bc-val">53%</div>
+              <div class="bc-sub">8 de 15 partidas</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="pane" id="pane-conquistas">
+          <div class="ach-grid">
+            <div class="ach on">
+              <div class="ach-ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg></div>
+              <div class="ach-name">1ª Vitória</div>
+            </div>
+            <div class="ach off">
+              <div class="ach-ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg></div>
+              <div class="ach-name">5 em Sequência</div>
+            </div>
+            <div class="ach on">
+              <div class="ach-ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--p-l)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+              <div class="ach-name">10km rodados</div>
+            </div>
+            <div class="ach off">
+              <div class="ach-ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg></div>
+              <div class="ach-name">Dono da Cidade</div>
+            </div>
+            <div class="ach on">
+              <div class="ach-ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--p-l)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="14 2 18 6 7 17 3 17 3 13 14 2"/><line x1="3" y1="22" x2="21" y2="22"/></svg></div>
+              <div class="ach-name">Roubo Épico</div>
+            </div>
+            <div class="ach off">
+              <div class="ach-ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg></div>
+              <div class="ach-name">Maratonista</div>
+            </div>
+          </div>
+          <div class="ach-foot">3 de 6 conquistas desbloqueadas</div>
+        </div>
+
+        <div class="pane" id="pane-historico">
+          <div class="hist">
+            <div class="hitem">
+              <div class="hico solo"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+              <div class="hinfo"><div class="htype">Solo</div><div class="hdate">24 Mar 2026</div></div>
+              <div class="hmeta"><div class="hm2">4.120 m²</div><div class="hsub">5.2 km · 28:14</div></div>
+            </div>
+            <div class="hitem">
+              <div class="hico partida"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+              <div class="hinfo"><div class="htype">Partida</div><div class="hdate">22 Mar 2026</div></div>
+              <div class="hmeta"><div class="hm2">2.690 m²</div><span class="rtag gold">1º lugar</span></div>
+            </div>
+            <div class="hitem">
+              <div class="hico solo"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+              <div class="hinfo"><div class="htype">Solo</div><div class="hdate">20 Mar 2026</div></div>
+              <div class="hmeta"><div class="hm2">5.340 m²</div><div class="hsub">6.1 km · 34:51</div></div>
+            </div>
+            <div class="hitem">
+              <div class="hico partida"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+              <div class="hinfo"><div class="htype">Partida</div><div class="hdate">18 Mar 2026</div></div>
+              <div class="hmeta"><div class="hm2">1.800 m²</div><span class="rtag purple">3º lugar</span></div>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
 
-    <div class="secao-titulo">Histórico de corridas</div>
-
-    <div class="card">
-
-      <div class="hist-item">
-        <div class="hist-icone solo">SOL</div>
-        <div class="hist-info">
-          <div class="hist-tipo">Solo</div>
-          <div class="hist-data">24 Mar 2026</div>
-        </div>
-        <div class="hist-meta">
-          <div class="hist-m2">4.120 m²</div>
-          <div class="hist-sub">5.2 km · 28:14</div>
-        </div>
-      </div>
-
-      <div class="hist-item">
-        <div class="hist-icone partida">PAR</div>
-        <div class="hist-info">
-          <div class="hist-tipo">Partida</div>
-          <div class="hist-data">22 Mar 2026</div>
-        </div>
-        <div class="hist-meta">
-          <div class="hist-m2">2.690 m²</div>
-          <span class="tag ouro">1º lugar</span>
-        </div>
-      </div>
-
-      <div class="hist-item">
-        <div class="hist-icone solo">SOL</div>
-        <div class="hist-info">
-          <div class="hist-tipo">Solo</div>
-          <div class="hist-data">20 Mar 2026</div>
-        </div>
-        <div class="hist-meta">
-          <div class="hist-m2">5.340 m²</div>
-          <div class="hist-sub">6.1 km · 34:51</div>
-        </div>
-      </div>
-
-      <div class="hist-item">
-        <div class="hist-icone partida">PAR</div>
-        <div class="hist-info">
-          <div class="hist-tipo">Partida</div>
-          <div class="hist-data">18 Mar 2026</div>
-        </div>
-        <div class="hist-meta">
-          <div class="hist-m2">1.800 m²</div>
-          <span class="tag bronze">3º lugar</span>
-        </div>
-      </div>
-
-    </div>
+<nav class="nav">
+      <a class="nit" href="index.html">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <div class="nlbl">Início</div>
+      </a>
+      <a class="nit" href="corrida.html">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        <div class="nlbl">Correr</div>
+      </a>
+      <a class="nit" href="corrida.html">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        <div class="nlbl">Jogar</div>
+      </a>
+      <a class="nit active" href="ranking.html">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        <div class="nlbl">Ranking</div>
+      </a>
+      <a class="nit" href="perfil.html">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <div class="nlbl">Perfil</div>
+      </a>
+    </nav>
 
   </div>
+</div>
 
-  <nav class="barra-nav">
-    <a href="perfil.html" class="ativo">Perfil</a>
-    <a href="index.html">Jogar</a>
-    <a href="ranking.html">Ranking</a>
-  </nav>
+<script>
+  function mudarAba(id, el) {
+    document.querySelectorAll('.ptab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.pane').forEach(p => p.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById('pane-' + id).classList.add('active');
+  }
 
+  function tick() {
+    const d = new Date();
+    document.getElementById('relogio').textContent =
+      String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+  }
+  tick(); setInterval(tick, 30000);
+</script>
 </body>
 </html>
