@@ -1,60 +1,588 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>RunCity</title>
   <link rel="stylesheet" href="libs/leaflet.css"/>
-  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --p:      #7c5cfc;
+      --p-l:    #a084fd;
+      --p-ll:   #c4b5fd;
+      --p-d:    #5b3fd8;
+      --p-dim:  rgba(124,92,252,.1);
+      --p-mid:  rgba(124,92,252,.22);
+      --p-glow: rgba(124,92,252,.38);
+      --ok:     #22c55e;
+      --err:    #ef4444;
+      --bg:     #08061a;
+      --c0:     #100e24;
+      --c1:     #170f32;
+      --brd:    #231848;
+      --brd2:   #190e38;
+      --t1:     #ede8ff;
+      --t2:     #5e5280;
+      --t3:     #9488c0;
+      --ff-d:   'Bebas Neue', sans-serif;
+      --ff-b:   'Outfit', sans-serif;
+    }
+
+    [data-theme="light"] {
+      --bg:  #f8f7ff;
+      --c0:  #eeebff;
+      --c1:  #e4dfff;
+      --brd: #cdc5f0;
+      --brd2:#d8d0f8;
+      --t1:  #160f38;
+      --t2:  #6e60a0;
+      --t3:  #453880;
+    }
+
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+
+    body {
+      background: #050410;
+      font-family: var(--ff-b);
+      min-height: 100vh;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 32px 20px;
+    }
+    [data-theme="light"] body { background: #eae7f8; }
+
+    /* ── PHONE ── */
+    .phone {
+      width: 390px; height: 844px;
+      background: var(--bg);
+      border-radius: 46px;
+      border: 1.5px solid var(--brd);
+      overflow: hidden; position: relative;
+      box-shadow: 0 0 0 1px rgba(124,92,252,.05), 0 40px 100px rgba(0,0,0,.65), inset 0 1px 0 rgba(255,255,255,.04);
+      animation: slideUp .5s cubic-bezier(.08,.82,.17,1) both;
+      flex-shrink: 0;
+      display: flex; flex-direction: column;
+    }
+
+    /* ── STATUS BAR ── */
+    .sbar { display:flex; justify-content:space-between; align-items:center; padding:14px 24px 6px; color:var(--t1); }
+    .sbar-time { font-size:15px; font-weight:700; }
+
+    /* ── HEADER ── */
+    .lhdr {
+      display:flex; align-items:center; gap:10px;
+      padding: 6px 18px 10px;
+      min-height: 48px;
+    }
+    .marca {
+      font-family: var(--ff-d);
+      font-size: 22px;
+      letter-spacing: 2.5px;
+      color: var(--t1);
+      flex-shrink: 0;
+    }
+    .marca span { color: var(--p-l); }
+
+    .sala-tag {
+      display:flex; align-items:center; gap:8px;
+      background: var(--p-dim);
+      border: 1px solid var(--p-mid);
+      border-radius: 20px;
+      padding: 5px 6px 5px 12px;
+      cursor: pointer;
+      transition: all .2s;
+      max-width: 60%;
+    }
+    .sala-tag:hover { background: var(--p-mid); }
+    .sala-tag .sala-nome {
+      font-size: 12px; font-weight: 700;
+      color: var(--p-ll);
+      letter-spacing: .3px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .sala-tag .sair-x {
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      background: rgba(239,68,68,.15);
+      color: #fca5a5;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      transition: all .2s;
+    }
+    .sala-tag:hover .sair-x { background: rgba(239,68,68,.3); color: #fff; }
+
+    .chips {
+      display: flex;
+      flex-wrap: nowrap;
+      gap: 5px;
+      overflow-x: auto;
+      flex: 1;
+      justify-content: flex-end;
+      padding-bottom: 2px;
+    }
+    .chips::-webkit-scrollbar { display: none; }
+    .chip {
+      background: var(--c0);
+      border: 1px solid var(--brd2);
+      border-radius: 10px;
+      padding: 3px 8px;
+      font-size: 10px; font-weight: 700;
+      color: var(--t3);
+      letter-spacing: .3px;
+      flex-shrink: 0;
+    }
+    .chip.pronto {
+      background: rgba(34,197,94,.12);
+      border-color: rgba(34,197,94,.4);
+      color: var(--ok);
+    }
+    .chip.eu {
+      background: var(--p-dim);
+      border-color: var(--p-mid);
+      color: var(--p-ll);
+    }
+
+    /* ── MAPA ── */
+    .map-wrap {
+      position: relative;
+      flex: 1;
+      overflow: hidden;
+      margin: 0 18px;
+      border-radius: 18px;
+      border: 1px solid var(--brd2);
+      min-height: 200px;
+    }
+    #mapa-lobby { width:100%; height:100%; background: var(--c0); }
+    [data-theme="dark"] .leaflet-container { background: #1a1530; }
+    .leaflet-control-attribution {
+      background: rgba(8,6,26,.75) !important;
+      color: var(--t3) !important;
+      font-size: 9px !important;
+    }
+    .leaflet-control-attribution a { color: var(--p-l) !important; }
+
+    /* botão Preparar circular */
+    .btn-preparar {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 96px; height: 96px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--p) 0%, var(--p-d) 100%);
+      color: #fff;
+      font-family: var(--ff-d);
+      font-size: 18px; letter-spacing: 1.2px;
+      border: 3px solid rgba(255,255,255,.12);
+      cursor: pointer;
+      box-shadow: 0 0 0 6px var(--p-dim), 0 18px 48px rgba(124,92,252,.5);
+      animation: pulseRing 2.4s ease-in-out infinite;
+      z-index: 500;
+      display: flex; align-items: center; justify-content: center;
+      transition: transform .15s;
+    }
+    .btn-preparar:hover { transform: translate(-50%, -50%) scale(1.05); }
+    .btn-preparar:active { transform: translate(-50%, -50%) scale(.97); }
+    @keyframes pulseRing {
+      0%,100% { box-shadow: 0 0 0 6px var(--p-dim), 0 18px 48px rgba(124,92,252,.45); }
+      50%     { box-shadow: 0 0 0 12px var(--p-dim), 0 18px 60px rgba(124,92,252,.7); }
+    }
+    .btn-preparar.inativo {
+      background: var(--c0);
+      color: var(--t2);
+      border-color: var(--brd);
+      box-shadow: none;
+      cursor: not-allowed;
+      animation: none;
+    }
+    .btn-preparar.inativo:hover { transform: translate(-50%, -50%); }
+
+    /* dica abaixo do botão quando sem sala */
+    .dica {
+      position: absolute;
+      top: calc(50% + 70px);
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 11px; font-weight: 600;
+      color: var(--t3);
+      letter-spacing: .3px;
+      background: rgba(8,6,26,.75);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      padding: 6px 12px;
+      border-radius: 14px;
+      border: 1px solid var(--brd2);
+      white-space: nowrap;
+      z-index: 500;
+    }
+
+    /* ── AÇÕES ── */
+    .acoes {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      padding: 14px 18px 10px;
+    }
+    .btn-acao {
+      display: flex; align-items: center; gap: 10px;
+      width: 100%; height: 48px;
+      background: var(--c0);
+      border: 1px solid var(--brd2);
+      border-radius: 13px;
+      padding: 0 14px;
+      color: var(--t1);
+      font-family: var(--ff-b);
+      font-size: 13px; font-weight: 600;
+      cursor: pointer;
+      transition: all .2s;
+    }
+    .btn-acao:hover { border-color: var(--p-mid); background: var(--c1); transform: translateY(-1px); }
+    .btn-acao .ico {
+      width: 32px; height: 32px;
+      border-radius: 9px;
+      background: var(--p-dim);
+      color: var(--p-l);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .btn-acao .txt { flex: 1; text-align: left; }
+    .btn-acao .seta { color: var(--t2); }
+
+    /* ── NAV ── */
+    .nav { height:78px; background:var(--bg); border-top:1px solid var(--brd); display:flex; flex-shrink: 0; }
+    @supports (backdrop-filter:blur(1px)) { .nav { backdrop-filter:blur(24px); background:color-mix(in srgb,var(--bg) 90%,transparent); } }
+    .nit { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:5px; cursor:pointer; transition:color .2s; color:var(--t2); position:relative; text-decoration:none; }
+    .nit::after { content:''; position:absolute; top:0; left:50%; transform:translateX(-50%); width:0; height:2px; background:var(--p); border-radius:0 0 2px 2px; transition:width .22s; }
+    .nit.active { color:var(--p-l); }
+    .nit.active::after { width:22px; }
+    .nit:hover { color:var(--t3); }
+    .nlbl { font-size:9px; font-weight:700; letter-spacing:.6px; text-transform:uppercase; }
+
+    /* ── OVERLAYS ── */
+    .overlay {
+      position: absolute; inset: 0;
+      background: rgba(5,4,16,.78);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      display: flex; align-items: center; justify-content: center;
+      padding: 20px;
+      z-index: 1000;
+      animation: fadeOver .25s ease;
+    }
+    @keyframes fadeOver { from { opacity: 0; } to { opacity: 1; } }
+    .escondido { display: none !important; }
+
+    .popup {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--p-mid);
+      border-radius: 22px;
+      padding: 20px;
+      display: flex; flex-direction: column;
+      gap: 14px;
+      box-shadow: 0 30px 80px rgba(124,92,252,.25);
+      animation: popIn .28s cubic-bezier(.08,.82,.17,1);
+    }
+    @keyframes popIn { from { opacity: 0; transform: scale(.94); } to { opacity: 1; transform: scale(1); } }
+
+    .popup h2 {
+      font-family: var(--ff-d);
+      font-size: 22px;
+      letter-spacing: 1.6px;
+      color: var(--t1);
+      text-align: center;
+    }
+    .popup .sub-aviso {
+      font-size: 12px;
+      color: var(--t2);
+      text-align: center;
+      line-height: 1.4;
+    }
+
+    .lista-popup {
+      list-style: none;
+      display: flex; flex-direction: column;
+      gap: 6px;
+      max-height: 280px;
+      overflow-y: auto;
+    }
+    .lista-popup::-webkit-scrollbar { width: 3px; }
+    .lista-popup::-webkit-scrollbar-thumb { background: var(--brd); border-radius: 2px; }
+
+    .item-popup {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 10px;
+      padding: 10px 12px;
+      background: var(--c0);
+      border: 1px solid var(--brd2);
+      border-radius: 12px;
+      font-size: 13px;
+      color: var(--t1);
+    }
+    .item-popup strong { font-weight: 700; }
+    .item-popup small {
+      display: block;
+      font-size: 11px;
+      color: var(--t2);
+      margin-top: 2px;
+      font-weight: 500;
+    }
+    .item-popup .label-criador {
+      font-size: 10px;
+      font-weight: 800;
+      color: var(--p-l);
+      letter-spacing: .8px;
+      margin-left: 5px;
+      text-transform: uppercase;
+    }
+
+    .status-pronto {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .3px;
+    }
+    .status-pronto.confirmado { color: var(--ok); }
+    .status-pronto.aguardando { color: var(--t2); }
+
+    .btn-acao-lista {
+      background: var(--p);
+      border: none;
+      color: #fff;
+      font-family: var(--ff-b);
+      font-size: 11px; font-weight: 700;
+      padding: 6px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      letter-spacing: .3px;
+      white-space: nowrap;
+      transition: background .2s;
+    }
+    .btn-acao-lista:hover { background: var(--p-d); }
+    .btn-acao-lista.convidado {
+      background: var(--c1);
+      color: var(--t2);
+      cursor: default;
+    }
+
+    .popup-acoes {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .btn-pronto, .btn-iniciar-sala, .btn-criar, .btn-perigo {
+      width: 100%;
+      height: 46px;
+      border: none;
+      border-radius: 12px;
+      font-family: var(--ff-b);
+      font-size: 13px; font-weight: 800;
+      letter-spacing: .8px; text-transform: uppercase;
+      cursor: pointer;
+      transition: all .2s;
+    }
+
+    .btn-pronto {
+      background: var(--c0);
+      color: var(--t1);
+      border: 1px solid var(--brd);
+    }
+    .btn-pronto:hover { border-color: var(--ok); color: var(--ok); }
+    .btn-pronto.ativo {
+      background: rgba(34,197,94,.15);
+      border-color: var(--ok);
+      color: var(--ok);
+    }
+
+    .btn-iniciar-sala, .btn-criar {
+      background: linear-gradient(135deg, var(--p) 0%, var(--p-d) 100%);
+      color: #fff;
+      box-shadow: 0 8px 24px rgba(124,92,252,.32);
+    }
+    .btn-iniciar-sala:hover, .btn-criar:hover { transform: translateY(-1px); box-shadow: 0 12px 32px rgba(124,92,252,.45); }
+
+    .btn-perigo {
+      background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
+      color: #fff;
+      box-shadow: 0 8px 22px rgba(239,68,68,.3);
+    }
+    .btn-perigo:hover { transform: translateY(-1px); }
+
+    .btn-fechar {
+      width: 100%;
+      height: 40px;
+      background: transparent;
+      border: 1px solid var(--brd2);
+      border-radius: 11px;
+      color: var(--t2);
+      font-size: 12px; font-weight: 600;
+      cursor: pointer;
+      transition: all .2s;
+    }
+    .btn-fechar:hover { border-color: var(--brd); color: var(--t1); }
+
+    .form-criar { display: flex; flex-direction: column; gap: 10px; }
+    .input-sala, .select-tempo {
+      width: 100%;
+      height: 46px;
+      background: var(--c0);
+      border: 1.5px solid var(--brd2);
+      border-radius: 12px;
+      padding: 0 14px;
+      font-family: var(--ff-b);
+      font-size: 13px;
+      color: var(--t1);
+      transition: border-color .2s;
+    }
+    .input-sala::placeholder { color: var(--t2); }
+    .input-sala:focus, .select-tempo:focus {
+      outline: none;
+      border-color: var(--p-mid);
+      background: var(--c1);
+    }
+    .select-tempo {
+      appearance: none;
+      -webkit-appearance: none;
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='%239488c0'><path d='M6 8L0 0h12z'/></svg>");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      padding-right: 34px;
+    }
+
+    /* ── TOAST ── */
+    .toast { position:fixed; bottom:36px; left:50%; transform:translateX(-50%) translateY(10px); background:var(--c1); border:1px solid var(--p-mid); color:var(--p-ll); padding:10px 22px; border-radius:30px; font-size:12px; font-weight:600; z-index:9999; white-space:nowrap; pointer-events:none; opacity:0; transition:all .28s; box-shadow:0 8px 30px rgba(0,0,0,.5); }
+    .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
+    @keyframes slideUp { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
+
+    @media (prefers-reduced-motion:reduce) {
+      *,*::before,*::after { animation-duration:.01ms!important; transition-duration:.01ms!important; }
+    }
+
+    @media (max-width:440px) {
+      .phone { width:100vw; height:100vh; border-radius:0; border:none; }
+      body { padding:0; }
+    }
+  </style>
 </head>
-<body class="tela-lobby">
+<body>
 
-  <!-- nome da sala -->
-  <div class="barra-lobby">
-    <span class="lobby-titulo" id="lobby-titulo">RunCity</span>
-    <div class="lobby-jogadores" id="lobby-jogadores"></div>
+<div class="toast" id="toast"></div>
+
+<div class="phone">
+
+  <!-- Status bar -->
+  <div class="sbar">
+    <span class="sbar-time" id="relogio">--:--</span>
+    <div>
+      <svg width="22" height="11" viewBox="0 0 33 18" fill="currentColor" style="color:var(--t1)">
+        <rect x="0" y="0" width="29" height="18" rx="3" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        <rect x="30" y="5" width="3" height="8" rx="1"/>
+        <rect x="2" y="2" width="19" height="14" rx="2"/>
+      </svg>
+    </div>
   </div>
 
-  <!-- botão Preparar -->
-  <div class="mapa-lobby-wrapper">
+  <!-- Header: marca ou tag da sala + chips dos jogadores -->
+  <div class="lhdr">
+    <div id="lobby-titulo-area">
+      <div class="marca" id="marca">RUN<span>CITY</span></div>
+    </div>
+    <div class="chips" id="lobby-jogadores"></div>
+  </div>
+
+  <!-- Mapa + botão Preparar -->
+  <div class="map-wrap">
     <div id="mapa-lobby"></div>
-    <button class="btn-preparar inativo" id="btn-preparar" onclick="abrirPreparar()" disabled>Preparar</button>
+    <button class="btn-preparar inativo" id="btn-preparar" onclick="abrirPreparar()" disabled>
+      Preparar
+    </button>
+    <div class="dica" id="dica">Crie ou entre em uma sala para começar</div>
   </div>
 
-  <!-- Botões de ação -->
-  <div class="acoes-lobby">
-    <button class="btn-acao" onclick="abrirConvidar()">Convidar amigo</button>
-    <button class="btn-acao" onclick="abrirEntrarSala()">Entrar em uma sala</button>
-    <button class="btn-acao" onclick="abrirCriarSala()">Criar sala</button>
+  <!-- Ações -->
+  <div class="acoes">
+    <button class="btn-acao" onclick="abrirConvidar()">
+      <span class="ico">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <line x1="20" y1="8" x2="20" y2="14"/>
+          <line x1="23" y1="11" x2="17" y2="11"/>
+        </svg>
+      </span>
+      <span class="txt">Convidar amigo</span>
+      <svg class="seta" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+    </button>
+
+    <button class="btn-acao" onclick="abrirEntrarSala()">
+      <span class="ico">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4"/>
+          <polyline points="10 17 15 12 10 7"/>
+          <line x1="15" y1="12" x2="3" y2="12"/>
+        </svg>
+      </span>
+      <span class="txt">Entrar em uma sala</span>
+      <svg class="seta" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+    </button>
+
+    <button class="btn-acao" onclick="abrirCriarSala()">
+      <span class="ico">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="5" x2="12" y2="19"/>
+          <line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+      </span>
+      <span class="txt">Criar sala</span>
+      <svg class="seta" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+    </button>
   </div>
 
-  <!-- Barra de navegação -->
-  <nav class="barra-nav">
-    <a href="perfil.html" class="nav-item">Perfil</a>
-    <a href="index.html" class="nav-item nav-ativo">Jogar</a>
-    <a href="ranking.html" class="nav-item">Ranking</a>
+  <!-- Nav -->
+  <nav class="nav">
+    <a class="nit active" href="index.html">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <div class="nlbl">Início</div>
+    </a>
+    <a class="nit" href="#" onclick="event.preventDefault(); toast('Em breve')">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      <div class="nlbl">Correr</div>
+    </a>
+    <a class="nit" href="#" onclick="event.preventDefault(); toast('Em breve')">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+      <div class="nlbl">Jogar</div>
+    </a>
+    <a class="nit" href="ranking.html">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      <div class="nlbl">Ranking</div>
+    </a>
+    <a class="nit" href="perfil.html">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <div class="nlbl">Perfil</div>
+    </a>
   </nav>
 
   <!-- Preparar -->
   <div id="popup-preparar" class="overlay escondido">
     <div class="popup">
-      <h2>Preparar</h2>
+      <h2>PREPARAR</h2>
       <ul class="lista-popup" id="lista-prontos"></ul>
       <div class="popup-acoes">
-        <button class="btn-pronto" id="btn-meu-pronto" onclick="togglePronto()">Estou Pronto</button>
-        <button class="btn-iniciar-sala escondido" id="btn-iniciar-sala" onclick="iniciarCorrida()">Iniciar</button>
+        <button class="btn-pronto" id="btn-meu-pronto" onclick="togglePronto()">Estou pronto</button>
+        <button class="btn-iniciar-sala escondido" id="btn-iniciar-sala" onclick="iniciarCorrida()">Iniciar corrida</button>
+        <button class="btn-fechar" onclick="fechar('popup-preparar')">Fechar</button>
       </div>
-      <button class="btn-fechar" onclick="fechar('popup-preparar')">Fechar</button>
     </div>
   </div>
 
   <!-- Sair da sala -->
   <div id="popup-sair-sala" class="overlay escondido">
     <div class="popup">
-      <h2>Sair da sala</h2>
-      <p style="color:gray; font-size:0.9rem;">Desconectar de "<span id="nome-sala-sair"></span>"?</p>
-      <div class="popup-acoes" style="margin-top:0.5rem">
-        <button class="btn-iniciar-sala" style="background-color:#c0392b" onclick="sairDaSala()">Sair</button>
+      <h2>SAIR DA SALA</h2>
+      <p class="sub-aviso">Tem certeza que quer sair de "<span id="nome-sala-sair"></span>"?</p>
+      <div class="popup-acoes">
+        <button class="btn-perigo" onclick="sairDaSala()">Sim, sair</button>
         <button class="btn-fechar" onclick="fechar('popup-sair-sala')">Cancelar</button>
       </div>
     </div>
@@ -63,7 +591,7 @@
   <!-- Convidar amigo -->
   <div id="popup-convidar" class="overlay escondido">
     <div class="popup">
-      <h2>Convidar amigo</h2>
+      <h2>CONVIDAR AMIGO</h2>
       <ul class="lista-popup" id="lista-amigos"></ul>
       <button class="btn-fechar" onclick="fechar('popup-convidar')">Fechar</button>
     </div>
@@ -72,7 +600,7 @@
   <!-- Entrar em uma sala -->
   <div id="popup-entrar-sala" class="overlay escondido">
     <div class="popup">
-      <h2>Salas disponíveis</h2>
+      <h2>SALAS DISPONÍVEIS</h2>
       <ul class="lista-popup" id="lista-salas"></ul>
       <button class="btn-fechar" onclick="fechar('popup-entrar-sala')">Fechar</button>
     </div>
@@ -81,9 +609,9 @@
   <!-- Criar sala -->
   <div id="popup-criar-sala" class="overlay escondido">
     <div class="popup">
-      <h2>Criar sala</h2>
-      <div class="form-criar-sala">
-        <input type="text" id="input-nome-sala" placeholder="Nome da sala" class="input-sala"/>
+      <h2>CRIAR SALA</h2>
+      <div class="form-criar">
+        <input type="text" id="input-nome-sala" placeholder="Nome da sala" class="input-sala" maxlength="30"/>
         <select id="select-tempo-sala" class="select-tempo">
           <option value="5">5 minutos</option>
           <option value="10" selected>10 minutos</option>
@@ -91,198 +619,244 @@
           <option value="20">20 minutos</option>
           <option value="30">30 minutos</option>
         </select>
-        <button class="btn-iniciar" onclick="criarSala()">Criar</button>
+        <button class="btn-criar" onclick="criarSala()">Criar sala</button>
       </div>
       <button class="btn-fechar" onclick="fechar('popup-criar-sala')">Fechar</button>
     </div>
   </div>
 
-  <script src="libs/leaflet.js"></script>
-  <script src="auth.js"></script>
-  <script>
-    RC.requerLogin();
+</div>
 
-    const meuNome = (RC.getUser()?.nome || 'Você').split(' ')[0];
+<script src="libs/leaflet.js"></script>
+<script src="auth.js"></script>
+<script>
+  RC.requerLogin();
 
-    const estado = {
-      sala: null,
-      jogadores: [{ nome: meuNome, pronto: false, eu: true }],
-      ehCriador: false,
-      convidados: []
-    };
+  const meuNome = (RC.getUser()?.nome || 'Você').split(' ')[0];
 
-    <!-- Essa parte é apenas para testar o front -->
-    const amigosOnline = ['Ana', 'Bruno', 'Carlos', 'Diana'];
-    const salasPublicas = [
-      { nome: 'Sala do João', tempo: 10, jogadores: 2 },
-      { nome: 'Corrida da Tarde', tempo: 5, jogadores: 1 },
-      { nome: 'Maratona Urbana', tempo: 15, jogadores: 3 },
-    ];
+  /* ── Estado ── */
+  const estado = {
+    sala: null,
+    jogadores: [{ nome: meuNome, pronto: false, eu: true }],
+    ehCriador: false,
+    convidados: []
+  };
 
-    const mapa = L.map('mapa-lobby', {
-      zoomControl: false,
-      dragging: false,
-      scrollWheelZoom: false,
-      doubleClickZoom: false,
-      touchZoom: false
-    }).setView([-19.9167, -43.9345], 15);
+  /* mock só pra mexer no front sem servidor de salas */
+  const amigosOnline = ['Ana', 'Bruno', 'Carlos', 'Diana'];
+  const salasPublicas = [
+    { nome: 'Sala do João',     tempo: 10, jogadores: 2 },
+    { nome: 'Corrida da Tarde', tempo: 5,  jogadores: 1 },
+    { nome: 'Maratona Urbana',  tempo: 15, jogadores: 3 },
+  ];
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap'
-    }).addTo(mapa);
+  /* ── Mapa ── */
+  const mapa = L.map('mapa-lobby', {
+    zoomControl: false,
+    dragging: false,
+    scrollWheelZoom: false,
+    doubleClickZoom: false,
+    touchZoom: false,
+    attributionControl: true
+  }).setView([-19.9167, -43.9345], 14);
 
-    function fechar(id) {
-      document.getElementById(id).classList.add('escondido');
-    }
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    attribution: '© OpenStreetMap, © CARTO',
+    subdomains: 'abcd',
+    maxZoom: 19
+  }).addTo(mapa);
 
-    function atualizarBarra() {
-      const titulo = document.getElementById('lobby-titulo');
-      const jogadoresEl = document.getElementById('lobby-jogadores');
-      const btnPreparar = document.getElementById('btn-preparar');
+  /* ── Helpers ── */
+  function fechar(id) {
+    document.getElementById(id).classList.add('escondido');
+  }
+  function abrir(id) {
+    document.getElementById(id).classList.remove('escondido');
+  }
 
-      if (estado.sala) {
-        titulo.textContent = estado.sala.nome;
-        titulo.classList.add('lobby-titulo-sala');
-        titulo.onclick = tentarSair;
-        jogadoresEl.innerHTML = estado.jogadores
-          .map(j => `<span class="tag-jogador${j.pronto ? ' pronto' : ''}">${j.nome}</span>`)
-          .join('');
-        btnPreparar.disabled = false;
-        btnPreparar.classList.remove('inativo');
-      } else {
-        titulo.textContent = 'RunCity';
-        titulo.classList.remove('lobby-titulo-sala');
-        titulo.onclick = null;
-        jogadoresEl.innerHTML = '';
-        btnPreparar.disabled = true;
-        btnPreparar.classList.add('inativo');
-      }
-    }
+  /* ── Header dinâmico ── */
+  function atualizarBarra() {
+    const titArea = document.getElementById('lobby-titulo-area');
+    const chips = document.getElementById('lobby-jogadores');
+    const btn = document.getElementById('btn-preparar');
+    const dica = document.getElementById('dica');
 
-    function tentarSair() {
-      document.getElementById('nome-sala-sair').textContent = estado.sala.nome;
-      document.getElementById('popup-sair-sala').classList.remove('escondido');
-    }
-
-    function sairDaSala() {
-      estado.sala = null;
-      estado.ehCriador = false;
-      estado.jogadores = [{ nome: meuNome, pronto: false, eu: true }];
-      estado.convidados = [];
-      atualizarBarra();
-      fechar('popup-sair-sala');
-    }
-
-    // Preparar
-    function abrirPreparar() {
-      if (!estado.sala) return;
-      const lista = document.getElementById('lista-prontos');
-      lista.innerHTML = estado.jogadores.map(j => {
-        const criador = j.eu && estado.ehCriador ? ' <small>(criador)</small>' : '';
-        return `
-          <li class="item-popup">
-            <span>${j.nome}${criador}</span>
-            <span class="status-pronto ${j.pronto ? 'confirmado' : 'aguardando'}">
-              ${j.pronto ? '&#10003; Pronto' : '&#8226; Aguardando'}
-            </span>
-          </li>`;
+    if (estado.sala) {
+      titArea.innerHTML = `
+        <div class="sala-tag" onclick="tentarSair()" title="Sair da sala">
+          <span class="sala-nome">${estado.sala.nome}</span>
+          <span class="sair-x">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </span>
+        </div>`;
+      chips.innerHTML = estado.jogadores.map(j => {
+        const cls = j.eu ? 'eu' : (j.pronto ? 'pronto' : '');
+        return `<span class="chip ${cls}">${j.nome}${j.pronto ? ' ✓' : ''}</span>`;
       }).join('');
-
-      const btnIniciar = document.getElementById('btn-iniciar-sala');
-      const podeIniciar = estado.ehCriador || !estado.sala;
-      btnIniciar.classList.toggle('escondido', !podeIniciar);
-
-      const eu = estado.jogadores.find(j => j.eu);
-      const btnPronto = document.getElementById('btn-meu-pronto');
-      btnPronto.textContent = eu.pronto ? 'Cancelar Pronto' : 'Estou Pronto';
-      btnPronto.classList.toggle('ativo', eu.pronto);
-
-      document.getElementById('popup-preparar').classList.remove('escondido');
-    }
-
-    function togglePronto() {
-      const eu = estado.jogadores.find(j => j.eu);
-      eu.pronto = !eu.pronto;
-      atualizarBarra();
-      abrirPreparar();
-    }
-
-    function iniciarCorrida() {
-      const tempo = estado.sala ? estado.sala.tempo : 10;
-      window.location.href = `corrida.html?tempo=${tempo}`;
-    }
-
-    // Convidar amigo
-    function abrirConvidar() {
-      const lista = document.getElementById('lista-amigos');
-      lista.innerHTML = amigosOnline.map(nome => {
-        const convidado = estado.convidados.includes(nome);
-        return `
-          <li class="item-popup">
-            <span>${nome}</span>
-            <button class="btn-acao-lista${convidado ? ' convidado' : ''}"
-              onclick="convidarAmigo('${nome}', this)"
-              ${convidado ? 'disabled' : ''}>
-              ${convidado ? 'Convidado' : 'Convidar'}
-            </button>
-          </li>`;
-      }).join('');
-      document.getElementById('popup-convidar').classList.remove('escondido');
-    }
-
-    function convidarAmigo(nome, btn) {
-      if (!estado.sala) {
-        estado.sala = { nome: 'Minha Sala', tempo: 10 };
-        estado.ehCriador = true;
-      }
-      estado.convidados.push(nome);
-      estado.jogadores.push({ nome, pronto: false });
-      btn.textContent = 'Convidado';
+      btn.disabled = false;
+      btn.classList.remove('inativo');
+      dica.style.display = 'none';
+    } else {
+      titArea.innerHTML = `<div class="marca">RUN<span>CITY</span></div>`;
+      chips.innerHTML = '';
       btn.disabled = true;
-      btn.classList.add('convidado');
-      atualizarBarra();
+      btn.classList.add('inativo');
+      dica.style.display = '';
     }
+  }
 
-    // Entrar em sala
-    function abrirEntrarSala() {
-      const lista = document.getElementById('lista-salas');
-      lista.innerHTML = salasPublicas.map((sala, i) => `
+  function tentarSair() {
+    document.getElementById('nome-sala-sair').textContent = estado.sala.nome;
+    abrir('popup-sair-sala');
+  }
+
+  function sairDaSala() {
+    estado.sala = null;
+    estado.ehCriador = false;
+    estado.jogadores = [{ nome: meuNome, pronto: false, eu: true }];
+    estado.convidados = [];
+    atualizarBarra();
+    fechar('popup-sair-sala');
+  }
+
+  /* ── Preparar ── */
+  function abrirPreparar() {
+    if (!estado.sala) return;
+    const lista = document.getElementById('lista-prontos');
+    lista.innerHTML = estado.jogadores.map(j => {
+      const tagCriador = j.eu && estado.ehCriador
+        ? '<span class="label-criador">criador</span>' : '';
+      return `
         <li class="item-popup">
-          <div>
-            <strong>${sala.nome}</strong>
-            <small>${sala.tempo} min · ${sala.jogadores} jogador${sala.jogadores > 1 ? 'es' : ''}</small>
-          </div>
-          <button class="btn-acao-lista" onclick="entrarSala(${i})">Entrar</button>
-        </li>`).join('');
-      document.getElementById('popup-entrar-sala').classList.remove('escondido');
-    }
+          <span><strong>${j.nome}</strong>${tagCriador}</span>
+          <span class="status-pronto ${j.pronto ? 'confirmado' : 'aguardando'}">
+            ${j.pronto ? '✓ Pronto' : '• Aguardando'}
+          </span>
+        </li>`;
+    }).join('');
 
-    function entrarSala(i) {
-      const sala = salasPublicas[i];
-      estado.sala = { nome: sala.nome, tempo: sala.tempo };
-      estado.ehCriador = false;
-      estado.jogadores = [
-        ...Array.from({ length: sala.jogadores }, (_, k) => ({ nome: `Jogador ${k + 1}`, pronto: false })),
-        { nome: meuNome, pronto: false, eu: true }
-      ];
-      atualizarBarra();
-      fechar('popup-entrar-sala');
-    }
+    const btnIniciar = document.getElementById('btn-iniciar-sala');
+    btnIniciar.classList.toggle('escondido', !estado.ehCriador);
 
-    // Criar sala
-    function abrirCriarSala() {
-      document.getElementById('popup-criar-sala').classList.remove('escondido');
-    }
+    const eu = estado.jogadores.find(j => j.eu);
+    const btnPronto = document.getElementById('btn-meu-pronto');
+    btnPronto.textContent = eu.pronto ? 'Cancelar pronto' : 'Estou pronto';
+    btnPronto.classList.toggle('ativo', eu.pronto);
 
-    function criarSala() {
-      const nome = document.getElementById('input-nome-sala').value.trim() || 'Minha Sala';
-      const tempo = parseInt(document.getElementById('select-tempo-sala').value);
-      estado.sala = { nome, tempo };
+    abrir('popup-preparar');
+  }
+
+  function togglePronto() {
+    const eu = estado.jogadores.find(j => j.eu);
+    eu.pronto = !eu.pronto;
+    atualizarBarra();
+    abrirPreparar();
+  }
+
+  function iniciarCorrida() {
+    const tempo = estado.sala ? estado.sala.tempo : 10;
+    window.location.href = `corrida.html?tempo=${tempo}`;
+  }
+
+  /* ── Convidar amigo ── */
+  function abrirConvidar() {
+    const lista = document.getElementById('lista-amigos');
+    lista.innerHTML = amigosOnline.map(nome => {
+      const convidado = estado.convidados.includes(nome);
+      return `
+        <li class="item-popup">
+          <span><strong>${nome}</strong></span>
+          <button class="btn-acao-lista${convidado ? ' convidado' : ''}"
+            onclick="convidarAmigo('${nome}', this)"
+            ${convidado ? 'disabled' : ''}>
+            ${convidado ? 'Convidado' : 'Convidar'}
+          </button>
+        </li>`;
+    }).join('');
+    abrir('popup-convidar');
+  }
+
+  function convidarAmigo(nome, btn) {
+    if (!estado.sala) {
+      // se não tem sala ainda, cria uma rápida pra acomodar o convite
+      estado.sala = { nome: 'Minha sala', tempo: 10 };
       estado.ehCriador = true;
-      estado.jogadores = [{ nome: meuNome, pronto: false, eu: true }];
-      atualizarBarra();
-      fechar('popup-criar-sala');
     }
-  </script>
+    estado.convidados.push(nome);
+    estado.jogadores.push({ nome, pronto: false });
+    btn.textContent = 'Convidado';
+    btn.disabled = true;
+    btn.classList.add('convidado');
+    atualizarBarra();
+  }
+
+  /* ── Entrar em sala ── */
+  function abrirEntrarSala() {
+    const lista = document.getElementById('lista-salas');
+    lista.innerHTML = salasPublicas.map((sala, i) => `
+      <li class="item-popup">
+        <div>
+          <strong>${sala.nome}</strong>
+          <small>${sala.tempo} min · ${sala.jogadores} jogador${sala.jogadores > 1 ? 'es' : ''}</small>
+        </div>
+        <button class="btn-acao-lista" onclick="entrarSala(${i})">Entrar</button>
+      </li>`).join('');
+    abrir('popup-entrar-sala');
+  }
+
+  function entrarSala(i) {
+    const sala = salasPublicas[i];
+    estado.sala = { nome: sala.nome, tempo: sala.tempo };
+    estado.ehCriador = false;
+    estado.jogadores = [
+      ...Array.from({ length: sala.jogadores }, (_, k) => ({ nome: `Jogador ${k + 1}`, pronto: false })),
+      { nome: meuNome, pronto: false, eu: true }
+    ];
+    atualizarBarra();
+    fechar('popup-entrar-sala');
+  }
+
+  /* ── Criar sala ── */
+  function abrirCriarSala() { abrir('popup-criar-sala'); }
+
+  function criarSala() {
+    const nome = document.getElementById('input-nome-sala').value.trim() || 'Minha sala';
+    const tempo = parseInt(document.getElementById('select-tempo-sala').value);
+    estado.sala = { nome, tempo };
+    estado.ehCriador = true;
+    estado.jogadores = [{ nome: meuNome, pronto: false, eu: true }];
+    atualizarBarra();
+    fechar('popup-criar-sala');
+    document.getElementById('input-nome-sala').value = '';
+  }
+
+  /* ── Toast ── */
+  let _tt;
+  function toast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(_tt);
+    _tt = setTimeout(() => t.classList.remove('show'), 2200);
+  }
+
+  /* ── Relógio status bar ── */
+  function tick() {
+    const d = new Date();
+    document.getElementById('relogio').textContent =
+      String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+  }
+  tick(); setInterval(tick, 30000);
+
+  /* ── Tema ── */
+  try {
+    if (localStorage.getItem('rc_theme') === 'light') {
+      document.documentElement.setAttribute('data-theme', 'light');
+    }
+  } catch(e) {}
+</script>
+
 </body>
 </html>
