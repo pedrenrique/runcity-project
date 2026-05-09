@@ -621,6 +621,9 @@
 <script>
   RC.requerLogin();
 
+  const meuNome = (RC.getUser()?.nome || 'Você').split(' ')[0];
+  document.querySelector('#ranking-lista li.eu .nome').textContent = meuNome;
+
   /* ── Cronômetro ── */
   const params = new URLSearchParams(window.location.search);
   const minutos = parseInt(params.get('tempo')) || 10;
@@ -662,7 +665,7 @@
   function mostrarResultado() {
     // mock — virão do backend depois
     const finais = [
-      { nome: 'Você',      m2: 1420, eu: true },
+      { nome: meuNome,     m2: 1420, eu: true },
       { nome: 'Jogador 2', m2: 980 },
       { nome: 'Jogador 3', m2: 640 },
     ].sort((a, b) => b.m2 - a.m2);

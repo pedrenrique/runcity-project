@@ -102,9 +102,11 @@
   <script>
     RC.requerLogin();
 
+    const meuNome = (RC.getUser()?.nome || 'Você').split(' ')[0];
+
     const estado = {
       sala: null,
-      jogadores: [{ nome: 'Você', pronto: false }],
+      jogadores: [{ nome: meuNome, pronto: false, eu: true }],
       ehCriador: false,
       convidados: []
     };
@@ -165,7 +167,7 @@
     function sairDaSala() {
       estado.sala = null;
       estado.ehCriador = false;
-      estado.jogadores = [{ nome: 'Você', pronto: false }];
+      estado.jogadores = [{ nome: meuNome, pronto: false, eu: true }];
       estado.convidados = [];
       atualizarBarra();
       fechar('popup-sair-sala');
@@ -176,7 +178,7 @@
       if (!estado.sala) return;
       const lista = document.getElementById('lista-prontos');
       lista.innerHTML = estado.jogadores.map(j => {
-        const criador = j.nome === 'Você' && estado.ehCriador ? ' <small>(criador)</small>' : '';
+        const criador = j.eu && estado.ehCriador ? ' <small>(criador)</small>' : '';
         return `
           <li class="item-popup">
             <span>${j.nome}${criador}</span>
@@ -190,7 +192,7 @@
       const podeIniciar = estado.ehCriador || !estado.sala;
       btnIniciar.classList.toggle('escondido', !podeIniciar);
 
-      const eu = estado.jogadores.find(j => j.nome === 'Você');
+      const eu = estado.jogadores.find(j => j.eu);
       const btnPronto = document.getElementById('btn-meu-pronto');
       btnPronto.textContent = eu.pronto ? 'Cancelar Pronto' : 'Estou Pronto';
       btnPronto.classList.toggle('ativo', eu.pronto);
@@ -199,7 +201,7 @@
     }
 
     function togglePronto() {
-      const eu = estado.jogadores.find(j => j.nome === 'Você');
+      const eu = estado.jogadores.find(j => j.eu);
       eu.pronto = !eu.pronto;
       atualizarBarra();
       abrirPreparar();
@@ -261,7 +263,7 @@
       estado.ehCriador = false;
       estado.jogadores = [
         ...Array.from({ length: sala.jogadores }, (_, k) => ({ nome: `Jogador ${k + 1}`, pronto: false })),
-        { nome: 'Você', pronto: false }
+        { nome: meuNome, pronto: false, eu: true }
       ];
       atualizarBarra();
       fechar('popup-entrar-sala');
@@ -277,7 +279,7 @@
       const tempo = parseInt(document.getElementById('select-tempo-sala').value);
       estado.sala = { nome, tempo };
       estado.ehCriador = true;
-      estado.jogadores = [{ nome: 'Você', pronto: false }];
+      estado.jogadores = [{ nome: meuNome, pronto: false, eu: true }];
       atualizarBarra();
       fechar('popup-criar-sala');
     }
