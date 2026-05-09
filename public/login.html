@@ -233,6 +233,43 @@
     .nota-cripto svg { flex-shrink: 0; margin-top: 1px; color: var(--p-l); }
     .nota-cripto strong { color: var(--p-ll); font-weight: 700; }
 
+    .ok-msg {
+      font-size: 12px; color: var(--ok);
+      padding: 8px 12px;
+      background: rgba(34,197,94,.08);
+      border: 1px solid rgba(34,197,94,.25);
+      border-radius: 8px;
+      display:none;
+    }
+    .ok-msg.show { display:block; }
+
+    .dev-link {
+      font-size: 10px; color: var(--t3);
+      padding: 8px 12px;
+      background: var(--c0);
+      border: 1px dashed var(--brd);
+      border-radius: 8px;
+      word-break: break-all;
+      display: none;
+    }
+    .dev-link.show { display: block; }
+    .dev-link strong { color: var(--p-l); display: block; margin-bottom: 4px; }
+    .dev-link a { color: var(--p-ll); text-decoration: underline; }
+
+    .btn-voltar {
+      width: 100%;
+      background: transparent;
+      border: 1px solid var(--brd2);
+      color: var(--t2);
+      padding: 11px;
+      border-radius: 12px;
+      font-family: var(--ff-b);
+      font-size: 12px; font-weight: 600;
+      cursor: pointer;
+      transition: all .2s;
+    }
+    .btn-voltar:hover { color: var(--t1); border-color: var(--brd); }
+
     .btn-primary {
       height: 50px;
       background: linear-gradient(135deg, var(--p) 0%, var(--p-d) 100%);
@@ -371,7 +408,7 @@
             <span class="box"></span>
             Lembrar de mim
           </label>
-          <a class="link" onclick="showToast('Recuperação de senha em breve')">Esqueci a senha</a>
+          <a class="link" onclick="abrirRecuperar()">Esqueci a senha</a>
         </div>
 
         <div class="err-msg" id="erro-login"></div>
@@ -429,7 +466,27 @@
         <button class="btn-primary" type="submit">Criar conta</button>
       </form>
 
-      <!-- Divisor + social -->
+      <!-- Form: recuperar senha -->
+      <form class="form" id="form-recuperar" onsubmit="recuperar(event)" novalidate>
+        <p style="font-size:13px; color:var(--t2); line-height:1.5; margin-bottom:4px;">
+          Informe o e-mail da sua conta. Vamos enviar um link para você redefinir sua senha.
+        </p>
+        <div class="field">
+          <svg class="lead" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+            <polyline points="22,6 12,13 2,6"/>
+          </svg>
+          <input type="email" name="email" placeholder="E-mail" autocomplete="email" required>
+        </div>
+        <div class="err-msg" id="erro-recuperar"></div>
+        <div class="ok-msg"  id="ok-recuperar"></div>
+        <div class="dev-link" id="dev-link"></div>
+        <button class="btn-primary" type="submit">Enviar link</button>
+        <button type="button" class="btn-voltar" onclick="trocarParaLogin()">← Voltar</button>
+      </form>
+
+      <!-- Divisor + social (escondido em modo recuperar senha) -->
+      <div id="bloco-social">
       <div class="divider">ou continue com</div>
       <button class="btn-social" onclick="showToast('Login social em breve')">
         <svg width="16" height="16" viewBox="0 0 48 48">
@@ -444,6 +501,7 @@
       <div class="foot">
         Ao entrar você aceita os <a onclick="showToast('Termos em breve')">Termos</a> e a <a onclick="showToast('Política em breve')">Política de Privacidade</a>.
       </div>
+      </div><!-- /bloco-social -->
 
     </div>
   </div>
@@ -458,6 +516,60 @@
     el.classList.add('active');
     document.getElementById('form-' + el.dataset.form).classList.add('active');
     document.querySelectorAll('.err-msg').forEach(e => e.classList.remove('show'));
+    // garante que a parte social aparece quando voltamos pras abas normais
+    document.querySelectorAll('.tabs').forEach(t => t.style.display = '');
+    document.getElementById('bloco-social').style.display = '';
+  }
+
+  function abrirRecuperar() {
+    document.querySelectorAll('.form').forEach(f => f.classList.remove('active'));
+    document.getElementById('form-recuperar').classList.add('active');
+    // esconde abas e bloco social pra ficar focado no recuperar
+    document.querySelector('.tabs').style.display = 'none';
+    document.getElementById('bloco-social').style.display = 'none';
+    document.querySelectorAll('.err-msg, .ok-msg, .dev-link').forEach(e => e.classList.remove('show'));
+  }
+
+  function trocarParaLogin() {
+    document.querySelector('.tabs').style.display = '';
+    document.getElementById('bloco-social').style.display = '';
+    document.querySelectorAll('.form').forEach(f => f.classList.remove('active'));
+    document.getElementById('form-login').classList.add('active');
+    // reativa visualmente a aba "Entrar"
+    document.querySelectorAll('.tab').forEach(t => {
+      t.classList.toggle('active', t.dataset.form === 'login');
+    });
+  }
+
+  function recuperar(ev) {
+    ev.preventDefault();
+    const f = ev.target;
+    const email = f.email.value.trim().toLowerCase();
+    const erro = document.getElementById('erro-recuperar');
+    const ok   = document.getElementById('ok-recuperar');
+    const dev  = document.getElementById('dev-link');
+    erro.classList.remove('show'); ok.classList.remove('show'); dev.classList.remove('show');
+
+    if (!email) { mostrarErro('erro-recuperar', 'Informe seu e-mail.'); return; }
+
+    // mock — sem backend, gera token local e oferece link direto
+    const users = RC._users.ler();
+    const u = users.find(x => x.email === email);
+
+    ok.textContent = 'Se essa conta existir, o link de recuperação foi enviado.';
+    ok.classList.add('show');
+
+    if (u) {
+      const token = 'reset_' + Math.random().toString(36).slice(2);
+      const expira = Date.now() + 60 * 60 * 1000;
+      const resets = JSON.parse(localStorage.getItem('rc_resets') || '{}');
+      resets[token] = { userId: u.id, expira, usado: false };
+      localStorage.setItem('rc_resets', JSON.stringify(resets));
+
+      const link = location.origin + '/redefinir.html?token=' + token;
+      dev.innerHTML = '<strong>Modo demo — link direto:</strong><a href="' + link + '">' + link + '</a>';
+      dev.classList.add('show');
+    }
   }
 
   /* ── Mostrar/esconder senha ── */

@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RunCity — Redefinir senha</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --p:#7c5cfc; --p-l:#a084fd; --p-ll:#c4b5fd; --p-d:#5b3fd8;
+      --p-dim:rgba(124,92,252,.1); --p-mid:rgba(124,92,252,.22); --p-glow:rgba(124,92,252,.38);
+      --ok:#22c55e; --err:#ef4444;
+      --bg:#08061a; --c0:#100e24; --c1:#170f32;
+      --brd:#231848; --brd2:#190e38;
+      --t1:#ede8ff; --t2:#5e5280; --t3:#9488c0;
+      --ff-d:'Bebas Neue', sans-serif; --ff-b:'Outfit', sans-serif;
+    }
+    [data-theme="light"] { --bg:#f8f7ff; --c0:#eeebff; --c1:#e4dfff; --brd:#cdc5f0; --brd2:#d8d0f8; --t1:#160f38; --t2:#6e60a0; --t3:#453880; }
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+    body {
+      background:#050410; font-family: var(--ff-b);
+      min-height:100vh; display:flex; align-items:center; justify-content:center;
+      padding: 32px 20px;
+    }
+    [data-theme="light"] body { background:#eae7f8; }
+
+    .phone {
+      width: 390px; height: 844px;
+      background: var(--bg);
+      border-radius: 46px;
+      border: 1.5px solid var(--brd);
+      overflow: hidden; position: relative;
+      box-shadow: 0 0 0 1px rgba(124,92,252,.05), 0 40px 100px rgba(0,0,0,.65);
+      animation: slideUp .5s cubic-bezier(.08,.82,.17,1) both;
+      flex-shrink: 0;
+      display: flex; flex-direction: column;
+    }
+    .pscroll { width:100%; height:100%; overflow-y:auto; padding: 0 24px 32px; }
+
+    .sbar { display:flex; justify-content:space-between; align-items:center; padding:14px 0 6px; color:var(--t1); }
+    .sbar-time { font-size:15px; font-weight:700; }
+
+    .hero { text-align:center; padding: 36px 0 24px; }
+    .ico-mark {
+      width:72px; height:72px; border-radius:20px;
+      background: linear-gradient(160deg, var(--p) 0%, var(--p-d) 100%);
+      display:inline-flex; align-items:center; justify-content:center;
+      margin-bottom:16px;
+      box-shadow: 0 0 0 6px var(--p-dim), 0 18px 38px rgba(124,92,252,.4);
+    }
+    .titulo {
+      font-family: var(--ff-d);
+      font-size: 30px; letter-spacing: 2.5px;
+      color: var(--t1); line-height: 1;
+    }
+    .sub {
+      font-size: 13px; color: var(--t2);
+      margin-top: 8px; line-height: 1.4;
+    }
+
+    .form { display:flex; flex-direction:column; gap:14px; }
+    .field { position:relative; }
+    .field svg.lead {
+      position:absolute; left:14px; top:50%; transform: translateY(-50%);
+      color: var(--t2); pointer-events:none;
+    }
+    .field input {
+      width:100%; height:48px;
+      background: var(--c0);
+      border: 1.5px solid var(--brd2);
+      border-radius: 12px;
+      padding: 0 14px 0 42px;
+      font-family: var(--ff-b);
+      font-size: 14px; color: var(--t1);
+    }
+    .field input::placeholder { color: var(--t2); }
+    .field input:focus { outline: none; border-color: var(--p-mid); background: var(--c1); }
+
+    .btn {
+      height: 50px;
+      background: linear-gradient(135deg, var(--p) 0%, var(--p-d) 100%);
+      color: #fff; border: none; border-radius: 12px;
+      font-family: var(--ff-b);
+      font-size: 14px; font-weight: 700;
+      letter-spacing: .8px; text-transform: uppercase;
+      cursor: pointer;
+      box-shadow: 0 8px 24px rgba(124,92,252,.35);
+      margin-top: 4px;
+      transition: transform .15s, opacity .2s;
+    }
+    .btn:hover { transform: translateY(-1px); }
+    .btn:disabled { opacity:.6; cursor: wait; }
+
+    .err-msg, .ok-msg {
+      font-size: 12px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      display:none;
+    }
+    .err-msg {
+      color: var(--err);
+      background: rgba(239,68,68,.08);
+      border: 1px solid rgba(239,68,68,.25);
+    }
+    .ok-msg {
+      color: var(--ok);
+      background: rgba(34,197,94,.08);
+      border: 1px solid rgba(34,197,94,.25);
+    }
+    .err-msg.show, .ok-msg.show { display:block; }
+
+    .voltar {
+      margin-top: 18px; text-align: center;
+    }
+    .voltar a {
+      font-size: 12px; color: var(--p-l);
+      text-decoration: none; font-weight: 600;
+    }
+
+    @keyframes slideUp { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
+
+    @media (max-width:440px) {
+      .phone { width:100vw; height:100vh; border-radius:0; border:none; }
+      body { padding:0; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="phone">
+  <div class="pscroll">
+
+    <div class="sbar">
+      <span class="sbar-time" id="relogio">--:--</span>
+    </div>
+
+    <div class="hero">
+      <div class="ico-mark">
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="11" width="18" height="11" rx="2"/>
+          <path d="M7 11V7a5 5 0 0110 0v4"/>
+        </svg>
+      </div>
+      <div class="titulo">REDEFINIR SENHA</div>
+      <div class="sub" id="sub">Escolha uma nova senha pra sua conta.</div>
+    </div>
+
+    <form class="form" id="form" onsubmit="redefinir(event)" novalidate>
+      <div class="field">
+        <svg class="lead" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="11" width="18" height="11" rx="2"/>
+          <path d="M7 11V7a5 5 0 0110 0v4"/>
+        </svg>
+        <input type="password" name="nova" placeholder="Nova senha (mín. 6)" minlength="6" required>
+      </div>
+
+      <div class="field">
+        <svg class="lead" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+        <input type="password" name="conf" placeholder="Confirmar senha" required>
+      </div>
+
+      <div class="err-msg" id="erro"></div>
+      <div class="ok-msg"  id="ok"></div>
+
+      <button class="btn" type="submit">Redefinir senha</button>
+    </form>
+
+    <div class="voltar">
+      <a href="login.html">← Voltar para o login</a>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  const params = new URLSearchParams(location.search);
+  const token = params.get('token');
+
+  if (!token) {
+    document.getElementById('sub').textContent = 'Link inválido. Volte e solicite um novo.';
+    document.getElementById('form').style.display = 'none';
+  }
+
+  async function redefinir(ev) {
+    ev.preventDefault();
+    const f = ev.target;
+    const nova = f.nova.value;
+    const conf = f.conf.value;
+    const erro = document.getElementById('erro');
+    const ok = document.getElementById('ok');
+    erro.classList.remove('show');
+    ok.classList.remove('show');
+
+    if (nova.length < 6) {
+      erro.textContent = 'A senha precisa ter pelo menos 6 caracteres.';
+      erro.classList.add('show');
+      return;
+    }
+    if (nova !== conf) {
+      erro.textContent = 'As senhas não conferem.';
+      erro.classList.add('show');
+      return;
+    }
+
+    const btn = f.querySelector('.btn');
+    btn.disabled = true;
+    // mock local — valida token contra localStorage (rc_resets) e atualiza senha em rc_users
+    const resets = JSON.parse(localStorage.getItem('rc_resets') || '{}');
+    const reset = resets[token];
+    if (!reset || reset.usado || Date.now() > reset.expira) {
+      erro.textContent = 'Link inválido ou expirado.';
+      erro.classList.add('show');
+      btn.disabled = false;
+      return;
+    }
+    const users = JSON.parse(localStorage.getItem('rc_users') || '[]');
+    const u = users.find(x => x.id === reset.userId);
+    if (!u) {
+      erro.textContent = 'Conta não encontrada.';
+      erro.classList.add('show');
+      btn.disabled = false;
+      return;
+    }
+    u.senha = nova;
+    localStorage.setItem('rc_users', JSON.stringify(users));
+    reset.usado = true;
+    localStorage.setItem('rc_resets', JSON.stringify(resets));
+
+    ok.textContent = 'Senha redefinida! Redirecionando...';
+    ok.classList.add('show');
+    setTimeout(() => { window.location.href = 'login.html'; }, 1200);
+  }
+
+  function tick() {
+    const d = new Date();
+    document.getElementById('relogio').textContent =
+      String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+  }
+  tick(); setInterval(tick, 30000);
+
+  try {
+    if (localStorage.getItem('rc_theme') === 'light') {
+      document.documentElement.setAttribute('data-theme', 'light');
+    }
+  } catch(e) {}
+</script>
+
+</body>
+</html>
