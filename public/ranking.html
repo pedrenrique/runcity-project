@@ -186,6 +186,30 @@
     .mypos { padding:14px 20px 0; }
     .mypos-lbl { font-size:10px; font-weight:700; letter-spacing:1.8px; text-transform:uppercase; color:var(--t2); margin-bottom:8px; }
 
+    /* paginador */
+    .paginador {
+      display: flex; align-items: center; justify-content: center;
+      gap: 14px;
+      padding: 14px 20px 4px;
+    }
+    .pag-btn {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      background: var(--c0);
+      border: 1px solid var(--brd);
+      color: var(--t2);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      transition: all .2s;
+    }
+    .pag-btn:hover:not(:disabled) { color: var(--p-l); border-color: var(--p-mid); }
+    .pag-btn:disabled { opacity: .35; cursor: not-allowed; }
+    .pag-info {
+      font-size: 11px; font-weight: 700;
+      color: var(--t3);
+      letter-spacing: .5px;
+    }
+
     /* ── NAV ── */
     .nav { position:absolute; bottom:0; left:0; right:0; height:78px; background:var(--bg); border-top:1px solid var(--brd); display:flex; z-index:100; transition:background .3s, border-color .3s; }
     @supports (backdrop-filter:blur(1px)) { .nav { backdrop-filter:blur(24px); background:color-mix(in srgb,var(--bg) 90%,transparent); } }
@@ -312,8 +336,18 @@
         </div>
       </div>
 
-      <!-- Lista 4-8 -->
+      <!-- Lista paginada (4 em diante) -->
       <div class="rlst" id="rankList"></div>
+
+      <div class="paginador">
+        <button class="pag-btn" id="btnPrev" onclick="paginaPrev()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <span class="pag-info" id="pagInfo">Página 1 de 1</span>
+        <button class="pag-btn" id="btnNext" onclick="paginaNext()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
 
       <!-- Minha posição -->
       <div class="mypos">
@@ -377,39 +411,77 @@
     document.getElementById('meuAv').textContent   = iniciais;
   })();
 
-  /* ── Dados ── */
+  /* ── Dados (mock — virão do backend depois) ── */
   const dados = [
-    { pos:4, n:"Mariana Rocha", city:"BH",  m2:"45.1k", km:134, wins:12, av:"MR", c:"#f97316", t:"up" },
-    { pos:5, n:"Carlos Melo",   city:"SP",  m2:"39.8k", km:98,  wins:7,  av:"CM", c:"#38bdf8", t:"up" },
-    { pos:6, n:"Fernanda Dias", city:"RJ",  m2:"32.0k", km:76,  wins:5,  av:"FD", c:"#c084fc", t:"dn" },
-    { pos:7, n:"Rafael Torres", city:"SP",  m2:"28.4k", km:65,  wins:4,  av:"RT", c:"#fb923c", t:"dn" },
-    { pos:8, n:"Luiza Neves",   city:"SP",  m2:"21.0k", km:52,  wins:3,  av:"LN", c:"#2dd4bf", t:"up" },
+    { id:"u-mariana",  pos:4,  n:"Mariana Rocha",  city:"BH", m2:"45.1k", km:134, wins:12, av:"MR", c:"#f97316", t:"up" },
+    { id:"u-carlos",   pos:5,  n:"Carlos Melo",    city:"SP", m2:"39.8k", km:98,  wins:7,  av:"CM", c:"#38bdf8", t:"up" },
+    { id:"u-fernanda", pos:6,  n:"Fernanda Dias",  city:"RJ", m2:"32.0k", km:76,  wins:5,  av:"FD", c:"#c084fc", t:"dn" },
+    { id:"u-rafael",   pos:7,  n:"Rafael Torres",  city:"SP", m2:"28.4k", km:65,  wins:4,  av:"RT", c:"#fb923c", t:"dn" },
+    { id:"u-luiza",    pos:8,  n:"Luiza Neves",    city:"SP", m2:"21.0k", km:52,  wins:3,  av:"LN", c:"#2dd4bf", t:"up" },
+    { id:"u-bruno",    pos:9,  n:"Bruno Alves",    city:"BH", m2:"19.2k", km:48,  wins:3,  av:"BA", c:"#f43f5e", t:"up" },
+    { id:"u-camila",   pos:10, n:"Camila Souza",   city:"RJ", m2:"17.6k", km:44,  wins:2,  av:"CS", c:"#a3e635", t:"dn" },
+    { id:"u-diego",    pos:11, n:"Diego Mendes",   city:"POA",m2:"16.0k", km:41,  wins:2,  av:"DM", c:"#0ea5e9", t:"up" },
+    { id:"u-eduarda",  pos:12, n:"Eduarda Lima",   city:"SP", m2:"14.8k", km:38,  wins:2,  av:"EL", c:"#facc15", t:"up" },
+    { id:"u-felipe",   pos:13, n:"Felipe Castro",  city:"BH", m2:"13.5k", km:35,  wins:1,  av:"FC", c:"#fb7185", t:"dn" },
+    { id:"u-gabriel",  pos:14, n:"Gabriel Faria",  city:"SP", m2:"12.0k", km:32,  wins:1,  av:"GF", c:"#34d399", t:"up" },
+    { id:"u-helena",   pos:15, n:"Helena Vieira",  city:"RJ", m2:"10.8k", km:29,  wins:1,  av:"HV", c:"#a78bfa", t:"up" },
+    { id:"u-igor",     pos:16, n:"Igor Pinto",     city:"BH", m2:"9.7k",  km:26,  wins:1,  av:"IP", c:"#fbbf24", t:"dn" },
+    { id:"u-julia",    pos:17, n:"Júlia Barreto",  city:"SP", m2:"8.9k",  km:23,  wins:0,  av:"JB", c:"#22d3ee", t:"up" },
+    { id:"u-leandro",  pos:18, n:"Leandro Costa",  city:"POA",m2:"8.2k",  km:21,  wins:0,  av:"LC", c:"#f472b6", t:"dn" },
+    { id:"u-marcos",   pos:19, n:"Marcos Pereira", city:"RJ", m2:"7.5k",  km:19,  wins:0,  av:"MP", c:"#60a5fa", t:"up" },
+    { id:"u-natalia",  pos:20, n:"Natália Reis",   city:"SP", m2:"6.8k",  km:17,  wins:0,  av:"NR", c:"#84cc16", t:"up" },
+    { id:"u-otavio",   pos:21, n:"Otávio Cardoso", city:"BH", m2:"6.0k",  km:15,  wins:0,  av:"OC", c:"#fb923c", t:"dn" },
+    { id:"u-paula",    pos:22, n:"Paula Tavares",  city:"RJ", m2:"5.4k",  km:13,  wins:0,  av:"PT", c:"#c084fc", t:"up" },
+    { id:"u-renato",   pos:23, n:"Renato Duarte",  city:"SP", m2:"4.7k",  km:11,  wins:0,  av:"RD", c:"#10b981", t:"dn" },
   ];
 
-  const list = document.getElementById('rankList');
-  dados.forEach((r, i) => {
-    const el = document.createElement('div');
-    el.className = 'ritem';
-    el.style.animationDelay = `${i * 55}ms`;
-    el.innerHTML = `
-      <div class="rpos">${r.pos}</div>
-      <div class="rav" style="background:${r.c}18;color:${r.c};border-color:${r.c}65;">${r.av}</div>
-      <div class="rinfo">
-        <div class="rname">${r.n}</div>
-        <div class="rsub">
-          <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
-          ${r.city} · ${r.wins} vitórias
+  const POR_PAGINA = 5;
+  let pagina = 0;
+
+  function renderizarPagina() {
+    const list = document.getElementById('rankList');
+    list.innerHTML = '';
+    const slice = dados.slice(pagina * POR_PAGINA, (pagina + 1) * POR_PAGINA);
+    slice.forEach((r, i) => {
+      const el = document.createElement('div');
+      el.className = 'ritem';
+      el.style.animationDelay = `${i * 55}ms`;
+      el.innerHTML = `
+        <div class="rpos">${r.pos}</div>
+        <div class="rav" style="background:${r.c}18;color:${r.c};border-color:${r.c}65;">${r.av}</div>
+        <div class="rinfo">
+          <div class="rname">${r.n}</div>
+          <div class="rsub">
+            <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            ${r.city} · ${r.wins} vitórias
+          </div>
         </div>
-      </div>
-      <div class="rmeta">
-        <div class="rm2">${r.m2} m²</div>
-        <div class="rkm">${r.km} km</div>
-      </div>
-      <div class="trend ${r.t}">${r.t==='up'?'↑':'↓'}</div>
-    `;
-    el.addEventListener('click', () => showToast(`Ver perfil de ${r.n}`));
-    list.appendChild(el);
-  });
+        <div class="rmeta">
+          <div class="rm2">${r.m2} m²</div>
+          <div class="rkm">${r.km} km</div>
+        </div>
+        <div class="trend ${r.t}">${r.t==='up'?'↑':'↓'}</div>
+      `;
+      el.addEventListener('click', () => {
+        window.location.href = 'perfil.html?id=' + encodeURIComponent(r.id);
+      });
+      list.appendChild(el);
+    });
+
+    // controles de paginação
+    const totalPaginas = Math.ceil(dados.length / POR_PAGINA);
+    document.getElementById('pagInfo').textContent = `Página ${pagina + 1} de ${totalPaginas}`;
+    document.getElementById('btnPrev').disabled = pagina === 0;
+    document.getElementById('btnNext').disabled = pagina >= totalPaginas - 1;
+  }
+
+  function paginaPrev() { if (pagina > 0) { pagina--; renderizarPagina(); } }
+  function paginaNext() {
+    const total = Math.ceil(dados.length / POR_PAGINA);
+    if (pagina < total - 1) { pagina++; renderizarPagina(); }
+  }
+
+  renderizarPagina();
 
   /* ── Filtros ── */
   function seg(id, el) {
