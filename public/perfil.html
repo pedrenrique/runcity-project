@@ -475,14 +475,57 @@
 
 <script src="auth.js"></script>
 <script>
-  /* ── Sessão ── */
+  /* ── Sessão + perfil (próprio ou de outro via ?id=X) ── */
   (async () => {
-    const u = await RC.requerLogin();
-    if (!u) return;
-    // preenche o cabeçalho com dados reais
-    const iniciais = (u.nome || '?').trim().split(/\s+/).map(s => s[0]).slice(0,2).join('').toUpperCase();
+    const me = await RC.requerLogin();
+    if (!me) return;
+
+    const params = new URLSearchParams(location.search);
+    const idAlvo = params.get('id');
+    const ehOutro = idAlvo && idAlvo !== me.id;
+
+    let perfil = me;
+    let naoEncontrado = false;
+    if (ehOutro) {
+      // sem backend: procura nos usuários cadastrados localmente
+      const users = RC._users.ler();
+      const u = users.find(x => x.id === idAlvo);
+      if (u) {
+        const { senha: _, ...pub } = u;
+        perfil = pub;
+      } else {
+        naoEncontrado = true;
+      }
+    }
+
+    if (naoEncontrado) {
+      document.querySelector('.av').textContent = '?';
+      document.querySelector('.p-name').textContent = 'NÃO ENCONTRADO';
+      document.querySelector('.p-role').textContent = 'Esse jogador não existe ou perfil não disponível';
+      document.querySelector('.p-loc').style.display = 'none';
+      document.querySelector('.xp').style.display = 'none';
+      document.querySelector('.stats').style.display = 'none';
+      document.querySelector('.ptabs').style.display = 'none';
+      document.querySelector('.tbody').innerHTML =
+        '<div style="text-align:center; padding:30px 20px; color:var(--t2); font-size:13px;">' +
+        '<a href="ranking.html" style="color:var(--p-l); text-decoration:none; font-weight:600;">← Voltar ao ranking</a></div>';
+      return;
+    }
+
+    const iniciais = (perfil.nome || '?').trim().split(/\s+/).map(s => s[0]).slice(0,2).join('').toUpperCase();
     document.querySelector('.av').textContent = iniciais || '?';
-    document.querySelector('.p-name').textContent = (u.nome || '').toUpperCase();
+    document.querySelector('.p-name').textContent = (perfil.nome || '').toUpperCase();
+
+    // ajustes pra perfil de outro: esconde sair, troca título do header
+    if (ehOutro && perfil.id !== me.id) {
+      document.querySelector('.shdr-title').textContent = 'Perfil';
+      const btnSair = document.querySelector('.logout-btn');
+      if (btnSair) btnSair.style.display = 'none';
+      const btnMapa = document.querySelector('.map-btn');
+      if (btnMapa) {
+        btnMapa.lastChild.textContent = ' Ver território de ' + (perfil.nome || '').split(' ')[0];
+      }
+    }
   })();
 
   /* ── ABAS ── */
