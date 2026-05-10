@@ -351,13 +351,53 @@
 
     .res-card {
       width: 100%;
+      max-height: calc(100% - 16px);
+      overflow-y: auto;
       background: var(--bg);
       border: 1px solid var(--p-mid);
       border-radius: 22px;
       padding: 22px 18px;
       display: flex; flex-direction: column;
-      gap: 16px;
+      gap: 14px;
       box-shadow: 0 30px 80px rgba(124,92,252,.25);
+    }
+    .res-card::-webkit-scrollbar { width: 3px; }
+    .res-card::-webkit-scrollbar-thumb { background: var(--brd); border-radius: 2px; }
+
+    .res-stats-titulo {
+      font-size: 10px; font-weight: 800;
+      color: var(--t2);
+      letter-spacing: 1.6px;
+      text-transform: uppercase;
+      text-align: center;
+      margin-top: 4px;
+    }
+    .res-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 6px;
+    }
+    .rs {
+      background: var(--c0);
+      border: 1px solid var(--brd2);
+      border-radius: 11px;
+      padding: 10px 6px;
+      text-align: center;
+    }
+    .rs-val {
+      font-family: var(--ff-d);
+      font-size: 17px;
+      letter-spacing: .4px;
+      color: var(--p-l);
+      line-height: 1;
+    }
+    .rs-lbl {
+      font-size: 9px;
+      font-weight: 700;
+      color: var(--t2);
+      letter-spacing: .6px;
+      text-transform: uppercase;
+      margin-top: 5px;
     }
 
     .res-head {
@@ -596,7 +636,7 @@
           </svg>
         </div>
         <div class="res-titulo">CORRIDA ENCERRADA</div>
-        <div class="res-sub">resultado final</div>
+        <div class="res-sub" id="res-sub-msg">resultado final</div>
       </div>
 
       <div class="vencedor">
@@ -608,6 +648,35 @@
         <div class="v-area"><span id="res-vencedor-area">1.250</span><small>m²</small></div>
       </div>
 
+      <div class="res-stats-titulo">SUAS ESTATÍSTICAS</div>
+      <div class="res-stats">
+        <div class="rs">
+          <div class="rs-val" id="rs-area">0</div>
+          <div class="rs-lbl">m² conquistados</div>
+        </div>
+        <div class="rs">
+          <div class="rs-val" id="rs-km">0,0</div>
+          <div class="rs-lbl">km</div>
+        </div>
+        <div class="rs">
+          <div class="rs-val" id="rs-pace">--:--</div>
+          <div class="rs-lbl">pace /km</div>
+        </div>
+        <div class="rs">
+          <div class="rs-val" id="rs-tempo">00:00</div>
+          <div class="rs-lbl">duração</div>
+        </div>
+        <div class="rs">
+          <div class="rs-val" id="rs-kcal">0</div>
+          <div class="rs-lbl">kcal</div>
+        </div>
+        <div class="rs">
+          <div class="rs-val" id="rs-pos">1º</div>
+          <div class="rs-lbl">posição</div>
+        </div>
+      </div>
+
+      <div class="res-stats-titulo">PÓDIO</div>
       <div class="res-rank" id="res-rank"></div>
 
       <button class="btn-continuar" onclick="window.location.href='index.html'">Continuar</button>
@@ -663,7 +732,7 @@
 
   /* ── Resultado ── */
   function mostrarResultado() {
-    // mock — virão do backend depois
+    // mock dos jogadores — virão do backend depois
     const finais = [
       { nome: meuNome,     m2: 1420, eu: true },
       { nome: 'Jogador 2', m2: 980 },
@@ -674,13 +743,42 @@
     document.getElementById('res-vencedor').textContent = venc.nome;
     document.getElementById('res-vencedor-area').textContent = venc.m2.toLocaleString('pt-BR');
 
-    const html = finais.map((j, i) => `
-      <div class="item${j.eu ? ' eu' : ''}">
-        <span class="pos">${i + 1}º</span>
-        <span class="nome">${j.nome}</span>
-        <span class="ar">${j.m2.toLocaleString('pt-BR')} m²</span>
-      </div>
-    `).join('');
+    // estatísticas pessoais — calculadas a partir do que rodou
+    const eu = finais.find(j => j.eu);
+    const minhaPos = finais.indexOf(eu) + 1;
+    const tempoUsadoSeg = totalSegundos - segundosRestantes;
+    const m = Math.floor(tempoUsadoSeg / 60).toString().padStart(2, '0');
+    const s = (tempoUsadoSeg % 60).toString().padStart(2, '0');
+
+    // mock plausível (até termos GPS real, deduzo a partir do tempo + área)
+    const km = (tempoUsadoSeg / 60 * 0.18); // ~0.18 km/min de média a passo trote
+    const paceSeg = km > 0 ? Math.round(tempoUsadoSeg / km) : 0;
+    const paceMin = Math.floor(paceSeg / 60);
+    const paceRes = (paceSeg % 60).toString().padStart(2, '0');
+    const kcal = Math.round(km * 62); // ~62 kcal por km
+
+    document.getElementById('rs-area').textContent  = eu.m2.toLocaleString('pt-BR');
+    document.getElementById('rs-km').textContent    = km.toFixed(1).replace('.', ',');
+    document.getElementById('rs-pace').textContent  = km > 0 ? `${paceMin}:${paceRes}` : '--:--';
+    document.getElementById('rs-tempo').textContent = `${m}:${s}`;
+    document.getElementById('rs-kcal').textContent  = kcal;
+    document.getElementById('rs-pos').textContent   = minhaPos + 'º';
+
+    // mensagem de cabeçalho ajustada conforme o resultado
+    const msg = document.getElementById('res-sub-msg');
+    if (minhaPos === 1)      msg.textContent = 'parabéns, você venceu!';
+    else if (minhaPos === 2) msg.textContent = '2º lugar — quase lá';
+    else                     msg.textContent = 'continue treinando';
+
+    const html = finais.map((j, i) => {
+      const medalha = ['🥇','🥈','🥉'][i] || (i + 1) + 'º';
+      return `
+        <div class="item${j.eu ? ' eu' : ''}">
+          <span class="pos">${medalha}</span>
+          <span class="nome">${j.nome}</span>
+          <span class="ar">${j.m2.toLocaleString('pt-BR')} m²</span>
+        </div>`;
+    }).join('');
     document.getElementById('res-rank').innerHTML = html;
 
     document.getElementById('overlay').classList.remove('escondido');
