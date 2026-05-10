@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RunCity — Corrida Solo</title>
+  <link rel="stylesheet" href="libs/leaflet.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --p:#7c5cfc; --p-l:#a084fd; --p-ll:#c4b5fd; --p-d:#5b3fd8;
+      --p-dim:rgba(124,92,252,.1); --p-mid:rgba(124,92,252,.22); --p-glow:rgba(124,92,252,.38);
+      --gold:#e8a020; --silver:#8ca0b8; --bronze:#a0724a;
+      --ok:#22c55e; --err:#ef4444;
+      --bg:#08061a; --c0:#100e24; --c1:#170f32;
+      --brd:#231848; --brd2:#190e38;
+      --t1:#ede8ff; --t2:#5e5280; --t3:#9488c0;
+      --ff-d:'Bebas Neue', sans-serif; --ff-b:'Outfit', sans-serif;
+    }
+    [data-theme="light"] { --bg:#f8f7ff; --c0:#eeebff; --c1:#e4dfff; --brd:#cdc5f0; --brd2:#d8d0f8; --t1:#160f38; --t2:#6e60a0; --t3:#453880; }
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+    body { background:#050410; font-family:var(--ff-b); min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:32px 20px; }
+    [data-theme="light"] body { background:#eae7f8; }
+
+    .phone {
+      width:390px; height:844px; background:var(--bg);
+      border-radius:46px; border:1.5px solid var(--brd);
+      overflow:hidden; position:relative;
+      box-shadow:0 0 0 1px rgba(124,92,252,.05), 0 40px 100px rgba(0,0,0,.65);
+      animation:slideUp .5s cubic-bezier(.08,.82,.17,1) both;
+      flex-shrink:0; display:flex; flex-direction:column;
+    }
+
+    .sbar { display:flex; justify-content:space-between; align-items:center; padding:14px 24px 6px; color:var(--t1); }
+    .sbar-time { font-size:15px; font-weight:700; }
+
+    /* topbar */
+    .topbar {
+      display:flex; align-items:center; justify-content:space-between;
+      padding: 8px 18px 12px; gap: 14px;
+    }
+    .crono-wrap {
+      display:flex; align-items:center; gap:10px;
+      background:var(--c0); border:1px solid var(--brd2);
+      border-radius:14px; padding:8px 16px; flex:1;
+    }
+    .pulse-dot {
+      width:8px; height:8px; border-radius:50%;
+      background:var(--ok);
+      box-shadow:0 0 0 0 rgba(34,197,94,.6);
+      animation:pulse 1.4s infinite;
+    }
+    .pulse-dot.pausado { background:var(--t2); animation:none; }
+    @keyframes pulse {
+      0%   { box-shadow:0 0 0 0 rgba(34,197,94,.55); }
+      70%  { box-shadow:0 0 0 10px rgba(34,197,94,0); }
+      100% { box-shadow:0 0 0 0 rgba(34,197,94,0); }
+    }
+    .crono { font-family:var(--ff-d); font-size:26px; letter-spacing:2px; color:var(--t1); line-height:1; }
+    .crono-lbl { font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:1.4px; color:var(--t2); margin-top:2px; }
+
+    .quit {
+      width:42px; height:42px; border-radius:50%;
+      background:var(--c0); border:1px solid var(--brd);
+      display:flex; align-items:center; justify-content:center;
+      cursor:pointer; color:var(--t2); transition:all .22s; flex-shrink:0;
+    }
+    .quit:hover { color:var(--err); border-color:rgba(239,68,68,.4); }
+
+    /* mapa */
+    .map-wrap {
+      position:relative; flex:1; overflow:hidden;
+      margin:0 18px; border-radius:18px;
+      border:1px solid var(--brd2); min-height:240px;
+    }
+    #mapa { width:100%; height:100%; background:var(--c0); }
+    [data-theme="dark"] .leaflet-container { background:#1a1530; }
+    .leaflet-control-attribution { background:rgba(8,6,26,.75) !important; color:var(--t3) !important; font-size:9px !important; }
+    .leaflet-control-attribution a { color:var(--p-l) !important; }
+
+    /* overlay "Pronto pra começar?" */
+    .pre-start {
+      position:absolute; inset:0;
+      background: rgba(8,6,26,.78);
+      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+      display:flex; align-items:center; justify-content:center;
+      z-index:600;
+    }
+    .pre-start.escondido { display:none; }
+    .pre-start-inner {
+      text-align:center; padding:24px 32px;
+      animation: pop .4s cubic-bezier(.08,.82,.17,1);
+    }
+    @keyframes pop { from { opacity:0; transform: scale(.9); } to { opacity:1; transform: scale(1); } }
+    .pre-titulo {
+      font-family:var(--ff-d); font-size:36px;
+      letter-spacing:2.5px; color:var(--t1);
+      line-height:1; margin-bottom:8px;
+    }
+    .pre-titulo span { color:var(--p-l); }
+    .pre-msg {
+      font-size:13px; color:var(--t2); margin-bottom:22px;
+    }
+    .btn-start {
+      width:120px; height:120px; border-radius:50%;
+      background: linear-gradient(135deg, var(--p) 0%, var(--p-d) 100%);
+      color:#fff; font-family:var(--ff-d);
+      font-size:22px; letter-spacing:1.5px;
+      border: 4px solid rgba(255,255,255,.15);
+      cursor:pointer;
+      box-shadow:0 0 0 8px var(--p-dim), 0 18px 50px rgba(124,92,252,.5);
+      animation: pulseRing 2.4s ease-in-out infinite;
+      transition: transform .15s;
+    }
+    .btn-start:hover { transform: scale(1.04); }
+    @keyframes pulseRing {
+      0%,100% { box-shadow:0 0 0 8px var(--p-dim), 0 18px 50px rgba(124,92,252,.45); }
+      50%     { box-shadow:0 0 0 14px var(--p-dim), 0 18px 60px rgba(124,92,252,.7); }
+    }
+
+    /* painel inferior */
+    .panel { padding:14px 18px 22px; display:flex; flex-direction:column; gap:10px; }
+    .area-card {
+      background: linear-gradient(135deg, var(--p-dim) 0%, var(--c0) 100%);
+      border:1px solid var(--p-mid); border-radius:16px;
+      padding:14px 18px; display:flex; align-items:center; justify-content:space-between; gap:14px;
+    }
+    .area-val { font-family:var(--ff-d); font-size:38px; letter-spacing:1.5px; color:var(--p-l); line-height:1; }
+    .area-val small { font-family:var(--ff-b); font-size:13px; color:var(--t2); margin-left:4px; letter-spacing:0; }
+    .area-lbl { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:1.4px; color:var(--t3); margin-top:4px; }
+    .area-ico {
+      width:44px; height:44px; border-radius:12px;
+      background:var(--p); display:flex; align-items:center; justify-content:center;
+      box-shadow:0 6px 18px rgba(124,92,252,.4); flex-shrink:0;
+    }
+
+    .stats-grid { display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:6px; }
+    .stat { background:var(--c0); border:1px solid var(--brd2); border-radius:11px; padding:10px 4px; text-align:center; }
+    .stat-val { font-family:var(--ff-d); font-size:16px; color:var(--t1); letter-spacing:.4px; line-height:1; }
+    .stat-lbl { font-size:8px; font-weight:700; color:var(--t2); letter-spacing:.5px; text-transform:uppercase; margin-top:5px; }
+
+    .actions { display:flex; gap:10px; margin-top:4px; }
+    .btn-pause {
+      flex:1; height:50px;
+      background:var(--c0); border:1px solid var(--brd);
+      border-radius:13px; color:var(--t1);
+      font-family:var(--ff-b); font-size:13px; font-weight:700;
+      letter-spacing:.8px; text-transform:uppercase;
+      cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;
+      transition:all .22s;
+    }
+    .btn-pause:hover { border-color:var(--p-mid); color:var(--p-l); }
+    .btn-pause.retomar { color:var(--ok); border-color:rgba(34,197,94,.35); }
+
+    .btn-stop {
+      flex:1.4; height:50px;
+      background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
+      border:none; border-radius:13px; color:#fff;
+      font-family:var(--ff-b); font-size:13px; font-weight:800;
+      letter-spacing:1px; text-transform:uppercase;
+      cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;
+      box-shadow:0 8px 24px rgba(239,68,68,.32);
+      transition:all .15s;
+    }
+    .btn-stop:hover { transform:translateY(-1px); }
+
+    /* resultado */
+    .overlay {
+      position:absolute; inset:0;
+      background:rgba(5,4,16,.88);
+      backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
+      display:flex; align-items:center; justify-content:center;
+      padding:20px; z-index:1000;
+    }
+    .escondido { display:none !important; }
+
+    .res-card {
+      width:100%; max-height:calc(100% - 16px); overflow-y:auto;
+      background:var(--bg); border:1px solid var(--p-mid);
+      border-radius:22px; padding:22px 18px;
+      display:flex; flex-direction:column; gap:14px;
+      box-shadow:0 30px 80px rgba(124,92,252,.25);
+    }
+    .res-head { display:flex; flex-direction:column; align-items:center; gap:4px; }
+    .res-flag {
+      width:56px; height:56px; border-radius:50%;
+      background:var(--p-dim); border:2px solid var(--p);
+      display:flex; align-items:center; justify-content:center;
+      margin-bottom:4px; box-shadow:0 0 30px var(--p-glow);
+    }
+    .res-titulo { font-family:var(--ff-d); font-size:26px; letter-spacing:2px; color:var(--t1); }
+    .res-sub { font-size:11px; color:var(--t2); letter-spacing:1px; text-transform:uppercase; font-weight:700; }
+
+    .res-stats { display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; }
+    .rs { background:var(--c0); border:1px solid var(--brd2); border-radius:11px; padding:10px 6px; text-align:center; }
+    .rs-val { font-family:var(--ff-d); font-size:17px; letter-spacing:.4px; color:var(--p-l); line-height:1; }
+    .rs-lbl { font-size:9px; font-weight:700; color:var(--t2); letter-spacing:.6px; text-transform:uppercase; margin-top:5px; }
+
+    .btn-continuar {
+      width:100%; height:50px;
+      background: linear-gradient(135deg, var(--p) 0%, var(--p-d) 100%);
+      border:none; border-radius:13px; color:#fff;
+      font-family:var(--ff-b); font-size:13px; font-weight:800;
+      letter-spacing:1px; text-transform:uppercase;
+      cursor:pointer;
+      box-shadow:0 8px 24px rgba(124,92,252,.35);
+    }
+
+    @keyframes slideUp { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
+
+    @media (max-width:440px) {
+      .phone { width:100vw; height:100vh; border-radius:0; border:none; }
+      body { padding:0; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="phone">
+
+  <div class="sbar">
+    <span class="sbar-time" id="relogio">--:--</span>
+    <div>
+      <svg width="22" height="11" viewBox="0 0 33 18" fill="currentColor" style="color:var(--t1)">
+        <rect x="0" y="0" width="29" height="18" rx="3" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        <rect x="30" y="5" width="3" height="8" rx="1"/>
+        <rect x="2" y="2" width="19" height="14" rx="2"/>
+      </svg>
+    </div>
+  </div>
+
+  <div class="topbar">
+    <div class="crono-wrap">
+      <span class="pulse-dot" id="pulseDot"></span>
+      <div>
+        <div class="crono" id="cronometro">00:00</div>
+        <div class="crono-lbl">tempo decorrido</div>
+      </div>
+    </div>
+    <a class="quit" href="index.html" title="Voltar">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+    </a>
+  </div>
+
+  <div class="map-wrap">
+    <div id="mapa"></div>
+
+    <!-- overlay "Pronto?" -->
+    <div class="pre-start" id="preStart">
+      <div class="pre-start-inner">
+        <div class="pre-titulo">CORRIDA <span>SOLO</span></div>
+        <div class="pre-msg">Toque pra começar a correr e conquistar território.</div>
+        <button class="btn-start" onclick="iniciar()">INICIAR</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="area-card">
+      <div>
+        <div class="area-val"><span id="area">0</span><small>m²</small></div>
+        <div class="area-lbl">Conquistados</div>
+      </div>
+      <div class="area-ico">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/>
+          <line x1="8" y1="2" x2="8" y2="18"/>
+          <line x1="16" y1="6" x2="16" y2="22"/>
+        </svg>
+      </div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat"><div class="stat-val" id="distancia">0,00</div><div class="stat-lbl">km</div></div>
+      <div class="stat"><div class="stat-val" id="ritmo">--:--</div><div class="stat-lbl">pace</div></div>
+      <div class="stat"><div class="stat-val" id="kcal">0</div><div class="stat-lbl">kcal</div></div>
+      <div class="stat"><div class="stat-val" id="poligonos">0</div><div class="stat-lbl">áreas</div></div>
+    </div>
+
+    <div class="actions">
+      <button class="btn-pause" id="btnPause" onclick="alternarPause()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+        Pausar
+      </button>
+      <button class="btn-stop" onclick="encerrar()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="1.5"/></svg>
+        Encerrar
+      </button>
+    </div>
+  </div>
+
+  <!-- Resultado -->
+  <div id="overlay" class="overlay escondido">
+    <div class="res-card">
+      <div class="res-head">
+        <div class="res-flag">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--p-l)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/>
+            <line x1="4" y1="22" x2="4" y2="15"/>
+          </svg>
+        </div>
+        <div class="res-titulo">CORRIDA ENCERRADA</div>
+        <div class="res-sub">resumo</div>
+      </div>
+
+      <div class="res-stats">
+        <div class="rs"><div class="rs-val" id="r-area">0</div><div class="rs-lbl">m²</div></div>
+        <div class="rs"><div class="rs-val" id="r-km">0,0</div><div class="rs-lbl">km</div></div>
+        <div class="rs"><div class="rs-val" id="r-pace">--:--</div><div class="rs-lbl">pace /km</div></div>
+        <div class="rs"><div class="rs-val" id="r-tempo">00:00</div><div class="rs-lbl">tempo</div></div>
+        <div class="rs"><div class="rs-val" id="r-kcal">0</div><div class="rs-lbl">kcal</div></div>
+        <div class="rs"><div class="rs-val" id="r-poli">0</div><div class="rs-lbl">áreas</div></div>
+      </div>
+
+      <button class="btn-continuar" onclick="window.location.href='index.html'">Continuar</button>
+    </div>
+  </div>
+
+</div>
+
+<script src="libs/leaflet.js"></script>
+<script src="auth.js"></script>
+<script>
+  RC.requerLogin();
+
+  /* ── Mapa ── */
+  const inicio = [-19.9167, -43.9345];
+  const mapa = L.map('mapa', { zoomControl: false, attributionControl: true })
+    .setView(inicio, 17);
+
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    attribution: '© OpenStreetMap, © CARTO',
+    subdomains: 'abcd',
+    maxZoom: 19
+  }).addTo(mapa);
+
+  // marcador da posição atual
+  const corredor = L.circleMarker(inicio, {
+    radius: 8,
+    color: '#fff',
+    weight: 2.5,
+    fillColor: '#7c5cfc',
+    fillOpacity: 1
+  }).addTo(mapa);
+
+  // polyline da rota corrente
+  let rota = L.polyline([inicio], {
+    color: '#a084fd',
+    weight: 4,
+    opacity: .85
+  }).addTo(mapa);
+
+  /* ── Estado da corrida ── */
+  let rodando = false;
+  let pausado = false;
+  let segundos = 0;
+  let distMetros = 0;
+  let pontos = [inicio.slice()];
+  let voltaAtual = []; // pontos da volta atual
+  let areaTotal = 0;
+  let nPoligonos = 0;
+  let intervalo = null;
+  let movInterval = null;
+  let direcao = 0; // ângulo em radianos
+
+  /* ── Controles ── */
+  function iniciar() {
+    document.getElementById('preStart').classList.add('escondido');
+    rodando = true;
+    pausado = false;
+    intervalo = setInterval(tickTempo, 1000);
+    movInterval = setInterval(tickMovimento, 700);
+  }
+
+  function alternarPause() {
+    if (!rodando) return;
+    pausado = !pausado;
+    const btn = document.getElementById('btnPause');
+    const dot = document.getElementById('pulseDot');
+    btn.classList.toggle('retomar', pausado);
+    dot.classList.toggle('pausado', pausado);
+    btn.innerHTML = pausado
+      ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="6,4 20,12 6,20"/></svg> Retomar'
+      : '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg> Pausar';
+  }
+
+  function encerrar() {
+    rodando = false;
+    clearInterval(intervalo);
+    clearInterval(movInterval);
+    mostrarResultado();
+  }
+
+  /* ── Tick de tempo ── */
+  function tickTempo() {
+    if (pausado) return;
+    segundos++;
+    const m = Math.floor(segundos / 60).toString().padStart(2, '0');
+    const s = (segundos % 60).toString().padStart(2, '0');
+    document.getElementById('cronometro').textContent = m + ':' + s;
+
+    // pace = tempo por km
+    const km = distMetros / 1000;
+    if (km > 0.05) {
+      const paceSeg = Math.round(segundos / km);
+      const pm = Math.floor(paceSeg / 60);
+      const ps = (paceSeg % 60).toString().padStart(2, '0');
+      document.getElementById('ritmo').textContent = pm + ':' + ps;
+    }
+
+    document.getElementById('distancia').textContent = km.toFixed(2).replace('.', ',');
+    document.getElementById('kcal').textContent = Math.round(km * 62);
+  }
+
+  /* ── Tick de movimento (GPS simulado) ── */
+  function tickMovimento() {
+    if (pausado || !rodando) return;
+
+    // movimento: avança ~10m na direção atual, com leve curva aleatória
+    direcao += (Math.random() - 0.5) * 0.6;
+    const passo = 0.0001; // ~11m
+    const ultimo = pontos[pontos.length - 1];
+    const novoLat = ultimo[0] + Math.cos(direcao) * passo;
+    const novoLon = ultimo[1] + Math.sin(direcao) * passo;
+    const novo = [novoLat, novoLon];
+
+    pontos.push(novo);
+    voltaAtual.push(novo);
+    distMetros += haversine(ultimo, novo);
+
+    rota.setLatLngs(pontos);
+    corredor.setLatLng(novo);
+    mapa.panTo(novo, { animate: true, duration: 0.6 });
+
+    // se voltei perto do início e já andei o suficiente, fecha um polígono
+    if (voltaAtual.length > 12 && haversine(novo, inicio) < 25) {
+      fecharPoligono();
+    }
+  }
+
+  function fecharPoligono() {
+    const cor = ['#7c5cfc', '#22d3ee', '#fb923c', '#a3e635', '#ec4899'][nPoligonos % 5];
+    const poli = L.polygon([...voltaAtual, inicio], {
+      color: cor,
+      weight: 2,
+      fillColor: cor,
+      fillOpacity: 0.32
+    }).addTo(mapa);
+
+    const area = areaPoligono(voltaAtual);
+    areaTotal += area;
+    nPoligonos++;
+
+    document.getElementById('area').textContent = Math.round(areaTotal).toLocaleString('pt-BR');
+    document.getElementById('poligonos').textContent = nPoligonos;
+
+    // reseta volta
+    voltaAtual = [];
+    direcao = Math.random() * Math.PI * 2;
+  }
+
+  /* ── Cálculos geográficos ── */
+  function haversine(a, b) {
+    const R = 6371000;
+    const toRad = d => d * Math.PI / 180;
+    const dLat = toRad(b[0] - a[0]);
+    const dLon = toRad(b[1] - a[1]);
+    const lat1 = toRad(a[0]);
+    const lat2 = toRad(b[0]);
+    const x = Math.sin(dLat/2)**2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLon/2)**2;
+    return 2 * R * Math.asin(Math.sqrt(x));
+  }
+
+  // área aproximada (em m²) — projeção plana, suficiente em escala de bairro
+  function areaPoligono(coords) {
+    if (coords.length < 3) return 0;
+    const latMed = coords.reduce((s,c) => s+c[0], 0) / coords.length;
+    const mPorLat = 111320;
+    const mPorLon = 111320 * Math.cos(latMed * Math.PI / 180);
+    let area = 0;
+    for (let i = 0; i < coords.length; i++) {
+      const a = coords[i];
+      const b = coords[(i+1) % coords.length];
+      area += (a[1] - b[1]) * mPorLon * (a[0] + b[0]) * mPorLat / 2;
+    }
+    return Math.abs(area);
+  }
+
+  /* ── Resultado ── */
+  function mostrarResultado() {
+    const km = distMetros / 1000;
+    document.getElementById('r-area').textContent  = Math.round(areaTotal).toLocaleString('pt-BR');
+    document.getElementById('r-km').textContent    = km.toFixed(2).replace('.', ',');
+    const m = Math.floor(segundos / 60).toString().padStart(2, '0');
+    const s = (segundos % 60).toString().padStart(2, '0');
+    document.getElementById('r-tempo').textContent = m + ':' + s;
+    if (km > 0) {
+      const paceSeg = Math.round(segundos / km);
+      document.getElementById('r-pace').textContent =
+        Math.floor(paceSeg / 60) + ':' + (paceSeg % 60).toString().padStart(2, '0');
+    }
+    document.getElementById('r-kcal').textContent = Math.round(km * 62);
+    document.getElementById('r-poli').textContent = nPoligonos;
+    document.getElementById('overlay').classList.remove('escondido');
+  }
+
+  /* ── Relógio ── */
+  function tick() {
+    const d = new Date();
+    document.getElementById('relogio').textContent =
+      String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+  }
+  tick(); setInterval(tick, 30000);
+
+  try {
+    if (localStorage.getItem('rc_theme') === 'light') {
+      document.documentElement.setAttribute('data-theme', 'light');
+    }
+  } catch(e) {}
+</script>
+
+</body>
+</html>
