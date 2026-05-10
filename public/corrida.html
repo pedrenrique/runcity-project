@@ -143,6 +143,35 @@
     }
     .leaflet-control-attribution a { color: var(--p-l) !important; }
 
+    /* legenda flutuante de jogadores */
+    .legenda {
+      position: absolute;
+      bottom: 10px; left: 10px;
+      background: rgba(8,6,26,.78);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid var(--brd2);
+      border-radius: 12px;
+      padding: 7px 10px;
+      display: flex; flex-direction: column;
+      gap: 4px;
+      z-index: 500;
+      max-width: 60%;
+    }
+    .leg-item {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 10px; font-weight: 600;
+      color: var(--t3);
+      letter-spacing: .2px;
+    }
+    .leg-item.eu { color: var(--p-ll); font-weight: 800; }
+    .leg-dot {
+      width: 9px; height: 9px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      box-shadow: 0 0 4px currentColor;
+    }
+
     /* chip flutuante de posição */
     .pos-chip {
       position: absolute;
@@ -557,6 +586,7 @@
       <span class="num" id="minha-pos">1º</span>
       <span class="lbl">sua posição</span>
     </div>
+    <div class="legenda" id="legenda"></div>
   </div>
 
   <!-- Painel inferior -->
@@ -786,7 +816,7 @@
 
   /* ── Mapa ── */
   const mapa = L.map('mapa', { zoomControl: false, attributionControl: true })
-    .setView([-19.9167, -43.9345], 15);
+    .setView([-19.9167, -43.9345], 16);
 
   // tile escuro pra combinar com o tema
   L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
@@ -795,14 +825,64 @@
     maxZoom: 19
   }).addTo(mapa);
 
-  // marcador simples no início da rota (o backend depois plota a rota real)
-  const inicio = L.circleMarker([-19.9167, -43.9345], {
+  // territórios mockados — cada jogador com sua cor.
+  // Quando o backend mandar dados de partida, isso vira dinâmico.
+  const territorios = [
+    {
+      nome: meuNome, eu: true, cor: '#7c5cfc', m2: 1420,
+      coords: [
+        [-19.9162, -43.9352],
+        [-19.9159, -43.9344],
+        [-19.9162, -43.9337],
+        [-19.9168, -43.9338],
+        [-19.9170, -43.9347],
+        [-19.9166, -43.9354]
+      ]
+    },
+    {
+      nome: 'Jogador 2', cor: '#fb923c', m2: 980,
+      coords: [
+        [-19.9170, -43.9333],
+        [-19.9168, -43.9325],
+        [-19.9176, -43.9326],
+        [-19.9178, -43.9335]
+      ]
+    },
+    {
+      nome: 'Jogador 3', cor: '#22d3ee', m2: 640,
+      coords: [
+        [-19.9180, -43.9352],
+        [-19.9176, -43.9347],
+        [-19.9181, -43.9342],
+        [-19.9186, -43.9348]
+      ]
+    }
+  ];
+
+  territorios.forEach(t => {
+    L.polygon(t.coords, {
+      color: t.cor,
+      weight: 2.5,
+      fillColor: t.cor,
+      fillOpacity: t.eu ? 0.42 : 0.28
+    }).addTo(mapa).bindPopup(`<strong>${t.nome}</strong><br>${t.m2.toLocaleString('pt-BR')} m²`);
+  });
+
+  // marcador da minha posição atual
+  L.circleMarker([-19.9165, -43.9344], {
     radius: 7,
     color: '#fff',
     weight: 2,
     fillColor: '#7c5cfc',
     fillOpacity: 1
   }).addTo(mapa);
+
+  // legenda de cores
+  const legendaHtml = territorios.map(t => `
+    <span class="leg-item${t.eu ? ' eu' : ''}">
+      <span class="leg-dot" style="background:${t.cor}"></span>${t.eu ? 'Você' : t.nome}
+    </span>`).join('');
+  document.getElementById('legenda').innerHTML = legendaHtml;
 
   /* ── Relógio status bar ── */
   function tick() {
