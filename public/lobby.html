@@ -216,37 +216,81 @@
       z-index: 500;
     }
 
-    /* ── AÇÕES ── */
-    .acoes {
+    /* ── ABAS ── */
+    .abas {
       display: flex;
-      flex-direction: column;
-      gap: 7px;
-      padding: 14px 18px 10px;
+      gap: 4px;
+      padding: 12px 18px 0;
+      background: var(--bg);
     }
-    .btn-acao {
-      display: flex; align-items: center; gap: 10px;
-      width: 100%; height: 48px;
+    .aba {
+      flex: 1;
+      text-align: center;
+      padding: 9px 4px;
+      border-radius: 10px;
+      font-size: 11px; font-weight: 700;
+      letter-spacing: .4px;
+      cursor: pointer;
+      transition: all .2s;
+      color: var(--t2);
+      border: 1px solid transparent;
+      text-transform: uppercase;
+    }
+    .aba.ativa {
+      background: var(--p-dim);
+      color: var(--p-ll);
+      border-color: var(--p-mid);
+    }
+
+    .aba-conteudo {
+      padding: 10px 18px 14px;
+    }
+    .painel { display: none; flex-direction: column; gap: 9px; animation: fadeP .2s ease; }
+    .painel.ativo { display: flex; }
+    @keyframes fadeP { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+    .form-linha { display: flex; gap: 8px; }
+    .form-linha > * { flex: 1; }
+
+    .input-codigo {
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      text-align: center;
+      font-family: var(--ff-d);
+      font-size: 16px;
+    }
+
+    .dica-codigo {
+      font-size: 11px;
+      color: var(--t3);
+      text-align: center;
+      padding: 0 6px;
+      line-height: 1.4;
+    }
+
+    /* paginador (compartilhado) */
+    .paginador {
+      display: flex; align-items: center; justify-content: center;
+      gap: 12px;
+      padding: 6px 0 0;
+    }
+    .pag-btn {
+      width: 28px; height: 28px;
+      border-radius: 50%;
       background: var(--c0);
-      border: 1px solid var(--brd2);
-      border-radius: 13px;
-      padding: 0 14px;
-      color: var(--t1);
-      font-family: var(--ff-b);
-      font-size: 13px; font-weight: 600;
+      border: 1px solid var(--brd);
+      color: var(--t2);
+      display: flex; align-items: center; justify-content: center;
       cursor: pointer;
       transition: all .2s;
     }
-    .btn-acao:hover { border-color: var(--p-mid); background: var(--c1); transform: translateY(-1px); }
-    .btn-acao .ico {
-      width: 32px; height: 32px;
-      border-radius: 9px;
-      background: var(--p-dim);
-      color: var(--p-l);
-      display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0;
+    .pag-btn:hover:not(:disabled) { color: var(--p-l); border-color: var(--p-mid); }
+    .pag-btn:disabled { opacity: .35; cursor: not-allowed; }
+    .pag-info {
+      font-size: 10px; font-weight: 700;
+      color: var(--t3);
+      letter-spacing: .5px;
     }
-    .btn-acao .txt { flex: 1; text-align: left; }
-    .btn-acao .seta { color: var(--t2); }
 
     /* ── NAV ── */
     .nav { height:78px; background:var(--bg); border-top:1px solid var(--brd); display:flex; flex-shrink: 0; }
@@ -382,6 +426,55 @@
       transition: all .2s;
     }
 
+    .codigo-bloco {
+      background: var(--p-dim);
+      border: 1px dashed var(--p-mid);
+      border-radius: 12px;
+      padding: 10px 12px;
+      display: flex; align-items: center; gap: 10px;
+      width: 100%;
+    }
+    .codigo-bloco.escondido { display: none; }
+    .codigo-lbl {
+      font-size: 9px; font-weight: 800;
+      color: var(--t3);
+      letter-spacing: 1.4px;
+      text-transform: uppercase;
+    }
+    .codigo-val {
+      font-family: var(--ff-d);
+      font-size: 18px;
+      letter-spacing: 2.5px;
+      color: var(--p-l);
+      flex: 1;
+    }
+    .btn-copiar {
+      background: var(--p);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 5px 12px;
+      font-size: 11px; font-weight: 700;
+      cursor: pointer;
+      letter-spacing: .3px;
+    }
+    .btn-copiar:hover { background: var(--p-d); }
+
+    .btn-secundario {
+      width: 100%;
+      height: 42px;
+      background: var(--c0);
+      border: 1px solid var(--brd);
+      color: var(--t1);
+      border-radius: 11px;
+      font-family: var(--ff-b);
+      font-size: 12px; font-weight: 700;
+      letter-spacing: .5px;
+      cursor: pointer;
+      transition: all .2s;
+    }
+    .btn-secundario:hover { border-color: var(--p-mid); color: var(--p-l); }
+
     .btn-pronto {
       background: var(--c0);
       color: var(--t1);
@@ -500,43 +593,55 @@
     <div class="dica" id="dica">Crie ou entre em uma sala para começar</div>
   </div>
 
-  <!-- Ações -->
-  <div class="acoes">
-    <button class="btn-acao" onclick="abrirConvidar()">
-      <span class="ico">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/>
-          <circle cx="9" cy="7" r="4"/>
-          <line x1="20" y1="8" x2="20" y2="14"/>
-          <line x1="23" y1="11" x2="17" y2="11"/>
-        </svg>
-      </span>
-      <span class="txt">Convidar amigo</span>
-      <svg class="seta" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-    </button>
+  <!-- Abas de ação -->
+  <div class="abas">
+    <div class="aba ativa" data-aba="criar" onclick="trocarAba(this)">Criar Sala</div>
+    <div class="aba" data-aba="codigo" onclick="trocarAba(this)">Código</div>
+    <div class="aba" data-aba="abertas" onclick="trocarAba(this)">Salas Abertas</div>
+  </div>
 
-    <button class="btn-acao" onclick="abrirEntrarSala()">
-      <span class="ico">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4"/>
-          <polyline points="10 17 15 12 10 7"/>
-          <line x1="15" y1="12" x2="3" y2="12"/>
-        </svg>
-      </span>
-      <span class="txt">Entrar em uma sala</span>
-      <svg class="seta" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-    </button>
+  <div class="aba-conteudo">
+    <!-- Aba Criar Sala -->
+    <div class="painel ativo" id="painel-criar">
+      <input type="text" id="input-nome-sala" placeholder="Nome da sala" class="input-sala" maxlength="30"/>
+      <div class="form-linha">
+        <select id="select-tempo-sala" class="select-tempo">
+          <option value="5">5 min</option>
+          <option value="10" selected>10 min</option>
+          <option value="15">15 min</option>
+          <option value="20">20 min</option>
+          <option value="30">30 min</option>
+        </select>
+        <select id="select-jogadores" class="select-tempo">
+          <option value="2">2 jogadores</option>
+          <option value="4" selected>4 jogadores</option>
+          <option value="6">6 jogadores</option>
+          <option value="8">8 jogadores</option>
+        </select>
+      </div>
+      <button class="btn-criar" onclick="criarSala()">Criar</button>
+    </div>
 
-    <button class="btn-acao" onclick="abrirCriarSala()">
-      <span class="ico">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="12" y1="5" x2="12" y2="19"/>
-          <line x1="5" y1="12" x2="19" y2="12"/>
-        </svg>
-      </span>
-      <span class="txt">Criar sala</span>
-      <svg class="seta" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-    </button>
+    <!-- Aba Entrar por Código -->
+    <div class="painel" id="painel-codigo">
+      <input type="text" id="input-codigo" placeholder="Código da sala (ex: ABCD-1234)" class="input-sala input-codigo" maxlength="9"/>
+      <div class="dica-codigo">O criador da sala pode compartilhar o código com você.</div>
+      <button class="btn-criar" onclick="entrarPorCodigo()">Entrar</button>
+    </div>
+
+    <!-- Aba Salas Abertas -->
+    <div class="painel" id="painel-abertas">
+      <ul class="lista-popup" id="lista-salas-abertas"></ul>
+      <div class="paginador">
+        <button class="pag-btn" id="btnPrevSala" onclick="paginaPrevSala()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <span class="pag-info" id="pagInfoSala">Página 1 de 1</span>
+        <button class="pag-btn" id="btnNextSala" onclick="paginaNextSala()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
+    </div>
   </div>
 
   <!-- Nav -->
@@ -567,9 +672,15 @@
   <div id="popup-preparar" class="overlay escondido">
     <div class="popup">
       <h2>PREPARAR</h2>
+      <div class="codigo-bloco escondido" id="codigo-bloco">
+        <div class="codigo-lbl">Código da sala</div>
+        <div class="codigo-val" id="codigo-val">----</div>
+        <button class="btn-copiar" onclick="copiarCodigo()">Copiar</button>
+      </div>
       <ul class="lista-popup" id="lista-prontos"></ul>
       <div class="popup-acoes">
         <button class="btn-pronto" id="btn-meu-pronto" onclick="togglePronto()">Estou pronto</button>
+        <button class="btn-secundario" onclick="abrirConvidar()">Convidar amigo</button>
         <button class="btn-iniciar-sala escondido" id="btn-iniciar-sala" onclick="iniciarCorrida()">Iniciar corrida</button>
         <button class="btn-fechar" onclick="fechar('popup-preparar')">Fechar</button>
       </div>
@@ -597,34 +708,6 @@
     </div>
   </div>
 
-  <!-- Entrar em uma sala -->
-  <div id="popup-entrar-sala" class="overlay escondido">
-    <div class="popup">
-      <h2>SALAS DISPONÍVEIS</h2>
-      <ul class="lista-popup" id="lista-salas"></ul>
-      <button class="btn-fechar" onclick="fechar('popup-entrar-sala')">Fechar</button>
-    </div>
-  </div>
-
-  <!-- Criar sala -->
-  <div id="popup-criar-sala" class="overlay escondido">
-    <div class="popup">
-      <h2>CRIAR SALA</h2>
-      <div class="form-criar">
-        <input type="text" id="input-nome-sala" placeholder="Nome da sala" class="input-sala" maxlength="30"/>
-        <select id="select-tempo-sala" class="select-tempo">
-          <option value="5">5 minutos</option>
-          <option value="10" selected>10 minutos</option>
-          <option value="15">15 minutos</option>
-          <option value="20">20 minutos</option>
-          <option value="30">30 minutos</option>
-        </select>
-        <button class="btn-criar" onclick="criarSala()">Criar sala</button>
-      </div>
-      <button class="btn-fechar" onclick="fechar('popup-criar-sala')">Fechar</button>
-    </div>
-  </div>
-
 </div>
 
 <script src="libs/leaflet.js"></script>
@@ -645,9 +728,14 @@
   /* mock só pra mexer no front sem servidor de salas */
   const amigosOnline = ['Ana', 'Bruno', 'Carlos', 'Diana'];
   const salasPublicas = [
-    { nome: 'Sala do João',     tempo: 10, jogadores: 2 },
-    { nome: 'Corrida da Tarde', tempo: 5,  jogadores: 1 },
-    { nome: 'Maratona Urbana',  tempo: 15, jogadores: 3 },
+    { codigo: 'JOAO-1234', nome: 'Sala do João',      tempo: 10, jogadores: 2, max: 4 },
+    { codigo: 'TARD-5678', nome: 'Corrida da Tarde',  tempo: 5,  jogadores: 1, max: 4 },
+    { codigo: 'URBA-9012', nome: 'Maratona Urbana',   tempo: 15, jogadores: 3, max: 6 },
+    { codigo: 'NOIT-3456', nome: 'Run Noturno',       tempo: 20, jogadores: 2, max: 4 },
+    { codigo: 'CENT-7890', nome: 'Centro Velho',      tempo: 10, jogadores: 4, max: 8 },
+    { codigo: 'IPIR-1122', nome: 'Pampulha Sprint',   tempo: 5,  jogadores: 1, max: 2 },
+    { codigo: 'BIRA-3344', nome: 'Bairro a Bairro',   tempo: 30, jogadores: 5, max: 6 },
+    { codigo: 'PRAC-5566', nome: 'Praça Liberdade',   tempo: 10, jogadores: 2, max: 4 },
   ];
 
   /* ── Mapa ── */
@@ -724,6 +812,16 @@
   /* ── Preparar ── */
   function abrirPreparar() {
     if (!estado.sala) return;
+
+    // mostra o código da sala se eu sou o criador (pra compartilhar)
+    const codBloco = document.getElementById('codigo-bloco');
+    if (estado.ehCriador && estado.sala.codigo) {
+      codBloco.classList.remove('escondido');
+      document.getElementById('codigo-val').textContent = estado.sala.codigo;
+    } else {
+      codBloco.classList.add('escondido');
+    }
+
     const lista = document.getElementById('lista-prontos');
     lista.innerHTML = estado.jogadores.map(j => {
       const tagCriador = j.eu && estado.ehCriador
@@ -753,6 +851,20 @@
     eu.pronto = !eu.pronto;
     atualizarBarra();
     abrirPreparar();
+  }
+
+  function copiarCodigo() {
+    const cod = document.getElementById('codigo-val').textContent;
+    if (!cod) return;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(cod).then(() => toast('Código copiado'));
+    } else {
+      // fallback simples
+      const inp = document.createElement('input');
+      inp.value = cod; document.body.appendChild(inp); inp.select();
+      try { document.execCommand('copy'); toast('Código copiado'); } catch {}
+      document.body.removeChild(inp);
+    }
   }
 
   function iniciarCorrida() {
@@ -792,44 +904,87 @@
     atualizarBarra();
   }
 
-  /* ── Entrar em sala ── */
-  function abrirEntrarSala() {
-    const lista = document.getElementById('lista-salas');
-    lista.innerHTML = salasPublicas.map((sala, i) => `
+  /* ── Abas ── */
+  function trocarAba(el) {
+    document.querySelectorAll('.aba').forEach(a => a.classList.remove('ativa'));
+    document.querySelectorAll('.painel').forEach(p => p.classList.remove('ativo'));
+    el.classList.add('ativa');
+    document.getElementById('painel-' + el.dataset.aba).classList.add('ativo');
+    if (el.dataset.aba === 'abertas') renderizarSalasAbertas();
+  }
+
+  /* ── Salas Abertas (com paginação) ── */
+  const SALAS_POR_PAG = 5;
+  let pagSalas = 0;
+
+  function renderizarSalasAbertas() {
+    const lista = document.getElementById('lista-salas-abertas');
+    const total = salasPublicas.length;
+    const totalPag = Math.max(1, Math.ceil(total / SALAS_POR_PAG));
+    if (pagSalas >= totalPag) pagSalas = totalPag - 1;
+    const slice = salasPublicas.slice(pagSalas * SALAS_POR_PAG, (pagSalas + 1) * SALAS_POR_PAG);
+    lista.innerHTML = slice.map((sala) => `
       <li class="item-popup">
         <div>
           <strong>${sala.nome}</strong>
-          <small>${sala.tempo} min · ${sala.jogadores} jogador${sala.jogadores > 1 ? 'es' : ''}</small>
+          <small>${sala.tempo} min · ${sala.jogadores}/${sala.max} jogadores</small>
         </div>
-        <button class="btn-acao-lista" onclick="entrarSala(${i})">Entrar</button>
+        <button class="btn-acao-lista" onclick="entrarSala('${sala.codigo}')">Entrar</button>
       </li>`).join('');
-    abrir('popup-entrar-sala');
+    document.getElementById('pagInfoSala').textContent = `Página ${pagSalas + 1} de ${totalPag}`;
+    document.getElementById('btnPrevSala').disabled = pagSalas === 0;
+    document.getElementById('btnNextSala').disabled = pagSalas >= totalPag - 1;
+  }
+  function paginaPrevSala() { if (pagSalas > 0) { pagSalas--; renderizarSalasAbertas(); } }
+  function paginaNextSala() {
+    const t = Math.ceil(salasPublicas.length / SALAS_POR_PAG);
+    if (pagSalas < t - 1) { pagSalas++; renderizarSalasAbertas(); }
   }
 
-  function entrarSala(i) {
-    const sala = salasPublicas[i];
-    estado.sala = { nome: sala.nome, tempo: sala.tempo };
+  function entrarSala(codigo) {
+    const sala = salasPublicas.find(s => s.codigo === codigo);
+    if (!sala) { toast('Sala não encontrada'); return; }
+    estado.sala = { nome: sala.nome, tempo: sala.tempo, codigo: sala.codigo, max: sala.max };
     estado.ehCriador = false;
     estado.jogadores = [
       ...Array.from({ length: sala.jogadores }, (_, k) => ({ nome: `Jogador ${k + 1}`, pronto: false })),
       { nome: meuNome, pronto: false, eu: true }
     ];
     atualizarBarra();
-    fechar('popup-entrar-sala');
+  }
+
+  /* ── Entrar por Código ── */
+  function entrarPorCodigo() {
+    const cod = document.getElementById('input-codigo').value.trim().toUpperCase();
+    if (!cod) { toast('Informe um código'); return; }
+    const sala = salasPublicas.find(s => s.codigo === cod);
+    if (!sala) { toast('Código não encontrado'); return; }
+    entrarSala(sala.codigo);
+    document.getElementById('input-codigo').value = '';
   }
 
   /* ── Criar sala ── */
-  function abrirCriarSala() { abrir('popup-criar-sala'); }
+  function gerarCodigo() {
+    const letras = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+    const num = '0123456789';
+    let s = '';
+    for (let i = 0; i < 4; i++) s += letras[Math.floor(Math.random() * letras.length)];
+    s += '-';
+    for (let i = 0; i < 4; i++) s += num[Math.floor(Math.random() * num.length)];
+    return s;
+  }
 
   function criarSala() {
     const nome = document.getElementById('input-nome-sala').value.trim() || 'Minha sala';
     const tempo = parseInt(document.getElementById('select-tempo-sala').value);
-    estado.sala = { nome, tempo };
+    const max = parseInt(document.getElementById('select-jogadores').value);
+    const codigo = gerarCodigo();
+    estado.sala = { nome, tempo, codigo, max };
     estado.ehCriador = true;
     estado.jogadores = [{ nome: meuNome, pronto: false, eu: true }];
     atualizarBarra();
-    fechar('popup-criar-sala');
     document.getElementById('input-nome-sala').value = '';
+    toast('Sala criada · código ' + codigo);
   }
 
   /* ── Toast ── */
