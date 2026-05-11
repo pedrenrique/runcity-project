@@ -26,11 +26,6 @@
     .pscroll::-webkit-scrollbar-thumb{background:var(--brd);border-radius:2px;}
     .pbody{padding-bottom:84px;}
 
-    /* STATUS BAR */
-    .sbar{display:flex;justify-content:space-between;align-items:center;padding:14px 24px 6px;color:var(--t1);}
-    .sbar-time{font-size:15px;font-weight:700;}
-    .sbar-right{display:flex;align-items:center;gap:6px;}
-
     /* HEADER */
     .shdr{display:flex;align-items:center;gap:12px;padding:10px 20px 14px;position:sticky;top:0;z-index:50;background:var(--bg);border-bottom:1px solid var(--brd2);transition:background .3s,border-color .3s;}
     @supports (backdrop-filter:blur(1px)){.shdr{backdrop-filter:blur(24px);background:color-mix(in srgb,var(--bg) 85%,transparent);}}
@@ -387,13 +382,6 @@ function showToast(msg){
   t.textContent=msg; t.classList.add('show');
   clearTimeout(_tt); _tt=setTimeout(()=>t.classList.remove('show'),2200);
 }
-
-/* ── RELÓGIO ── */
-function tick(){
-  const d=new Date();
-  document.getElementById('relogio').textContent=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
-}
-tick(); setInterval(tick,30000);
 
 /* ── INIT ── */
 (function(){

@@ -75,11 +75,6 @@
     .pscroll::-webkit-scrollbar-thumb { background:var(--brd); border-radius:2px; }
     .pbody { padding: 0 24px 32px; min-height:100%; display:flex; flex-direction:column; }
 
-    /* ── STATUS BAR ── */
-    .sbar { display:flex; justify-content:space-between; align-items:center; padding:14px 24px 6px; color:var(--t1); margin: 0 -24px; }
-    .sbar-time { font-size:15px; font-weight:700; }
-    .sbar-right { display:flex; align-items:center; gap:6px; font-size:12px; font-weight:700; }
-
     /* ── LOGO/HERO ── */
     .hero { padding: 48px 0 28px; text-align:center; position:relative; }
     .hero::before {
@@ -658,14 +653,6 @@
     clearTimeout(_tt);
     _tt = setTimeout(() => t.classList.remove('show'), 2200);
   }
-
-  /* ── Relógio da status bar ── */
-  function tick() {
-    const d = new Date();
-    document.getElementById('relogio').textContent =
-      String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
-  }
-  tick(); setInterval(tick, 30000);
 
   /* ── Tema ── */
   try {

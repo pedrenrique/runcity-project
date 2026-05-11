@@ -37,9 +37,6 @@
     }
     .pscroll { width:100%; height:100%; overflow-y:auto; padding: 0 24px 32px; }
 
-    .sbar { display:flex; justify-content:space-between; align-items:center; padding:14px 0 6px; color:var(--t1); }
-    .sbar-time { font-size:15px; font-weight:700; }
-
     .hero { text-align:center; padding: 36px 0 24px; }
     .ico-mark {
       width:72px; height:72px; border-radius:20px;
@@ -228,13 +225,6 @@
     ok.classList.add('show');
     setTimeout(() => { window.location.href = 'login.html'; }, 1200);
   }
-
-  function tick() {
-    const d = new Date();
-    document.getElementById('relogio').textContent =
-      String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
-  }
-  tick(); setInterval(tick, 30000);
 
   try {
     if (localStorage.getItem('rc_theme') === 'light') {
