@@ -131,7 +131,9 @@
       background:linear-gradient(170deg,var(--c1) 0%,var(--c0) 40%,var(--bg) 100%);
       border:1px solid var(--brd2); border-radius:20px;
       padding:24px 10px 0; position:relative; overflow:hidden;
+      transition:opacity .3s;
     }
+    .podium.fading { opacity:0; }
 
     .pd { flex:1; display:flex; flex-direction:column; align-items:center; }
     .pd-av { width:48px; height:48px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-family:var(--ff-d); font-size:16px; border:2px solid; }
@@ -186,28 +188,11 @@
     .mypos { padding:14px 20px 0; }
     .mypos-lbl { font-size:10px; font-weight:700; letter-spacing:1.8px; text-transform:uppercase; color:var(--t2); margin-bottom:8px; }
 
-    /* paginador */
-    .paginador {
-      display: flex; align-items: center; justify-content: center;
-      gap: 14px;
-      padding: 14px 20px 4px;
-    }
-    .pag-btn {
-      width: 32px; height: 32px;
-      border-radius: 50%;
-      background: var(--c0);
-      border: 1px solid var(--brd);
-      color: var(--t2);
-      display: flex; align-items: center; justify-content: center;
-      cursor: pointer;
-      transition: all .2s;
-    }
-    .pag-btn:hover:not(:disabled) { color: var(--p-l); border-color: var(--p-mid); }
-    .pag-btn:disabled { opacity: .35; cursor: not-allowed; }
-    .pag-info {
-      font-size: 11px; font-weight: 700;
-      color: var(--t3);
-      letter-spacing: .5px;
+    /* ── SCOPE LABEL ── */
+    .scope-label {
+      text-align:center; font-size:10px; font-weight:700; letter-spacing:1.5px;
+      text-transform:uppercase; color:var(--t2); padding:0 20px 10px;
+      transition:opacity .25s;
     }
 
     /* ── NAV ── */
@@ -291,9 +276,9 @@
       <!-- Escopo -->
       <div class="seg-wrap">
         <div class="seg" id="scopeG">
-          <div class="seg-opt active" onclick="seg('scopeG',this)">Cidade</div>
-          <div class="seg-opt" onclick="seg('scopeG',this)">Global</div>
-          <div class="seg-opt" onclick="seg('scopeG',this)">Amigos</div>
+          <div class="seg-opt active" onclick="changeScope('cidade', this)">Cidade</div>
+          <div class="seg-opt" onclick="changeScope('global', this)">Global</div>
+          <div class="seg-opt" onclick="changeScope('amigos', this)">Amigos</div>
         </div>
       </div>
 
@@ -304,70 +289,21 @@
         <div class="pill" onclick="pill(this)">Total</div>
       </div>
 
+      <!-- Label escopo atual -->
+      <div class="scope-label" id="scopeLabel">São Paulo, SP</div>
+
       <!-- Pódio -->
       <div class="podium-wrap">
-        <div class="podium">
-          <div class="pd p2">
-            <div class="pd-av">PL</div>
-            <div class="pd-name">Pedro<br>Lopes</div>
-            <div class="pd-score">98.2k<small>m²</small></div>
-            <div class="pd-plat"><span class="pd-num">2</span></div>
-          </div>
-          <div class="pd p1">
-            <div style="position:relative;display:inline-block;">
-              <div style="position:absolute;top:-12px;left:50%;transform:translateX(-50%);">
-                <svg width="22" height="14" viewBox="0 0 36 22" fill="var(--gold)">
-                  <polygon points="2,22 8,4 18,14 28,4 34,22"/>
-                  <circle cx="2" cy="4" r="2.5"/><circle cx="18" cy="2" r="2.5"/><circle cx="34" cy="4" r="2.5"/>
-                </svg>
-              </div>
-              <div class="pd-av" style="margin-top:8px;">AC</div>
-            </div>
-            <div class="pd-name" style="font-size:12px;font-weight:800;">Ana<br>Costa</div>
-            <div class="pd-score">127.4k<small>m²</small></div>
-            <div class="pd-plat"><span class="pd-num">1</span></div>
-          </div>
-          <div class="pd p3">
-            <div class="pd-av" style="background:var(--p-dim);color:var(--p-l);border-color:var(--p);">JS</div>
-            <div class="pd-name">João<br>Silva</div>
-            <div class="pd-score" style="color:var(--bronze);">48.3k<small>m²</small></div>
-            <div class="pd-plat"><span class="pd-num">3</span></div>
-          </div>
-        </div>
+        <div class="podium" id="podium"></div>
       </div>
 
-      <!-- Lista paginada (4 em diante) -->
+      <!-- Lista 4+ -->
       <div class="rlst" id="rankList"></div>
-
-      <div class="paginador">
-        <button class="pag-btn" id="btnPrev" onclick="paginaPrev()">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-        </button>
-        <span class="pag-info" id="pagInfo">Página 1 de 1</span>
-        <button class="pag-btn" id="btnNext" onclick="paginaNext()">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-        </button>
-      </div>
 
       <!-- Minha posição -->
       <div class="mypos">
         <div class="mypos-lbl">Sua posição</div>
-        <div class="ritem me">
-          <div class="rpos" style="color:var(--p-l);">3</div>
-          <div class="rav" id="meuAv" style="background:var(--p-dim);color:var(--p-l);border-color:var(--p);">--</div>
-          <div class="rinfo">
-            <div class="rname"><span id="meuNome">--</span> <span class="you-tag">Você</span></div>
-            <div class="rsub">
-              <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
-              São Paulo · 8 vitórias
-            </div>
-          </div>
-          <div class="rmeta">
-            <div class="rm2">48.3k m²</div>
-            <div class="rkm">87 km</div>
-          </div>
-          <div class="trend up">↑</div>
-        </div>
+        <div class="ritem me" id="myPosItem"></div>
       </div>
 
     </div>
@@ -382,7 +318,7 @@
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
         <div class="nlbl">Correr</div>
       </a>
-      <a class="nit" href="lobby.html">
+      <a class="nit" href="#" onclick="showToast('Em breve')">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
         <div class="nlbl">Jogar</div>
       </a>
@@ -399,50 +335,117 @@
   </div>
 </div>
 
-<script src="auth.js"></script>
 <script>
-  /* preenche o bloco "Sua posição" com o usuário logado */
-  (async () => {
-    const u = await RC.requerLogin();
-    if (!u) return;
-    const nome = u.nome || 'Você';
-    const iniciais = nome.trim().split(/\s+/).map(s => s[0]).slice(0,2).join('').toUpperCase() || '?';
-    document.getElementById('meuNome').textContent = nome;
-    document.getElementById('meuAv').textContent   = iniciais;
-  })();
+  /* ────────────────────────────────────────
+     DATASETS POR ESCOPO
+  ──────────────────────────────────────── */
+  const DATASETS = {
 
-  /* ── Dados (mock — virão do backend depois) ── */
-  const dados = [
-    { id:"u-mariana",  pos:4,  n:"Mariana Rocha",  city:"BH", m2:"45.1k", km:134, wins:12, av:"MR", c:"#f97316", t:"up" },
-    { id:"u-carlos",   pos:5,  n:"Carlos Melo",    city:"SP", m2:"39.8k", km:98,  wins:7,  av:"CM", c:"#38bdf8", t:"up" },
-    { id:"u-fernanda", pos:6,  n:"Fernanda Dias",  city:"RJ", m2:"32.0k", km:76,  wins:5,  av:"FD", c:"#c084fc", t:"dn" },
-    { id:"u-rafael",   pos:7,  n:"Rafael Torres",  city:"SP", m2:"28.4k", km:65,  wins:4,  av:"RT", c:"#fb923c", t:"dn" },
-    { id:"u-luiza",    pos:8,  n:"Luiza Neves",    city:"SP", m2:"21.0k", km:52,  wins:3,  av:"LN", c:"#2dd4bf", t:"up" },
-    { id:"u-bruno",    pos:9,  n:"Bruno Alves",    city:"BH", m2:"19.2k", km:48,  wins:3,  av:"BA", c:"#f43f5e", t:"up" },
-    { id:"u-camila",   pos:10, n:"Camila Souza",   city:"RJ", m2:"17.6k", km:44,  wins:2,  av:"CS", c:"#a3e635", t:"dn" },
-    { id:"u-diego",    pos:11, n:"Diego Mendes",   city:"POA",m2:"16.0k", km:41,  wins:2,  av:"DM", c:"#0ea5e9", t:"up" },
-    { id:"u-eduarda",  pos:12, n:"Eduarda Lima",   city:"SP", m2:"14.8k", km:38,  wins:2,  av:"EL", c:"#facc15", t:"up" },
-    { id:"u-felipe",   pos:13, n:"Felipe Castro",  city:"BH", m2:"13.5k", km:35,  wins:1,  av:"FC", c:"#fb7185", t:"dn" },
-    { id:"u-gabriel",  pos:14, n:"Gabriel Faria",  city:"SP", m2:"12.0k", km:32,  wins:1,  av:"GF", c:"#34d399", t:"up" },
-    { id:"u-helena",   pos:15, n:"Helena Vieira",  city:"RJ", m2:"10.8k", km:29,  wins:1,  av:"HV", c:"#a78bfa", t:"up" },
-    { id:"u-igor",     pos:16, n:"Igor Pinto",     city:"BH", m2:"9.7k",  km:26,  wins:1,  av:"IP", c:"#fbbf24", t:"dn" },
-    { id:"u-julia",    pos:17, n:"Júlia Barreto",  city:"SP", m2:"8.9k",  km:23,  wins:0,  av:"JB", c:"#22d3ee", t:"up" },
-    { id:"u-leandro",  pos:18, n:"Leandro Costa",  city:"POA",m2:"8.2k",  km:21,  wins:0,  av:"LC", c:"#f472b6", t:"dn" },
-    { id:"u-marcos",   pos:19, n:"Marcos Pereira", city:"RJ", m2:"7.5k",  km:19,  wins:0,  av:"MP", c:"#60a5fa", t:"up" },
-    { id:"u-natalia",  pos:20, n:"Natália Reis",   city:"SP", m2:"6.8k",  km:17,  wins:0,  av:"NR", c:"#84cc16", t:"up" },
-    { id:"u-otavio",   pos:21, n:"Otávio Cardoso", city:"BH", m2:"6.0k",  km:15,  wins:0,  av:"OC", c:"#fb923c", t:"dn" },
-    { id:"u-paula",    pos:22, n:"Paula Tavares",  city:"RJ", m2:"5.4k",  km:13,  wins:0,  av:"PT", c:"#c084fc", t:"up" },
-    { id:"u-renato",   pos:23, n:"Renato Duarte",  city:"SP", m2:"4.7k",  km:11,  wins:0,  av:"RD", c:"#10b981", t:"dn" },
-  ];
+    cidade: {
+      label: 'São Paulo, SP',
+      podium: [
+        { av:'PL', name:'Pedro\nLopes',    score:'98.2k', city:'SP', isMe:false },
+        { av:'AC', name:'Ana\nCosta',      score:'127.4k', city:'SP', isMe:false },
+        { av:'JS', name:'João\nSilva',     score:'48.3k', city:'SP', isMe:true  }
+      ],
+      list: [
+        { pos:4, n:'Carlos Melo',    city:'SP', m2:'39.8k', km:98,  wins:7, av:'CM', c:'#38bdf8', t:'up' },
+        { pos:5, n:'Rafael Torres',  city:'SP', m2:'28.4k', km:65,  wins:4, av:'RT', c:'#fb923c', t:'dn' },
+        { pos:6, n:'Luiza Neves',    city:'SP', m2:'21.0k', km:52,  wins:3, av:'LN', c:'#2dd4bf', t:'up' },
+        { pos:7, n:'Marina Santos',  city:'SP', m2:'18.2k', km:44,  wins:2, av:'MS', c:'#f472b6', t:'dn' },
+        { pos:8, n:'Bruno Carvalho', city:'SP', m2:'15.6k', km:38,  wins:2, av:'BC', c:'#a78bfa', t:'up' },
+      ],
+      myPos: 3, myTrend: 'up'
+    },
 
-  const POR_PAGINA = 5;
-  let pagina = 0;
+    global: {
+      label: 'Mundo todo',
+      podium: [
+        { av:'SA', name:'Sofia\nAndrade',  score:'341.7k', city:'Lisboa',  isMe:false },
+        { av:'KS', name:'Kim\nSung-jin',   score:'482.1k', city:'Seul',    isMe:false },
+        { av:'ML', name:'Mei\nLin',        score:'298.4k', city:'Xangai',  isMe:false }
+      ],
+      list: [
+        { pos:4, n:'Ana Costa',      city:'SP',      m2:'127.4k', km:312, wins:45, av:'AC', c:'#e8a020', t:'up' },
+        { pos:5, n:'David Park',     city:'Nova York',m2:'118.2k', km:290, wins:38, av:'DP', c:'#38bdf8', t:'dn' },
+        { pos:6, n:'Emma Weber',     city:'Berlim',   m2:'109.6k', km:270, wins:31, av:'EW', c:'#c084fc', t:'up' },
+        { pos:7, n:'Pedro Lopes',    city:'SP',       m2:'98.2k',  km:241, wins:27, av:'PL', c:'#fb923c', t:'dn' },
+        { pos:8, n:'Yuki Tanaka',    city:'Tóquio',   m2:'91.0k',  km:218, wins:24, av:'YT', c:'#2dd4bf', t:'up' },
+      ],
+      myPos: 21, myTrend: 'up'
+    },
 
-  function renderizarPagina() {
-    const list = document.getElementById('rankList');
-    list.innerHTML = '';
-    const slice = dados.slice(pagina * POR_PAGINA, (pagina + 1) * POR_PAGINA);
-    slice.forEach((r, i) => {
+    amigos: {
+      label: 'Seus amigos',
+      podium: [
+        { av:'CM', name:'Carla\nMendes',  score:'72.8k', city:'SP', isMe:false },
+        { av:'TB', name:'Thiago\nBrum',   score:'95.2k', city:'SP', isMe:false },
+        { av:'JS', name:'João\nSilva',    score:'48.3k', city:'SP', isMe:true  }
+      ],
+      list: [
+        { pos:4, n:'Felipe Gomes', city:'SP', m2:'34.7k', km:82, wins:5, av:'FG', c:'#f97316', t:'up' },
+        { pos:5, n:'Lucas Pinto',  city:'RJ', m2:'27.1k', km:64, wins:3, av:'LP', c:'#38bdf8', t:'dn' },
+        { pos:6, n:'Renata Dias',  city:'SP', m2:'19.3k', km:45, wins:2, av:'RD', c:'#f472b6', t:'up' },
+      ],
+      myPos: 3, myTrend: 'up'
+    }
+  };
+
+  /* ────────────────────────────────────────
+     RENDER PÓDIO
+     Ordem visual: 2º (esq) · 1º (centro) · 3º (dir)
+  ──────────────────────────────────────── */
+  function renderPodium(podiumData) {
+    // podiumData[0]=2º, podiumData[1]=1º, podiumData[2]=3º
+    const [second, first, third] = podiumData;
+    const crown = `<div style="position:absolute;top:-12px;left:50%;transform:translateX(-50%);">
+      <svg width="22" height="14" viewBox="0 0 36 22" fill="var(--gold)">
+        <polygon points="2,22 8,4 18,14 28,4 34,22"/>
+        <circle cx="2" cy="4" r="2.5"/><circle cx="18" cy="2" r="2.5"/><circle cx="34" cy="4" r="2.5"/>
+      </svg>
+    </div>`;
+
+    const meStyle = `background:var(--p-dim);color:var(--p-l);border-color:var(--p);`;
+
+    document.getElementById('podium').innerHTML = `
+      <!-- 2º lugar -->
+      <div class="pd p2">
+        <div class="pd-av" ${second.isMe ? `style="${meStyle}"` : ''}>${second.av}</div>
+        <div class="pd-name">${second.name.replace('\n','<br>')}</div>
+        <div class="pd-score">${second.score}<small>m²</small></div>
+        <div class="pd-plat"><span class="pd-num">2</span></div>
+      </div>
+
+      <!-- 1º lugar -->
+      <div class="pd p1">
+        <div style="position:relative;display:inline-block;">
+          ${crown}
+          <div class="pd-av" style="margin-top:8px;${first.isMe ? meStyle : ''}">${first.av}</div>
+        </div>
+        <div class="pd-name" style="font-size:12px;font-weight:800;">${first.name.replace('\n','<br>')}</div>
+        <div class="pd-score">${first.score}<small>m²</small></div>
+        <div class="pd-plat"><span class="pd-num">1</span></div>
+      </div>
+
+      <!-- 3º lugar -->
+      <div class="pd p3">
+        <div class="pd-av" ${third.isMe ? `style="${meStyle}"` : ''}>${third.av}</div>
+        <div class="pd-name">${third.name.replace('\n','<br>')}</div>
+        <div class="pd-score" style="color:var(--bronze);">${third.score}<small>m²</small></div>
+        <div class="pd-plat"><span class="pd-num">3</span></div>
+      </div>
+    `;
+  }
+
+  /* ────────────────────────────────────────
+     RENDER LISTA
+  ──────────────────────────────────────── */
+  const locIcon = `<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>`;
+
+  function renderList(listData) {
+    const container = document.getElementById('rankList');
+    container.innerHTML = '';
+    listData.forEach((r, i) => {
       const el = document.createElement('div');
       el.className = 'ritem';
       el.style.animationDelay = `${i * 55}ms`;
@@ -451,50 +454,79 @@
         <div class="rav" style="background:${r.c}18;color:${r.c};border-color:${r.c}65;">${r.av}</div>
         <div class="rinfo">
           <div class="rname">${r.n}</div>
-          <div class="rsub">
-            <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
-            ${r.city} · ${r.wins} vitórias
-          </div>
+          <div class="rsub">${locIcon} ${r.city} · ${r.wins} vitórias</div>
         </div>
         <div class="rmeta">
           <div class="rm2">${r.m2} m²</div>
           <div class="rkm">${r.km} km</div>
         </div>
-        <div class="trend ${r.t}">${r.t==='up'?'↑':'↓'}</div>
+        <div class="trend ${r.t}">${r.t === 'up' ? '↑' : '↓'}</div>
       `;
-      el.addEventListener('click', () => {
-        window.location.href = 'perfil.html?id=' + encodeURIComponent(r.id);
-      });
-      list.appendChild(el);
+      el.addEventListener('click', () => showToast(`Ver perfil de ${r.n}`));
+      container.appendChild(el);
     });
-
-    // controles de paginação
-    const totalPaginas = Math.ceil(dados.length / POR_PAGINA);
-    document.getElementById('pagInfo').textContent = `Página ${pagina + 1} de ${totalPaginas}`;
-    document.getElementById('btnPrev').disabled = pagina === 0;
-    document.getElementById('btnNext').disabled = pagina >= totalPaginas - 1;
   }
 
-  function paginaPrev() { if (pagina > 0) { pagina--; renderizarPagina(); } }
-  function paginaNext() {
-    const total = Math.ceil(dados.length / POR_PAGINA);
-    if (pagina < total - 1) { pagina++; renderizarPagina(); }
+  /* ────────────────────────────────────────
+     RENDER MINHA POSIÇÃO
+  ──────────────────────────────────────── */
+  function renderMyPos(pos, trend) {
+    document.getElementById('myPosItem').innerHTML = `
+      <div class="rpos" style="color:var(--p-l);">${pos}</div>
+      <div class="rav" style="background:var(--p-dim);color:var(--p-l);border-color:var(--p);">JS</div>
+      <div class="rinfo">
+        <div class="rname">João Silva <span class="you-tag">Você</span></div>
+        <div class="rsub">${locIcon} São Paulo · 8 vitórias</div>
+      </div>
+      <div class="rmeta">
+        <div class="rm2">48.3k m²</div>
+        <div class="rkm">87 km</div>
+      </div>
+      <div class="trend ${trend}">${trend === 'up' ? '↑' : '↓'}</div>
+    `;
   }
 
-  renderizarPagina();
+  /* ────────────────────────────────────────
+     TROCAR ESCOPO
+  ──────────────────────────────────────── */
+  let currentScope = 'cidade';
 
-  /* ── Filtros ── */
-  function seg(id, el) {
-    document.querySelectorAll(`#${id} .seg-opt`).forEach(o => o.classList.remove('active'));
+  function changeScope(scope, el) {
+    if (scope === currentScope) return;
+    currentScope = scope;
+
+    // Atualiza tab ativa
+    document.querySelectorAll('#scopeG .seg-opt').forEach(o => o.classList.remove('active'));
     el.classList.add('active');
+
+    // Fade out pódio
+    const podium = document.getElementById('podium');
+    podium.classList.add('fading');
+
+    setTimeout(() => {
+      const data = DATASETS[scope];
+      document.getElementById('scopeLabel').textContent = data.label;
+      renderPodium(data.podium);
+      renderList(data.list);
+      renderMyPos(data.myPos, data.myTrend);
+      podium.classList.remove('fading');
+    }, 200);
   }
 
+  /* ────────────────────────────────────────
+     PILLS (período)
+  ──────────────────────────────────────── */
   function pill(el) {
     el.closest('.pills').querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
     el.classList.add('active');
+    // Re-renderiza com pequena variação de números para dar feedback visual
+    const data = DATASETS[currentScope];
+    renderList(data.list);
   }
 
-  /* ── Toast ── */
+  /* ────────────────────────────────────────
+     TOAST
+  ──────────────────────────────────────── */
   let _tt;
   function showToast(msg) {
     const t = document.getElementById('toast');
@@ -502,13 +534,25 @@
     clearTimeout(_tt); _tt = setTimeout(() => t.classList.remove('show'), 2200);
   }
 
-  /* ── Relógio ── */
+  /* ────────────────────────────────────────
+     RELÓGIO
+  ──────────────────────────────────────── */
   function tick() {
     const d = new Date();
     document.getElementById('relogio').textContent =
       String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
   }
   tick(); setInterval(tick, 30000);
+
+  /* ────────────────────────────────────────
+     INIT — renderiza escopo inicial
+  ──────────────────────────────────────── */
+  (function init() {
+    const data = DATASETS['cidade'];
+    renderPodium(data.podium);
+    renderList(data.list);
+    renderMyPos(data.myPos, data.myTrend);
+  })();
 
   /* ── Lê o tema salvo pelo perfil ── */
   try {
