@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RunCity</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --p:      #7c5cfc;
+      --p-l:    #a084fd;
+      --p-ll:   #c4b5fd;
+      --p-d:    #5b3fd8;
+      --p-dim:  rgba(124,92,252,.1);
+      --p-mid:  rgba(124,92,252,.22);
+      --p-glow: rgba(124,92,252,.38);
+      --gold:   #e8a020;
+      --ok:     #22c55e;
+      --bg:     #08061a;
+      --c0:     #100e24;
+      --c1:     #170f32;
+      --brd:    #231848;
+      --brd2:   #190e38;
+      --t1:     #ede8ff;
+      --t2:     #5e5280;
+      --t3:     #9488c0;
+      --ff-d:   'Bebas Neue', sans-serif;
+      --ff-b:   'Outfit', sans-serif;
+    }
+
+    [data-theme="light"] {
+      --bg:  #f8f7ff;
+      --c0:  #eeebff;
+      --c1:  #e4dfff;
+      --brd: #cdc5f0;
+      --brd2:#d8d0f8;
+      --t1:  #160f38;
+      --t2:  #6e60a0;
+      --t3:  #453880;
+    }
+
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+
+    body {
+      background: #050410;
+      font-family: var(--ff-b);
+      min-height: 100vh;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 32px 20px;
+    }
+    [data-theme="light"] body { background: #eae7f8; }
+
+    .phone {
+      width: 390px; height: 844px;
+      background: var(--bg);
+      border-radius: 46px;
+      border: 1.5px solid var(--brd);
+      overflow: hidden; position: relative;
+      box-shadow: 0 0 0 1px rgba(124,92,252,.05), 0 40px 100px rgba(0,0,0,.65), inset 0 1px 0 rgba(255,255,255,.04);
+      animation: slideUp .5s cubic-bezier(.08,.82,.17,1) both;
+      flex-shrink: 0;
+    }
+
+    .pscroll { width:100%; height:100%; overflow-y:auto; overflow-x:hidden; }
+    .pscroll::-webkit-scrollbar { width:2px; }
+    .pscroll::-webkit-scrollbar-thumb { background:var(--brd); border-radius:2px; }
+    .pbody { padding-bottom:84px; }
+
+    /* ── STATUS BAR ── */
+    .sbar { display:flex; justify-content:space-between; align-items:center; padding:14px 24px 6px; color:var(--t1); }
+    .sbar-time { font-size:15px; font-weight:700; }
+
+    /* ── TOPO ── */
+    .topo {
+      display:flex; align-items:center; justify-content:space-between;
+      padding: 6px 20px 14px;
+    }
+    .marca {
+      font-family: var(--ff-d);
+      font-size: 24px;
+      letter-spacing: 2.5px;
+      color: var(--t1);
+    }
+    .marca span { color: var(--p-l); }
+
+    .av-link {
+      width:42px; height:42px; border-radius:50%;
+      background: var(--p-dim);
+      border: 2px solid var(--p);
+      display:flex; align-items:center; justify-content:center;
+      font-family: var(--ff-d);
+      font-size: 14px;
+      color: var(--p-l);
+      letter-spacing: .5px;
+      cursor:pointer; transition: all .2s;
+      text-decoration: none;
+    }
+    .av-link:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 16px var(--p-glow);
+    }
+
+    /* ── SAUDAÇÃO ── */
+    .saudacao {
+      padding: 0 20px 16px;
+      position: relative;
+    }
+    .saudacao::before {
+      content:''; position:absolute; top:-20px; left:0;
+      width: 280px; height: 180px;
+      background: radial-gradient(ellipse, var(--p-glow) 0%, transparent 65%);
+      opacity: .12; pointer-events:none;
+    }
+    .saud-ola {
+      font-family: var(--ff-d);
+      font-size: 32px;
+      letter-spacing: 1.5px;
+      color: var(--t1);
+      line-height: 1;
+    }
+    .saud-ola span { color: var(--p-l); }
+    .saud-msg {
+      font-size: 13px;
+      color: var(--t2);
+      font-weight: 500;
+      margin-top: 6px;
+    }
+
+    /* ── XP CARD ── */
+    .xp-card {
+      margin: 0 20px 14px;
+      background: linear-gradient(135deg, var(--p-dim) 0%, var(--c0) 100%);
+      border: 1px solid var(--p-mid);
+      border-radius: 18px;
+      padding: 16px 18px;
+    }
+    .xp-row {
+      display:flex; align-items:center; justify-content:space-between;
+      margin-bottom: 10px;
+    }
+    .xp-nivel-tag {
+      display:inline-flex; align-items:center; gap:6px;
+      background: var(--p);
+      color: #fff;
+      padding: 4px 12px;
+      border-radius: 14px;
+      font-family: var(--ff-d);
+      font-size: 13px;
+      letter-spacing: 1.2px;
+    }
+    .xp-prox {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--t3);
+      letter-spacing: .5px;
+    }
+    .xp-track {
+      height: 7px;
+      background: var(--c0);
+      border-radius: 4px;
+      overflow: hidden;
+      border: 1px solid var(--brd2);
+      margin-bottom: 8px;
+    }
+    .xp-fill {
+      height: 100%; width: 0;
+      background: linear-gradient(90deg, var(--p-d), var(--p-l));
+      border-radius: 4px;
+      position: relative; overflow: hidden;
+      transition: width 1.2s cubic-bezier(.08,.82,.17,1);
+    }
+    .xp-fill::after {
+      content:''; position:absolute; top:0; left:-80%;
+      width:50%; height:100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,.45), transparent);
+      animation: shim 2.4s ease-in-out infinite;
+    }
+    @keyframes shim { from { left:-80%; } to { left:180%; } }
+    .xp-pts {
+      font-size: 11px;
+      color: var(--t2);
+      text-align: right;
+      font-weight: 600;
+    }
+
+    /* ── STATS GRID ── */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      padding: 0 20px 18px;
+    }
+    .stat-card {
+      background: var(--c0);
+      border: 1px solid var(--brd2);
+      border-radius: 14px;
+      padding: 14px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: all .22s;
+    }
+    .stat-card:hover { border-color: var(--p-mid); transform: translateY(-2px); }
+    .stat-ico {
+      width: 36px; height: 36px;
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .stat-ico.roxo  { background: var(--p-dim);    color: var(--p-l); }
+    .stat-ico.verde { background: rgba(34,197,94,.12); color: var(--ok); }
+    .stat-ico.gold  { background: rgba(232,160,32,.12); color: var(--gold); }
+    .stat-ico.azul  { background: rgba(56,189,248,.12); color: #38bdf8; }
+    .stat-info { min-width: 0; }
+    .stat-val {
+      font-family: var(--ff-d);
+      font-size: 20px;
+      letter-spacing: .5px;
+      color: var(--t1);
+      line-height: 1;
+    }
+    .stat-lbl {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--t2);
+      letter-spacing: .8px;
+      text-transform: uppercase;
+      margin-top: 4px;
+    }
+
+    /* ── SEÇÃO TÍTULO ── */
+    .secao-titulo {
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--t2);
+      letter-spacing: 1.8px;
+      text-transform: uppercase;
+      padding: 0 20px 10px;
+    }
+
+    /* ── MODO CARDS ── */
+    .modos {
+      padding: 0 20px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .modo-btn {
+      width: 100%;
+      border: none;
+      border-radius: 18px;
+      padding: 18px 18px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      text-align: left;
+      font-family: var(--ff-b);
+      transition: all .22s;
+      position: relative;
+      overflow: hidden;
+    }
+    .modo-btn::after {
+      content:''; position:absolute; top:50%; right:18px;
+      transform: translateY(-50%);
+      width:28px; height:28px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.12);
+      display: flex; align-items: center; justify-content: center;
+      transition: all .22s;
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'><polyline points='9 18 15 12 9 6'/></svg>");
+      background-position: center;
+      background-repeat: no-repeat;
+    }
+    .modo-btn:hover { transform: translateY(-2px); }
+    .modo-btn:hover::after { background: rgba(255,255,255,.22); transform: translateY(-50%) translateX(3px); }
+
+    .modo-solo {
+      background: linear-gradient(135deg, #1e3a8a 0%, #6d28d9 100%);
+      box-shadow: 0 12px 30px rgba(109,40,217,.32);
+    }
+    .modo-comp {
+      background: linear-gradient(135deg, var(--p) 0%, var(--p-d) 100%);
+      box-shadow: 0 12px 30px rgba(124,92,252,.4);
+    }
+
+    .modo-ico {
+      width: 50px; height: 50px;
+      border-radius: 14px;
+      background: rgba(255,255,255,.18);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      backdrop-filter: blur(4px);
+    }
+    .modo-info { flex: 1; padding-right: 32px; }
+    .modo-titulo {
+      font-family: var(--ff-d);
+      font-size: 22px;
+      letter-spacing: 1.5px;
+      color: #fff;
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+    .modo-desc {
+      font-size: 11px;
+      font-weight: 500;
+      color: rgba(255,255,255,.78);
+      line-height: 1.4;
+    }
+
+    /* ── ATIVIDADES RECENTES ── */
+    .recentes {
+      padding: 0 20px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .ritem {
+      background: var(--c0);
+      border: 1px solid var(--brd2);
+      border-radius: 13px;
+      padding: 12px 14px;
+      display: flex; align-items: center; gap: 12px;
+      transition: all .2s;
+      cursor: pointer;
+    }
+    .ritem:hover { border-color: var(--brd); transform: translateX(3px); }
+    .ritem .ico {
+      width: 36px; height: 36px;
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .ritem .ico.solo    { background: var(--p-dim);    color: var(--p-l); }
+    .ritem .ico.partida { background: rgba(232,160,32,.1); color: var(--gold); }
+    .ritem .info { flex: 1; min-width: 0; }
+    .ritem .tipo {
+      font-size: 10px;
+      font-weight: 800;
+      color: var(--t3);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+    .ritem .data {
+      font-size: 11px;
+      color: var(--t2);
+      margin-top: 1px;
+      font-weight: 500;
+    }
+    .ritem .meta { text-align: right; }
+    .ritem .m2 {
+      font-family: var(--ff-d);
+      font-size: 16px;
+      color: var(--p-l);
+      letter-spacing: .3px;
+    }
+    .ritem .sub {
+      font-size: 10px;
+      color: var(--t2);
+      margin-top: 1px;
+    }
+    .ritem .tag {
+      display: inline-block;
+      margin-top: 2px;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 9px;
+      font-weight: 800;
+      background: rgba(232,160,32,.12);
+      color: var(--gold);
+      border: 1px solid rgba(232,160,32,.28);
+    }
+    .ver-tudo {
+      width: 100%;
+      background: transparent;
+      border: 1px solid var(--brd2);
+      color: var(--t2);
+      padding: 10px;
+      border-radius: 11px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      letter-spacing: .8px;
+      text-transform: uppercase;
+      margin-top: 4px;
+      transition: all .2s;
+    }
+    .ver-tudo:hover { color: var(--p-l); border-color: var(--p-mid); }
+
+    /* ── NAV ── */
+    .nav { position:absolute; bottom:0; left:0; right:0; height:78px; background:var(--bg); border-top:1px solid var(--brd); display:flex; z-index:100; transition:background .3s, border-color .3s; }
+    @supports (backdrop-filter:blur(1px)) { .nav { backdrop-filter:blur(24px); background:color-mix(in srgb,var(--bg) 90%,transparent); } }
+    .nit { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:5px; cursor:pointer; transition:color .2s; color:var(--t2); position:relative; text-decoration:none; }
+    .nit::after { content:''; position:absolute; top:0; left:50%; transform:translateX(-50%); width:0; height:2px; background:var(--p); border-radius:0 0 2px 2px; transition:width .22s; }
+    .nit.active { color:var(--p-l); }
+    .nit.active::after { width:22px; }
+    .nit:hover { color:var(--t3); }
+    .nlbl { font-size:9px; font-weight:700; letter-spacing:.6px; text-transform:uppercase; }
+
+    /* ── TOAST ── */
+    .toast { position:fixed; bottom:36px; left:50%; transform:translateX(-50%) translateY(10px); background:var(--c1); border:1px solid var(--p-mid); color:var(--p-ll); padding:10px 22px; border-radius:30px; font-size:12px; font-weight:600; z-index:9999; white-space:nowrap; pointer-events:none; opacity:0; transition:all .28s; box-shadow:0 8px 30px rgba(0,0,0,.5); }
+    .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
+    @keyframes slideUp { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
+
+    @media (prefers-reduced-motion:reduce) {
+      *,*::before,*::after { animation-duration:.01ms!important; transition-duration:.01ms!important; }
+    }
+
+    @media (max-width:440px) {
+      .phone { width:100vw; height:100vh; border-radius:0; border:none; }
+      body { padding:0; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="toast" id="toast"></div>
+
+<div class="phone">
+  <div class="pscroll">
+
+    <!-- Status bar -->
+    <div class="sbar">
+      <span class="sbar-time" id="relogio">--:--</span>
+      <div>
+        <svg width="22" height="11" viewBox="0 0 33 18" fill="currentColor" style="color:var(--t1)">
+          <rect x="0" y="0" width="29" height="18" rx="3" fill="none" stroke="currentColor" stroke-width="1.5"/>
+          <rect x="30" y="5" width="3" height="8" rx="1"/>
+          <rect x="2" y="2" width="19" height="14" rx="2"/>
+        </svg>
+      </div>
+    </div>
+
+    <div class="pbody">
+
+      <!-- Topo -->
+      <div class="topo">
+        <div class="marca">RUN<span>CITY</span></div>
+        <a class="av-link" href="perfil.html" id="avTopo" title="Meu perfil">--</a>
+      </div>
+
+      <!-- Saudação -->
+      <div class="saudacao">
+        <div class="saud-ola">Olá, <span id="primeiroNome">você</span>!</div>
+        <div class="saud-msg">Pronta para conquistar mais território hoje?</div>
+      </div>
+
+      <!-- XP -->
+      <div class="xp-card">
+        <div class="xp-row">
+          <span class="xp-nivel-tag">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            Nível 5
+          </span>
+          <span class="xp-prox">3.500 XP até o nível 6</span>
+        </div>
+        <div class="xp-track"><div class="xp-fill" id="xpFill"></div></div>
+        <div class="xp-pts">6.500 / 10.000 XP</div>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-ico roxo">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/>
+              <line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/>
+            </svg>
+          </div>
+          <div class="stat-info">
+            <div class="stat-val">48.3k</div>
+            <div class="stat-lbl">m² conquistados</div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-ico azul">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+            </svg>
+          </div>
+          <div class="stat-info">
+            <div class="stat-val">87 km</div>
+            <div class="stat-lbl">percorridos</div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-ico gold">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="8" r="6"/>
+              <path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/>
+            </svg>
+          </div>
+          <div class="stat-info">
+            <div class="stat-val">8</div>
+            <div class="stat-lbl">vitórias</div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-ico verde">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <polyline points="12 6 12 12 16 14"/>
+            </svg>
+          </div>
+          <div class="stat-info">
+            <div class="stat-val">23</div>
+            <div class="stat-lbl">corridas</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modos -->
+      <div class="secao-titulo">Escolha seu modo</div>
+      <div class="modos">
+        <button class="modo-btn modo-solo" onclick="irPara('solo')">
+          <span class="modo-ico">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+            </svg>
+          </span>
+          <div class="modo-info">
+            <div class="modo-titulo">SOLO</div>
+            <div class="modo-desc">Corra livre e conquiste território no seu próprio ritmo.</div>
+          </div>
+        </button>
+
+        <button class="modo-btn modo-comp" onclick="irPara('comp')">
+          <span class="modo-ico">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+            </svg>
+          </span>
+          <div class="modo-info">
+            <div class="modo-titulo">COMPETITIVO</div>
+            <div class="modo-desc">Dispute em sala com outros corredores em tempo real.</div>
+          </div>
+        </button>
+      </div>
+
+      <!-- Atividades recentes -->
+      <div class="secao-titulo">Atividades recentes</div>
+      <div class="recentes">
+        <div class="ritem" onclick="toast('Detalhes da atividade em breve')">
+          <div class="ico solo">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          </div>
+          <div class="info">
+            <div class="tipo">Solo</div>
+            <div class="data">24 Mar 2026</div>
+          </div>
+          <div class="meta">
+            <div class="m2">4.120 m²</div>
+            <div class="sub">5.2 km · 28:14</div>
+          </div>
+        </div>
+
+        <div class="ritem" onclick="toast('Detalhes da atividade em breve')">
+          <div class="ico partida">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          </div>
+          <div class="info">
+            <div class="tipo">Partida</div>
+            <div class="data">22 Mar 2026</div>
+          </div>
+          <div class="meta">
+            <div class="m2">2.690 m²</div>
+            <span class="tag">1º lugar</span>
+          </div>
+        </div>
+
+        <button class="ver-tudo" onclick="window.location.href='perfil.html'">Ver histórico completo</button>
+      </div>
+
+    </div>
+
+    <!-- Nav -->
+    <nav class="nav">
+      <a class="nit active" href="index.html">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <div class="nlbl">Início</div>
+      </a>
+      <a class="nit" href="corrida-solo.html">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        <div class="nlbl">Correr</div>
+      </a>
+      <a class="nit" href="lobby.html">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        <div class="nlbl">Jogar</div>
+      </a>
+      <a class="nit" href="ranking.html">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        <div class="nlbl">Ranking</div>
+      </a>
+      <a class="nit" href="perfil.html">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <div class="nlbl">Perfil</div>
+      </a>
+    </nav>
+
+  </div>
+</div>
+
+<script src="auth.js"></script>
+<script>
+  /* preenche dados do usuário logado */
+  (async () => {
+    const u = await RC.requerLogin();
+    if (!u) return;
+    const primeiro = (u.nome || 'Você').split(' ')[0];
+    const iniciais = (u.nome || '?').trim().split(/\s+/).map(s => s[0]).slice(0,2).join('').toUpperCase() || '?';
+    document.getElementById('primeiroNome').textContent = primeiro;
+    document.getElementById('avTopo').textContent = iniciais;
+  })();
+
+  function irPara(modo) {
+    if (modo === 'comp') window.location.href = 'lobby.html';
+    else                 window.location.href = 'corrida-solo.html';
+  }
+
+  /* toast */
+  let _tt;
+  function toast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(_tt);
+    _tt = setTimeout(() => t.classList.remove('show'), 2200);
+  }
+
+  /* relógio */
+  function tick() {
+    const d = new Date();
+    document.getElementById('relogio').textContent =
+      String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+  }
+  tick(); setInterval(tick, 30000);
+
+  /* anima a barra de XP no carregamento */
+  window.addEventListener('load', () => {
+    setTimeout(() => { document.getElementById('xpFill').style.width = '65%'; }, 350);
+  });
+
+  /* tema */
+  try {
+    if (localStorage.getItem('rc_theme') === 'light') {
+      document.documentElement.setAttribute('data-theme', 'light');
+    }
+  } catch(e) {}
+</script>
+
+</body>
+</html>
