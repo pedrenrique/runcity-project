@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RunCity — Mapa da Cidade</title>
+  <link rel="stylesheet" href="libs/leaflet.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --p:#7c5cfc; --p-l:#a084fd; --p-ll:#c4b5fd; --p-d:#5b3fd8;
+      --p-dim:rgba(124,92,252,.1); --p-mid:rgba(124,92,252,.22); --p-glow:rgba(124,92,252,.38);
+      --gold:#e8a020; --ok:#22c55e; --err:#ef4444;
+      --bg:#08061a; --c0:#100e24; --c1:#170f32;
+      --brd:#231848; --brd2:#190e38;
+      --t1:#ede8ff; --t2:#5e5280; --t3:#9488c0;
+      --ff-d:'Bebas Neue', sans-serif; --ff-b:'Outfit', sans-serif;
+    }
+    [data-theme="light"] { --bg:#f8f7ff; --c0:#eeebff; --c1:#e4dfff; --brd:#cdc5f0; --brd2:#d8d0f8; --t1:#160f38; --t2:#6e60a0; --t3:#453880; }
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+    body { background:#050410; font-family:var(--ff-b); min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:32px 20px; }
+    [data-theme="light"] body { background:#eae7f8; }
+
+    .phone {
+      width:390px; height:844px; background:var(--bg);
+      border-radius:46px; border:1.5px solid var(--brd);
+      overflow:hidden; position:relative;
+      box-shadow:0 0 0 1px rgba(124,92,252,.05), 0 40px 100px rgba(0,0,0,.65);
+      animation:slideUp .5s cubic-bezier(.08,.82,.17,1) both;
+      flex-shrink:0; display:flex; flex-direction:column;
+    }
+
+    .sbar { display:flex; justify-content:space-between; align-items:center; padding:14px 24px 6px; color:var(--t1); }
+    .sbar-time { font-size:15px; font-weight:700; }
+
+    .shdr {
+      display:flex; align-items:center; gap:12px;
+      padding:8px 18px 12px;
+      border-bottom: 1px solid var(--brd2);
+    }
+    .back {
+      width:36px; height:36px; border-radius:50%;
+      background:var(--c0); border:1px solid var(--brd);
+      display:flex; align-items:center; justify-content:center;
+      text-decoration:none; color:var(--t1); transition:all .22s; flex-shrink:0;
+    }
+    .back:hover { color:var(--p-l); border-color:var(--p-mid); }
+    .shdr-title { font-family:var(--ff-d); font-size:20px; letter-spacing:1.8px; color:var(--t1); flex:1; }
+
+    .resumo {
+      display:flex; gap:10px;
+      padding:10px 18px;
+      background:var(--bg);
+    }
+    .res-card {
+      flex:1;
+      background:var(--c0); border:1px solid var(--brd2);
+      border-radius:11px; padding:8px 10px;
+    }
+    .res-val {
+      font-family:var(--ff-d); font-size:18px;
+      color:var(--p-l); letter-spacing:.4px; line-height:1;
+    }
+    .res-lbl {
+      font-size:9px; font-weight:700;
+      color:var(--t2); letter-spacing:.6px;
+      text-transform:uppercase; margin-top:4px;
+    }
+
+    /* mapa */
+    .map-wrap {
+      position:relative; flex:1; overflow:hidden;
+      margin:0 18px 14px; border-radius:18px;
+      border:1px solid var(--brd2);
+    }
+    #mapa { width:100%; height:100%; background:var(--c0); }
+    [data-theme="dark"] .leaflet-container { background:#1a1530; }
+    .leaflet-control-attribution { background:rgba(8,6,26,.75) !important; color:var(--t3) !important; font-size:9px !important; }
+    .leaflet-control-attribution a { color:var(--p-l) !important; }
+    .leaflet-popup-content-wrapper {
+      background: var(--bg); color: var(--t1);
+      border: 1px solid var(--p-mid);
+      border-radius: 12px;
+    }
+    .leaflet-popup-tip { background: var(--bg); border: 1px solid var(--p-mid); }
+    .leaflet-popup-content { margin: 12px 14px; font-family: var(--ff-b); }
+    .pop-titulo { font-family:var(--ff-d); font-size:16px; letter-spacing:1px; color:var(--p-l); margin-bottom:6px; }
+    .pop-linha { display:flex; justify-content:space-between; gap:10px; font-size:11px; margin-top:4px; }
+    .pop-linha strong { color:var(--t1); }
+    .pop-linha span { color:var(--t3); }
+    .pop-roubo {
+      margin-top:8px; padding:6px 8px;
+      background:rgba(232,160,32,.1);
+      border:1px solid rgba(232,160,32,.3);
+      border-radius:6px;
+      font-size:10px; color:var(--gold);
+      font-weight:600; line-height:1.4;
+    }
+    .pop-link {
+      display:inline-block; margin-top:8px;
+      font-size:10px; color:var(--p-l);
+      text-decoration:none; font-weight:700;
+      letter-spacing:.5px;
+      text-transform:uppercase;
+    }
+
+    /* legenda dos donos */
+    .legenda-flutua {
+      position:absolute;
+      top:10px; right:10px;
+      background:rgba(8,6,26,.82);
+      backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
+      border:1px solid var(--brd);
+      border-radius:12px;
+      padding:8px 10px;
+      max-width: 60%;
+      z-index:500;
+    }
+    .legenda-titulo {
+      font-size:9px; font-weight:800;
+      color:var(--t3); letter-spacing:1.2px;
+      text-transform:uppercase;
+      margin-bottom:5px;
+    }
+    .leg-item {
+      display:flex; align-items:center; gap:6px;
+      font-size:11px; color:var(--t1);
+      padding:2px 0;
+    }
+    .leg-dot {
+      width:10px; height:10px; border-radius:3px;
+      flex-shrink:0;
+    }
+    .leg-nome { flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-weight:600; }
+    .leg-area { color:var(--t2); font-size:10px; font-weight:700; }
+
+    /* nav */
+    .nav { height:78px; background:var(--bg); border-top:1px solid var(--brd); display:flex; flex-shrink:0; }
+    @supports (backdrop-filter:blur(1px)) { .nav { backdrop-filter:blur(24px); background:color-mix(in srgb,var(--bg) 90%,transparent); } }
+    .nit { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:5px; cursor:pointer; transition:color .2s; color:var(--t2); position:relative; text-decoration:none; }
+    .nit::after { content:''; position:absolute; top:0; left:50%; transform:translateX(-50%); width:0; height:2px; background:var(--p); border-radius:0 0 2px 2px; transition:width .22s; }
+    .nit.active { color:var(--p-l); }
+    .nit.active::after { width:22px; }
+    .nlbl { font-size:9px; font-weight:700; letter-spacing:.6px; text-transform:uppercase; }
+
+    @keyframes slideUp { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
+
+    @media (max-width:440px) {
+      .phone { width:100vw; height:100vh; border-radius:0; border:none; }
+      body { padding:0; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="phone">
+
+  <div class="sbar">
+    <span class="sbar-time" id="relogio">--:--</span>
+    <div>
+      <svg width="22" height="11" viewBox="0 0 33 18" fill="currentColor" style="color:var(--t1)">
+        <rect x="0" y="0" width="29" height="18" rx="3" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        <rect x="30" y="5" width="3" height="8" rx="1"/>
+        <rect x="2" y="2" width="19" height="14" rx="2"/>
+      </svg>
+    </div>
+  </div>
+
+  <div class="shdr">
+    <a class="back" href="index.html" title="Início">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M19 12H5"/><path d="M12 5l-7 7 7 7"/>
+      </svg>
+    </a>
+    <div class="shdr-title">MAPA DA CIDADE</div>
+  </div>
+
+  <div class="resumo">
+    <div class="res-card">
+      <div class="res-val" id="rTotalArea">0</div>
+      <div class="res-lbl">m² dominados</div>
+    </div>
+    <div class="res-card">
+      <div class="res-val" id="rTotalDonos">0</div>
+      <div class="res-lbl">jogadores</div>
+    </div>
+    <div class="res-card">
+      <div class="res-val" id="rTotalAreas">0</div>
+      <div class="res-lbl">áreas</div>
+    </div>
+  </div>
+
+  <div class="map-wrap">
+    <div id="mapa"></div>
+    <div class="legenda-flutua">
+      <div class="legenda-titulo">Donos no mapa</div>
+      <div id="legenda"></div>
+    </div>
+  </div>
+
+  <nav class="nav">
+    <a class="nit" href="index.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><div class="nlbl">Início</div></a>
+    <a class="nit" href="corrida-solo.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg><div class="nlbl">Correr</div></a>
+    <a class="nit" href="lobby.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><div class="nlbl">Jogar</div></a>
+    <a class="nit" href="ranking.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg><div class="nlbl">Ranking</div></a>
+    <a class="nit" href="perfil.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><div class="nlbl">Perfil</div></a>
+  </nav>
+
+</div>
+
+<script src="libs/leaflet.js"></script>
+<script src="auth.js"></script>
+<script>
+  RC.requerLogin();
+
+  const params = new URLSearchParams(location.search);
+  const focar = params.get('u'); // se vier ?u=X, dá zoom no território desse jogador
+
+  // territórios mock — virão do backend depois
+  const territorios = [
+    {
+      dono: 'Você', donoId: 'me', cor: '#7c5cfc', area: 4120,
+      capturadoEm: '24 Mar 2026', regiao: 'Vila Madalena',
+      coords: [
+        [-19.9162, -43.9352],
+        [-19.9159, -43.9344],
+        [-19.9162, -43.9337],
+        [-19.9168, -43.9338],
+        [-19.9170, -43.9347],
+        [-19.9166, -43.9354]
+      ]
+    },
+    {
+      dono: 'Mariana Rocha', donoId: 'u-mariana', cor: '#f97316', area: 3210,
+      capturadoEm: '22 Mar 2026', regiao: 'Pampulha',
+      coords: [
+        [-19.9145, -43.9340],
+        [-19.9140, -43.9332],
+        [-19.9144, -43.9325],
+        [-19.9152, -43.9329],
+        [-19.9152, -43.9337]
+      ],
+      roubadoDe: 'Carlos Melo', roubadoEm: '20 Mar 2026'
+    },
+    {
+      dono: 'Carlos Melo', donoId: 'u-carlos', cor: '#38bdf8', area: 2830,
+      capturadoEm: '18 Mar 2026', regiao: 'Centro',
+      coords: [
+        [-19.9180, -43.9352],
+        [-19.9176, -43.9347],
+        [-19.9181, -43.9342],
+        [-19.9186, -43.9348],
+        [-19.9186, -43.9355]
+      ]
+    },
+    {
+      dono: 'Fernanda Dias', donoId: 'u-fernanda', cor: '#c084fc', area: 1980,
+      capturadoEm: '15 Mar 2026', regiao: 'Savassi',
+      coords: [
+        [-19.9170, -43.9325],
+        [-19.9165, -43.9318],
+        [-19.9172, -43.9312],
+        [-19.9178, -43.9320]
+      ]
+    },
+    {
+      dono: 'Luiza Neves', donoId: 'u-luiza', cor: '#2dd4bf', area: 1450,
+      capturadoEm: '12 Mar 2026', regiao: 'Lourdes',
+      coords: [
+        [-19.9192, -43.9335],
+        [-19.9188, -43.9328],
+        [-19.9195, -43.9322],
+        [-19.9200, -43.9332]
+      ]
+    },
+    {
+      dono: 'Você', donoId: 'me', cor: '#7c5cfc', area: 1820,
+      capturadoEm: '10 Mar 2026', regiao: 'Funcionários',
+      coords: [
+        [-19.9155, -43.9362],
+        [-19.9150, -43.9356],
+        [-19.9156, -43.9350],
+        [-19.9162, -43.9356]
+      ],
+      roubadoDe: 'Bruno Alves', roubadoEm: '08 Mar 2026'
+    }
+  ];
+
+  const mapa = L.map('mapa', { zoomControl: true })
+    .setView([-19.9170, -43.9342], 15);
+  mapa.zoomControl.setPosition('bottomright');
+
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    attribution: '© OpenStreetMap, © CARTO',
+    subdomains: 'abcd',
+    maxZoom: 19
+  }).addTo(mapa);
+
+  const polígonos = [];
+
+  territorios.forEach((t, i) => {
+    const poli = L.polygon(t.coords, {
+      color: t.cor,
+      weight: 2.5,
+      fillColor: t.cor,
+      fillOpacity: 0.32
+    }).addTo(mapa);
+
+    let html = `
+      <div class="pop-titulo">${t.regiao}</div>
+      <div class="pop-linha"><strong>Dono:</strong><span>${t.dono}</span></div>
+      <div class="pop-linha"><strong>Área:</strong><span>${t.area.toLocaleString('pt-BR')} m²</span></div>
+      <div class="pop-linha"><strong>Capturado:</strong><span>${t.capturadoEm}</span></div>
+    `;
+    if (t.roubadoDe) {
+      html += `<div class="pop-roubo">⚡ Roubado de <strong>${t.roubadoDe}</strong> em ${t.roubadoEm}</div>`;
+    }
+    if (t.donoId !== 'me') {
+      html += `<a class="pop-link" href="perfil.html?id=${encodeURIComponent(t.donoId)}">Ver perfil →</a>`;
+    }
+
+    poli.bindPopup(html);
+    polígonos.push({ poli, t });
+  });
+
+  // resumo
+  const totalArea = territorios.reduce((s, t) => s + t.area, 0);
+  const donosUnicos = new Set(territorios.map(t => t.donoId)).size;
+  document.getElementById('rTotalArea').textContent  = totalArea > 1000
+    ? (totalArea / 1000).toFixed(1).replace('.', ',') + 'k'
+    : totalArea.toLocaleString('pt-BR');
+  document.getElementById('rTotalDonos').textContent = donosUnicos;
+  document.getElementById('rTotalAreas').textContent = territorios.length;
+
+  // legenda — agrega por dono
+  const porDono = {};
+  territorios.forEach(t => {
+    if (!porDono[t.donoId]) porDono[t.donoId] = { dono: t.dono, cor: t.cor, area: 0 };
+    porDono[t.donoId].area += t.area;
+  });
+  const ordenado = Object.values(porDono).sort((a, b) => b.area - a.area);
+  document.getElementById('legenda').innerHTML = ordenado.slice(0, 5).map(d => `
+    <div class="leg-item">
+      <span class="leg-dot" style="background:${d.cor}"></span>
+      <span class="leg-nome">${d.dono === 'Você' ? 'Você' : d.dono.split(' ')[0]}</span>
+      <span class="leg-area">${(d.area/1000).toFixed(1).replace('.',',')}k</span>
+    </div>
+  `).join('');
+
+  // se veio ?u=X, dá zoom nos polígonos desse dono
+  if (focar) {
+    const meus = polígonos.filter(p => p.t.donoId === focar);
+    if (meus.length > 0) {
+      const grupo = L.featureGroup(meus.map(p => p.poli));
+      mapa.fitBounds(grupo.getBounds().pad(0.5));
+      meus[0].poli.openPopup();
+    }
+  }
+
+  function tick() {
+    const d = new Date();
+    document.getElementById('relogio').textContent =
+      String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+  }
+  tick(); setInterval(tick, 30000);
+
+  try {
+    if (localStorage.getItem('rc_theme') === 'light') {
+      document.documentElement.setAttribute('data-theme', 'light');
+    }
+  } catch(e) {}
+</script>
+
+</body>
+</html>
