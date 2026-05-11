@@ -7,226 +7,121 @@
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     :root {
-      --p:      #7c5cfc;
-      --p-l:    #a084fd;
-      --p-ll:   #c4b5fd;
-      --p-d:    #5b3fd8;
-      --p-dim:  rgba(124,92,252,.1);
-      --p-mid:  rgba(124,92,252,.22);
-      --p-glow: rgba(124,92,252,.38);
-      --gold:   #e8a020;
-      --silver: #8ca0b8;
-      --bronze: #a0724a;
-      --ok:     #22c55e;
-      --err:    #ef4444;
-      --bg:     #08061a;
-      --c0:     #100e24;
-      --c1:     #170f32;
-      --brd:    #231848;
-      --brd2:   #190e38;
-      --t1:     #ede8ff;
-      --t2:     #5e5280;
-      --t3:     #9488c0;
-      --ff-d:   'Bebas Neue', sans-serif;
-      --ff-b:   'Outfit', sans-serif;
+      --p:#7c5cfc; --p-l:#a084fd; --p-ll:#c4b5fd; --p-d:#5b3fd8;
+      --p-dim:rgba(124,92,252,.1); --p-mid:rgba(124,92,252,.22); --p-glow:rgba(124,92,252,.38);
+      --gold:#e8a020; --silver:#8ca0b8; --bronze:#a0724a; --ok:#22c55e; --err:#ef4444;
+      --bg:#08061a; --c0:#100e24; --c1:#170f32; --brd:#231848; --brd2:#190e38;
+      --t1:#ede8ff; --t2:#5e5280; --t3:#9488c0;
+      --ff-d:'Bebas Neue',sans-serif; --ff-b:'Outfit',sans-serif;
     }
+    [data-theme="light"]{--bg:#f8f7ff;--c0:#eeebff;--c1:#e4dfff;--brd:#cdc5f0;--brd2:#d8d0f8;--t1:#160f38;--t2:#6e60a0;--t3:#453880;}
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    body{background:#050410;font-family:var(--ff-b);min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 20px;}
+    [data-theme="light"] body{background:#eae7f8;}
 
-    [data-theme="light"] {
-      --bg:  #f8f7ff;
-      --c0:  #eeebff;
-      --c1:  #e4dfff;
-      --brd: #cdc5f0;
-      --brd2:#d8d0f8;
-      --t1:  #160f38;
-      --t2:  #6e60a0;
-      --t3:  #453880;
-    }
+    /* PHONE */
+    .phone{width:390px;height:844px;background:var(--bg);border-radius:46px;border:1.5px solid var(--brd);overflow:hidden;position:relative;box-shadow:0 0 0 1px rgba(124,92,252,.05),0 40px 100px rgba(0,0,0,.65),inset 0 1px 0 rgba(255,255,255,.04);animation:slideUp .5s cubic-bezier(.08,.82,.17,1) both;flex-shrink:0;transition:border-color .3s;}
+    .pscroll{width:100%;height:100%;overflow-y:auto;overflow-x:hidden;}
+    .pscroll::-webkit-scrollbar{width:2px;}
+    .pscroll::-webkit-scrollbar-thumb{background:var(--brd);border-radius:2px;}
+    .pbody{padding-bottom:84px;}
 
-    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+    /* STATUS BAR */
+    .sbar{display:flex;justify-content:space-between;align-items:center;padding:14px 24px 6px;color:var(--t1);}
+    .sbar-time{font-size:15px;font-weight:700;}
+    .sbar-right{display:flex;align-items:center;gap:6px;}
 
-    body {
-      background: #050410;
-      font-family: var(--ff-b);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 32px 20px;
-    }
+    /* HEADER */
+    .shdr{display:flex;align-items:center;gap:12px;padding:10px 20px 14px;position:sticky;top:0;z-index:50;background:var(--bg);border-bottom:1px solid var(--brd2);transition:background .3s,border-color .3s;}
+    @supports (backdrop-filter:blur(1px)){.shdr{backdrop-filter:blur(24px);background:color-mix(in srgb,var(--bg) 85%,transparent);}}
+    .back{width:36px;height:36px;border-radius:50%;background:var(--c0);border:1px solid var(--brd);display:flex;align-items:center;justify-content:center;text-decoration:none;color:var(--t1);transition:all .22s;flex-shrink:0;}
+    .back:hover{background:var(--p-dim);border-color:var(--p-mid);color:var(--p-l);transform:translateX(-2px);}
+    .shdr-title{font-family:var(--ff-d);font-size:22px;letter-spacing:2px;color:var(--t1);flex:1;}
+    .icon-btn{width:36px;height:36px;border-radius:50%;background:var(--c0);border:1px solid var(--brd);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--t3);transition:all .2s;}
+    .icon-btn:hover{border-color:var(--p-mid);color:var(--p-l);}
 
-    [data-theme="light"] body { background: #eae7f8; }
+    /* SEGMENTED */
+    .seg-wrap{padding:12px 20px 8px;}
+    .seg{display:flex;background:var(--c0);border-radius:10px;padding:3px;border:1px solid var(--brd2);gap:2px;}
+    .seg-opt{flex:1;text-align:center;padding:8px 4px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;transition:all .2s;color:var(--t2);border:1px solid transparent;}
+    .seg-opt.active{background:var(--p-dim);color:var(--p-ll);border-color:var(--p-mid);}
 
-    /* ── PHONE ── */
-    .phone {
-      width: 390px;
-      height: 844px;
-      background: var(--bg);
-      border-radius: 46px;
-      border: 1.5px solid var(--brd);
-      overflow: hidden;
-      position: relative;
-      box-shadow: 0 0 0 1px rgba(124,92,252,.05), 0 40px 100px rgba(0,0,0,.65), inset 0 1px 0 rgba(255,255,255,.04);
-      animation: slideUp .5s cubic-bezier(.08,.82,.17,1) both;
-      flex-shrink: 0;
-      transition: border-color .3s;
-    }
+    /* PILLS — centralizadas, com wrap */
+    .pills{display:flex;flex-wrap:wrap;justify-content:center;gap:7px;padding:6px 20px 14px;}
+    .pill{flex-shrink:0;padding:6px 16px;border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;transition:all .2s;border:1px solid var(--brd);color:var(--t2);}
+    .pill.active{background:var(--p);border-color:var(--p);color:#fff;}
+    .pill:hover:not(.active){border-color:var(--p-mid);color:var(--p-l);}
 
-    .pscroll { width:100%; height:100%; overflow-y:auto; overflow-x:hidden; }
-    .pscroll::-webkit-scrollbar { width:2px; }
-    .pscroll::-webkit-scrollbar-thumb { background:var(--brd); border-radius:2px; }
-    .pbody { padding-bottom:84px; }
+    /* SCOPE LABEL */
+    .scope-label{text-align:center;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--t2);padding:0 20px 10px;}
 
-    /* ── STATUS BAR ── */
-    .sbar { display:flex; justify-content:space-between; align-items:center; padding:14px 24px 6px; color:var(--t1); }
-    .sbar-time { font-size:15px; font-weight:700; }
-    .sbar-right { display:flex; align-items:center; gap:6px; font-size:12px; font-weight:700; }
+    /* PÓDIO */
+    .podium-wrap{padding:0 20px 18px;}
+    .podium{display:flex;align-items:flex-end;gap:4px;background:linear-gradient(170deg,var(--c1) 0%,var(--c0) 40%,var(--bg) 100%);border:1px solid var(--brd2);border-radius:20px;padding:24px 10px 0;position:relative;overflow:hidden;transition:opacity .25s;}
+    .podium.fading{opacity:0;}
+    .pd{flex:1;display:flex;flex-direction:column;align-items:center;}
+    .pd-av{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--ff-d);font-size:16px;border:2px solid;}
+    .pd-name{font-size:11px;font-weight:700;color:var(--t1);margin:8px 0 3px;text-align:center;line-height:1.2;}
+    .pd-score{font-family:var(--ff-d);font-size:13px;text-align:center;margin-bottom:8px;line-height:1;}
+    .pd-score small{font-family:var(--ff-b);font-size:9px;color:var(--t2);display:block;margin-top:2px;}
+    .pd-plat{width:100%;border-radius:6px 6px 0 0;display:flex;align-items:center;justify-content:center;}
+    .pd-num{font-family:var(--ff-d);font-size:24px;}
+    .p1{transform:translateY(-14px);}
+    .p1 .pd-av{width:60px;height:60px;font-size:20px;background:rgba(232,160,32,.12);color:var(--gold);border-color:var(--gold);box-shadow:0 0 20px rgba(232,160,32,.28);}
+    .p1 .pd-score{color:var(--gold);font-size:15px;}
+    .p1 .pd-num{color:var(--gold);font-size:30px;}
+    .p1 .pd-plat{height:68px;background:linear-gradient(180deg,rgba(232,160,32,.18),rgba(232,160,32,.03));}
+    .p2 .pd-av{background:rgba(140,160,184,.1);color:var(--silver);border-color:var(--silver);}
+    .p2 .pd-score{color:var(--silver);}
+    .p2 .pd-num{color:var(--silver);}
+    .p2 .pd-plat{height:50px;background:linear-gradient(180deg,rgba(140,160,184,.14),rgba(140,160,184,.02));}
+    .p3 .pd-av{background:rgba(160,114,74,.1);color:var(--bronze);border-color:var(--bronze);}
+    .p3 .pd-score{color:var(--bronze);}
+    .p3 .pd-num{color:var(--bronze);}
+    .p3 .pd-plat{height:38px;background:linear-gradient(180deg,rgba(160,114,74,.14),rgba(160,114,74,.02));}
 
-    /* ── SCREEN HEADER ── */
-    .shdr {
-      display:flex; align-items:center; gap:12px;
-      padding:10px 20px 14px;
-      position:sticky; top:0; z-index:50;
-      background:var(--bg); border-bottom:1px solid var(--brd2);
-      transition: background .3s, border-color .3s;
-    }
-    @supports (backdrop-filter:blur(1px)) {
-      .shdr { backdrop-filter:blur(24px); background:color-mix(in srgb,var(--bg) 85%,transparent); }
-    }
+    /* RANK LIST */
+    .rlst{padding:0 20px;display:flex;flex-direction:column;gap:6px;}
+    .ritem{display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--c0);border-radius:13px;border:1px solid var(--brd2);cursor:pointer;transition:all .2s;position:relative;overflow:hidden;animation:itemIn .35s cubic-bezier(.08,.82,.17,1) both;text-decoration:none;}
+    .ritem::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:transparent;transition:background .2s;}
+    .ritem:hover{border-color:var(--brd);transform:translateX(3px);}
+    .ritem:hover::before{background:var(--p);}
+    .ritem.me{border-color:var(--p-mid);background:var(--p-dim);}
+    .ritem.me::before{background:var(--p);}
+    .rpos{font-family:var(--ff-d);font-size:20px;color:var(--t2);width:24px;text-align:center;flex-shrink:0;}
+    .rav{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--ff-d);font-size:13px;flex-shrink:0;border:2px solid;transition:transform .2s;}
+    .ritem:hover .rav{transform:scale(1.08);}
+    .rinfo{flex:1;min-width:0;}
+    .rname{font-size:14px;font-weight:700;color:var(--t1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .rsub{font-size:11px;color:var(--t2);margin-top:1px;display:flex;align-items:center;gap:5px;}
+    .rmeta{text-align:right;flex-shrink:0;}
+    .rm2{font-family:var(--ff-d);font-size:16px;letter-spacing:.4px;color:var(--p-l);}
+    .rkm{font-size:10px;color:var(--t2);margin-top:1px;}
+    .you-tag{background:var(--p);color:#fff;font-size:9px;font-weight:800;letter-spacing:.6px;padding:2px 6px;border-radius:4px;vertical-align:middle;margin-left:5px;}
+    .trend{font-size:11px;font-weight:800;margin-left:2px;}
+    .trend.up{color:var(--ok);}
+    .trend.dn{color:var(--err);}
+    .mypos{padding:14px 20px 0;}
+    .mypos-lbl{font-size:10px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--t2);margin-bottom:8px;}
 
-    .back {
-      width:36px; height:36px; border-radius:50%;
-      background:var(--c0); border:1px solid var(--brd);
-      display:flex; align-items:center; justify-content:center;
-      text-decoration:none; color:var(--t1); transition:all .22s; flex-shrink:0;
-    }
-    .back:hover { background:var(--p-dim); border-color:var(--p-mid); color:var(--p-l); transform:translateX(-2px); }
+    /* NAV */
+    .nav{position:absolute;bottom:0;left:0;right:0;height:78px;background:var(--bg);border-top:1px solid var(--brd);display:flex;z-index:100;transition:background .3s,border-color .3s;}
+    @supports (backdrop-filter:blur(1px)){.nav{backdrop-filter:blur(24px);background:color-mix(in srgb,var(--bg) 90%,transparent);}}
+    .nit{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;cursor:pointer;transition:color .2s;color:var(--t2);position:relative;text-decoration:none;}
+    .nit::after{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:0;height:2px;background:var(--p);border-radius:0 0 2px 2px;transition:width .22s;}
+    .nit.active{color:var(--p-l);}
+    .nit.active::after{width:22px;}
+    .nit:hover{color:var(--t3);}
+    .nlbl{font-size:9px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;}
 
-    .shdr-title { font-family:var(--ff-d); font-size:22px; letter-spacing:2px; color:var(--t1); flex:1; }
+    /* TOAST */
+    .toast{position:fixed;bottom:36px;left:50%;transform:translateX(-50%) translateY(10px);background:var(--c1);border:1px solid var(--p-mid);color:var(--p-ll);padding:10px 22px;border-radius:30px;font-size:12px;font-weight:600;z-index:9999;white-space:nowrap;pointer-events:none;opacity:0;transition:all .28s;box-shadow:0 8px 30px rgba(0,0,0,.5);}
+    .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 
-    .icon-btn {
-      width:36px; height:36px; border-radius:50%;
-      background:var(--c0); border:1px solid var(--brd);
-      display:flex; align-items:center; justify-content:center;
-      cursor:pointer; color:var(--t3); transition:all .2s;
-    }
-    .icon-btn:hover { border-color:var(--p-mid); color:var(--p-l); }
-
-    /* ── SEGMENTED CONTROL ── */
-    .seg-wrap { padding:12px 20px 8px; }
-    .seg { display:flex; background:var(--c0); border-radius:10px; padding:3px; border:1px solid var(--brd2); gap:2px; }
-    .seg-opt { flex:1; text-align:center; padding:8px 4px; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer; transition:all .2s; color:var(--t2); border:1px solid transparent; }
-    .seg-opt.active { background:var(--p-dim); color:var(--p-ll); border-color:var(--p-mid); }
-
-    /* ── PILLS ── */
-    .pills { display:flex; gap:7px; padding:6px 20px 16px; overflow-x:auto; }
-    .pills::-webkit-scrollbar { display:none; }
-    .pill { flex-shrink:0; padding:6px 14px; border-radius:20px; font-size:11px; font-weight:700; cursor:pointer; transition:all .2s; border:1px solid var(--brd); color:var(--t2); }
-    .pill.active { background:var(--p); border-color:var(--p); color:#fff; }
-
-    /* ── PÓDIO ── */
-    .podium-wrap { padding:0 20px 18px; }
-    .podium {
-      display:flex; align-items:flex-end; gap:4px;
-      background:linear-gradient(170deg,var(--c1) 0%,var(--c0) 40%,var(--bg) 100%);
-      border:1px solid var(--brd2); border-radius:20px;
-      padding:24px 10px 0; position:relative; overflow:hidden;
-      transition:opacity .3s;
-    }
-    .podium.fading { opacity:0; }
-
-    .pd { flex:1; display:flex; flex-direction:column; align-items:center; }
-    .pd-av { width:48px; height:48px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-family:var(--ff-d); font-size:16px; border:2px solid; }
-    .pd-name { font-size:11px; font-weight:700; color:var(--t1); margin:8px 0 3px; text-align:center; line-height:1.2; }
-    .pd-score { font-family:var(--ff-d); font-size:13px; text-align:center; margin-bottom:8px; line-height:1; }
-    .pd-score small { font-family:var(--ff-b); font-size:9px; color:var(--t2); display:block; margin-top:2px; }
-    .pd-plat { width:100%; border-radius:6px 6px 0 0; display:flex; align-items:center; justify-content:center; }
-    .pd-num { font-family:var(--ff-d); font-size:24px; }
-
-    .p1 { transform:translateY(-14px); }
-    .p1 .pd-av { width:60px; height:60px; font-size:20px; background:rgba(232,160,32,.12); color:var(--gold); border-color:var(--gold); box-shadow:0 0 20px rgba(232,160,32,.28); }
-    .p1 .pd-score { color:var(--gold); font-size:15px; }
-    .p1 .pd-num { color:var(--gold); font-size:30px; }
-    .p1 .pd-plat { height:68px; background:linear-gradient(180deg,rgba(232,160,32,.18),rgba(232,160,32,.03)); }
-    .p2 .pd-av { background:rgba(140,160,184,.1); color:var(--silver); border-color:var(--silver); }
-    .p2 .pd-score { color:var(--silver); }
-    .p2 .pd-num { color:var(--silver); }
-    .p2 .pd-plat { height:50px; background:linear-gradient(180deg,rgba(140,160,184,.14),rgba(140,160,184,.02)); }
-    .p3 .pd-av { background:rgba(160,114,74,.1); color:var(--bronze); border-color:var(--bronze); }
-    .p3 .pd-score { color:var(--bronze); }
-    .p3 .pd-num { color:var(--bronze); }
-    .p3 .pd-plat { height:38px; background:linear-gradient(180deg,rgba(160,114,74,.14),rgba(160,114,74,.02)); }
-
-    /* ── RANK LIST ── */
-    .rlst { padding:0 20px; display:flex; flex-direction:column; gap:6px; }
-    .ritem {
-      display:flex; align-items:center; gap:10px; padding:12px 14px;
-      background:var(--c0); border-radius:13px; border:1px solid var(--brd2);
-      cursor:pointer; transition:all .2s; position:relative; overflow:hidden;
-      animation:itemIn .35s cubic-bezier(.08,.82,.17,1) both;
-    }
-    .ritem::before { content:''; position:absolute; left:0; top:0; bottom:0; width:3px; background:transparent; transition:background .2s; }
-    .ritem:hover { border-color:var(--brd); transform:translateX(3px); }
-    .ritem:hover::before { background:var(--p); }
-    .ritem.me { border-color:var(--p-mid); background:var(--p-dim); }
-    .ritem.me::before { background:var(--p); }
-
-    .rpos { font-family:var(--ff-d); font-size:20px; color:var(--t2); width:24px; text-align:center; flex-shrink:0; }
-    .rav  { width:38px; height:38px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-family:var(--ff-d); font-size:13px; flex-shrink:0; border:2px solid; transition:transform .2s; }
-    .ritem:hover .rav { transform:scale(1.08); }
-    .rinfo { flex:1; min-width:0; }
-    .rname { font-size:14px; font-weight:700; color:var(--t1); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-    .rsub  { font-size:11px; color:var(--t2); margin-top:1px; display:flex; align-items:center; gap:5px; }
-    .rmeta { text-align:right; flex-shrink:0; }
-    .rm2   { font-family:var(--ff-d); font-size:16px; letter-spacing:.4px; color:var(--p-l); }
-    .rkm   { font-size:10px; color:var(--t2); margin-top:1px; }
-    .you-tag { background:var(--p); color:#fff; font-size:9px; font-weight:800; letter-spacing:.6px; padding:2px 6px; border-radius:4px; vertical-align:middle; margin-left:5px; }
-    .trend { font-size:11px; font-weight:800; margin-left:2px; }
-    .trend.up { color:var(--ok); }
-    .trend.dn { color:var(--err); }
-
-    .mypos { padding:14px 20px 0; }
-    .mypos-lbl { font-size:10px; font-weight:700; letter-spacing:1.8px; text-transform:uppercase; color:var(--t2); margin-bottom:8px; }
-
-    /* ── SCOPE LABEL ── */
-    .scope-label {
-      text-align:center; font-size:10px; font-weight:700; letter-spacing:1.5px;
-      text-transform:uppercase; color:var(--t2); padding:0 20px 10px;
-      transition:opacity .25s;
-    }
-
-    /* ── NAV ── */
-    .nav { position:absolute; bottom:0; left:0; right:0; height:78px; background:var(--bg); border-top:1px solid var(--brd); display:flex; z-index:100; transition:background .3s, border-color .3s; }
-    @supports (backdrop-filter:blur(1px)) { .nav { backdrop-filter:blur(24px); background:color-mix(in srgb,var(--bg) 90%,transparent); } }
-    .nit { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:5px; cursor:pointer; transition:color .2s; color:var(--t2); position:relative; text-decoration:none; }
-    .nit::after { content:''; position:absolute; top:0; left:50%; transform:translateX(-50%); width:0; height:2px; background:var(--p); border-radius:0 0 2px 2px; transition:width .22s; }
-    .nit.active { color:var(--p-l); }
-    .nit.active::after { width:22px; }
-    .nit:hover { color:var(--t3); }
-    .nlbl { font-size:9px; font-weight:700; letter-spacing:.6px; text-transform:uppercase; }
-
-    /* ── TOAST ── */
-    .toast { position:fixed; bottom:36px; left:50%; transform:translateX(-50%) translateY(10px); background:var(--c1); border:1px solid var(--p-mid); color:var(--p-ll); padding:10px 22px; border-radius:30px; font-size:12px; font-weight:600; z-index:9999; white-space:nowrap; pointer-events:none; opacity:0; transition:all .28s; box-shadow:0 8px 30px rgba(0,0,0,.5); }
-    .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
-
-    /* ── ANIMAÇÕES ── */
-    @keyframes slideUp { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
-    @keyframes itemIn  { from{opacity:0;transform:translateX(-12px)} to{opacity:1;transform:translateX(0)} }
-
-    @media (prefers-reduced-motion:reduce) {
-      *,*::before,*::after { animation-duration:.01ms!important; transition-duration:.01ms!important; }
-    }
-
-    @media (max-width:440px) {
-      .phone { width:100vw; height:100vh; border-radius:0; border:none; }
-      body { padding:0; }
-    }
-
-    @media print {
-      body { background:#fff; padding:0; }
-      .phone { box-shadow:none; border:1px solid #ccc; }
-      .toast { display:none; }
-    }
+    @keyframes slideUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes itemIn {from{opacity:0;transform:translateX(-12px)}to{opacity:1;transform:translateX(0)}}
+    @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important;}}
+    @media (max-width:440px){.phone{width:100vw;height:100vh;border-radius:0;border:none;}body{padding:0;}}
   </style>
 </head>
 <body>
@@ -236,330 +131,289 @@
 <div class="phone">
   <div class="pscroll">
 
-    <!-- Status bar -->
     <div class="sbar">
       <span class="sbar-time" id="relogio">--:--</span>
       <div class="sbar-right">
-        <svg width="16" height="12" viewBox="0 0 24 18" fill="currentColor">
-          <rect x="0" y="10" width="4" height="8" rx="1"/>
-          <rect x="6.5" y="7" width="4" height="11" rx="1"/>
-          <rect x="13" y="3" width="4" height="15" rx="1"/>
-          <rect x="19.5" y="0" width="4" height="18" rx="1" opacity=".35"/>
-        </svg>
-        <svg width="22" height="11" viewBox="0 0 33 18" fill="currentColor">
-          <rect x="0" y="0" width="29" height="18" rx="3" fill="none" stroke="currentColor" stroke-width="1.5"/>
-          <rect x="30" y="5" width="3" height="8" rx="1"/>
-          <rect x="2" y="2" width="19" height="14" rx="2"/>
-        </svg>
+        <svg width="16" height="12" viewBox="0 0 24 18" fill="currentColor"><rect x="0" y="10" width="4" height="8" rx="1"/><rect x="6.5" y="7" width="4" height="11" rx="1"/><rect x="13" y="3" width="4" height="15" rx="1"/><rect x="19.5" y="0" width="4" height="18" rx="1" opacity=".35"/></svg>
+        <svg width="22" height="11" viewBox="0 0 33 18" fill="currentColor"><rect x="0" y="0" width="29" height="18" rx="3" fill="none" stroke="currentColor" stroke-width="1.5"/><rect x="30" y="5" width="3" height="8" rx="1"/><rect x="2" y="2" width="19" height="14" rx="2"/></svg>
       </div>
     </div>
 
     <div class="pbody">
 
-      <!-- Header -->
       <div class="shdr">
         <a class="back" href="index.html" title="Início">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M19 12H5"/><path d="M12 5l-7 7 7 7"/>
-          </svg>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="M12 5l-7 7 7 7"/></svg>
         </a>
         <div class="shdr-title">Ranking</div>
         <div class="icon-btn" onclick="showToast('Link copiado!')" title="Compartilhar">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
-            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
-            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
-          </svg>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
         </div>
       </div>
 
       <!-- Escopo -->
       <div class="seg-wrap">
         <div class="seg" id="scopeG">
-          <div class="seg-opt active" onclick="changeScope('cidade', this)">Cidade</div>
-          <div class="seg-opt" onclick="changeScope('global', this)">Global</div>
-          <div class="seg-opt" onclick="changeScope('amigos', this)">Amigos</div>
+          <div class="seg-opt active" onclick="changeScope('cidade',this)">Cidade</div>
+          <div class="seg-opt" onclick="changeScope('global',this)">Global</div>
+          <div class="seg-opt" onclick="changeScope('amigos',this)">Amigos</div>
         </div>
       </div>
 
-      <!-- Período -->
-      <div class="pills">
-        <div class="pill active" onclick="pill(this)">Esta semana</div>
-        <div class="pill" onclick="pill(this)">Este mês</div>
-        <div class="pill" onclick="pill(this)">Total</div>
+      <!-- Período — centralizado, com Diário -->
+      <div class="pills" id="pillsRow">
+        <div class="pill active" onclick="pill(this,'diario')">Diário</div>
+        <div class="pill" onclick="pill(this,'semana')">Esta semana</div>
+        <div class="pill" onclick="pill(this,'mes')">Este mês</div>
+        <div class="pill" onclick="pill(this,'total')">Total</div>
       </div>
 
-      <!-- Label escopo atual -->
       <div class="scope-label" id="scopeLabel">São Paulo, SP</div>
 
-      <!-- Pódio -->
       <div class="podium-wrap">
         <div class="podium" id="podium"></div>
       </div>
 
-      <!-- Lista 4+ -->
       <div class="rlst" id="rankList"></div>
 
-      <!-- Minha posição -->
       <div class="mypos">
         <div class="mypos-lbl">Sua posição</div>
-        <div class="ritem me" id="myPosItem"></div>
+        <div id="myPosItem"></div>
       </div>
 
     </div>
 
-    <!-- Nav bar -->
     <nav class="nav">
-      <a class="nit" href="index.html">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-        <div class="nlbl">Início</div>
-      </a>
-      <a class="nit" href="#" onclick="showToast('Em breve')">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-        <div class="nlbl">Correr</div>
-      </a>
-      <a class="nit" href="#" onclick="showToast('Em breve')">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-        <div class="nlbl">Jogar</div>
-      </a>
-      <a class="nit active" href="ranking.html">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-        <div class="nlbl">Ranking</div>
-      </a>
-      <a class="nit" href="perfil.html">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-        <div class="nlbl">Perfil</div>
-      </a>
+      <a class="nit" href="index.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><div class="nlbl">Início</div></a>
+      <a class="nit" href="#" onclick="showToast('Em breve')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg><div class="nlbl">Correr</div></a>
+      <a class="nit" href="#" onclick="showToast('Em breve')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><div class="nlbl">Jogar</div></a>
+      <a class="nit active" href="ranking.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg><div class="nlbl">Ranking</div></a>
+      <a class="nit" href="perfil.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><div class="nlbl">Perfil</div></a>
     </nav>
 
   </div>
 </div>
 
 <script>
-  /* ────────────────────────────────────────
-     DATASETS POR ESCOPO
-  ──────────────────────────────────────── */
-  const DATASETS = {
+/* ── COR DOS AVATARES ── */
+const AV_C = { JS:'#a084fd',AC:'#e8a020',PL:'#fb923c',TB:'#38bdf8',CM:'#c084fc',FG:'#f97316',LP:'#2dd4bf',KS:'#ef4444',MR:'#f472b6',RT:'#f97316',LN:'#2dd4bf',MS:'#f472b6',BC:'#a78bfa',SA:'#38bdf8',ML:'#c084fc',DP:'#38bdf8' };
 
-    cidade: {
-      label: 'São Paulo, SP',
-      podium: [
-        { av:'PL', name:'Pedro\nLopes',    score:'98.2k', city:'SP', isMe:false },
-        { av:'AC', name:'Ana\nCosta',      score:'127.4k', city:'SP', isMe:false },
-        { av:'JS', name:'João\nSilva',     score:'48.3k', city:'SP', isMe:true  }
-      ],
-      list: [
-        { pos:4, n:'Carlos Melo',    city:'SP', m2:'39.8k', km:98,  wins:7, av:'CM', c:'#38bdf8', t:'up' },
-        { pos:5, n:'Rafael Torres',  city:'SP', m2:'28.4k', km:65,  wins:4, av:'RT', c:'#fb923c', t:'dn' },
-        { pos:6, n:'Luiza Neves',    city:'SP', m2:'21.0k', km:52,  wins:3, av:'LN', c:'#2dd4bf', t:'up' },
-        { pos:7, n:'Marina Santos',  city:'SP', m2:'18.2k', km:44,  wins:2, av:'MS', c:'#f472b6', t:'dn' },
-        { pos:8, n:'Bruno Carvalho', city:'SP', m2:'15.6k', km:38,  wins:2, av:'BC', c:'#a78bfa', t:'up' },
-      ],
-      myPos: 3, myTrend: 'up'
-    },
-
-    global: {
-      label: 'Mundo todo',
-      podium: [
-        { av:'SA', name:'Sofia\nAndrade',  score:'341.7k', city:'Lisboa',  isMe:false },
-        { av:'KS', name:'Kim\nSung-jin',   score:'482.1k', city:'Seul',    isMe:false },
-        { av:'ML', name:'Mei\nLin',        score:'298.4k', city:'Xangai',  isMe:false }
-      ],
-      list: [
-        { pos:4, n:'Ana Costa',      city:'SP',      m2:'127.4k', km:312, wins:45, av:'AC', c:'#e8a020', t:'up' },
-        { pos:5, n:'David Park',     city:'Nova York',m2:'118.2k', km:290, wins:38, av:'DP', c:'#38bdf8', t:'dn' },
-        { pos:6, n:'Emma Weber',     city:'Berlim',   m2:'109.6k', km:270, wins:31, av:'EW', c:'#c084fc', t:'up' },
-        { pos:7, n:'Pedro Lopes',    city:'SP',       m2:'98.2k',  km:241, wins:27, av:'PL', c:'#fb923c', t:'dn' },
-        { pos:8, n:'Yuki Tanaka',    city:'Tóquio',   m2:'91.0k',  km:218, wins:24, av:'YT', c:'#2dd4bf', t:'up' },
-      ],
-      myPos: 21, myTrend: 'up'
-    },
-
-    amigos: {
-      label: 'Seus amigos',
-      podium: [
-        { av:'CM', name:'Carla\nMendes',  score:'72.8k', city:'SP', isMe:false },
-        { av:'TB', name:'Thiago\nBrum',   score:'95.2k', city:'SP', isMe:false },
-        { av:'JS', name:'João\nSilva',    score:'48.3k', city:'SP', isMe:true  }
-      ],
-      list: [
-        { pos:4, n:'Felipe Gomes', city:'SP', m2:'34.7k', km:82, wins:5, av:'FG', c:'#f97316', t:'up' },
-        { pos:5, n:'Lucas Pinto',  city:'RJ', m2:'27.1k', km:64, wins:3, av:'LP', c:'#38bdf8', t:'dn' },
-        { pos:6, n:'Renata Dias',  city:'SP', m2:'19.3k', km:45, wins:2, av:'RD', c:'#f472b6', t:'up' },
-      ],
-      myPos: 3, myTrend: 'up'
-    }
+/* ── DATASETS ──
+   Cada escopo tem variantes por período (diario / semana / mes / total).
+   Para manter o exemplo manejável os dados variam principalmente em m² e posição.
+─────────────────────────────────────────────────────────────────────────────── */
+function mkCidade(period){
+  const mult = {diario:.12, semana:1, mes:4.2, total:18};
+  const m = mult[period]||1;
+  const fmt = v => v>=1000 ? (v/1000).toFixed(1)+'k' : v+'';
+  return {
+    label:'São Paulo, SP',
+    podium:[
+      {av:'PL',name:'Pedro\nLopes', score:fmt(Math.round(98200*m)), city:'SP', isMe:false, uid:'PL'},
+      {av:'AC',name:'Ana\nCosta',   score:fmt(Math.round(127400*m)),city:'SP', isMe:false, uid:'AC'},
+      {av:'JS',name:'João\nSilva',  score:fmt(Math.round(48300*m)), city:'SP', isMe:true,  uid:'JS'}
+    ],
+    list:[
+      {pos:4,n:'Carlos Melo',   uid:'CM',city:'SP',m2:fmt(Math.round(39800*m)),km:Math.round(98*m) ,wins:Math.round(7*m) ,av:'CM',t:'up'},
+      {pos:5,n:'Rafael Torres', uid:'RT',city:'SP',m2:fmt(Math.round(28400*m)),km:Math.round(65*m) ,wins:Math.round(4*m) ,av:'RT',t:'dn'},
+      {pos:6,n:'Luiza Neves',   uid:'LN',city:'SP',m2:fmt(Math.round(21000*m)),km:Math.round(52*m) ,wins:Math.round(3*m) ,av:'LN',t:'up'},
+      {pos:7,n:'Marina Santos', uid:'MS',city:'SP',m2:fmt(Math.round(18200*m)),km:Math.round(44*m) ,wins:Math.round(2*m) ,av:'MS',t:'dn'},
+      {pos:8,n:'Bruno Carvalho',uid:'BC',city:'SP',m2:fmt(Math.round(15600*m)),km:Math.round(38*m) ,wins:Math.round(2*m) ,av:'BC',t:'up'},
+    ],
+    myPos:3, myTrend:'up'
   };
+}
 
-  /* ────────────────────────────────────────
-     RENDER PÓDIO
-     Ordem visual: 2º (esq) · 1º (centro) · 3º (dir)
-  ──────────────────────────────────────── */
-  function renderPodium(podiumData) {
-    // podiumData[0]=2º, podiumData[1]=1º, podiumData[2]=3º
-    const [second, first, third] = podiumData;
-    const crown = `<div style="position:absolute;top:-12px;left:50%;transform:translateX(-50%);">
-      <svg width="22" height="14" viewBox="0 0 36 22" fill="var(--gold)">
-        <polygon points="2,22 8,4 18,14 28,4 34,22"/>
-        <circle cx="2" cy="4" r="2.5"/><circle cx="18" cy="2" r="2.5"/><circle cx="34" cy="4" r="2.5"/>
-      </svg>
+function mkGlobal(period){
+  const mult = {diario:.05, semana:1, mes:4.2, total:18};
+  const m = mult[period]||1;
+  const fmt = v => v>=1000 ? (v/1000).toFixed(1)+'k' : v+'';
+  return {
+    label:'Mundo todo',
+    podium:[
+      {av:'SA',name:'Sofia\nAndrade', score:fmt(Math.round(341700*m)),city:'Lisboa',  isMe:false,uid:'SA'},
+      {av:'KS',name:'Kim\nSung-jin',  score:fmt(Math.round(482100*m)),city:'Seul',    isMe:false,uid:'KS'},
+      {av:'ML',name:'Mei\nLin',       score:fmt(Math.round(298400*m)),city:'Xangai',  isMe:false,uid:'ML'}
+    ],
+    list:[
+      {pos:4, n:'Ana Costa',    uid:'AC',city:'SP',      m2:fmt(Math.round(127400*m)),km:Math.round(312*m),wins:Math.round(45*m),av:'AC',t:'up'},
+      {pos:5, n:'David Park',   uid:'DP',city:'Nova York',m2:fmt(Math.round(118200*m)),km:Math.round(290*m),wins:Math.round(38*m),av:'DP',t:'dn'},
+      {pos:6, n:'Emma Weber',   uid:'EW',city:'Berlim',  m2:fmt(Math.round(109600*m)),km:Math.round(270*m),wins:Math.round(31*m),av:'EW',t:'up'},
+      {pos:7, n:'Pedro Lopes',  uid:'PL',city:'SP',      m2:fmt(Math.round(98200*m)), km:Math.round(241*m),wins:Math.round(27*m),av:'PL',t:'dn'},
+      {pos:8, n:'Yuki Tanaka',  uid:'YT',city:'Tóquio', m2:fmt(Math.round(91000*m)), km:Math.round(218*m),wins:Math.round(24*m),av:'YT',t:'up'},
+    ],
+    myPos:21, myTrend:'up'
+  };
+}
+
+function mkAmigos(period){
+  const mult = {diario:.12, semana:1, mes:4.2, total:18};
+  const m = mult[period]||1;
+  const fmt = v => v>=1000 ? (v/1000).toFixed(1)+'k' : v+'';
+  return {
+    label:'Seus amigos',
+    podium:[
+      {av:'CM',name:'Carla\nMendes', score:fmt(Math.round(72800*m)),city:'SP',isMe:false,uid:'CM'},
+      {av:'TB',name:'Thiago\nBrum',  score:fmt(Math.round(95200*m)),city:'SP',isMe:false,uid:'TB'},
+      {av:'JS',name:'João\nSilva',   score:fmt(Math.round(48300*m)),city:'SP',isMe:true, uid:'JS'}
+    ],
+    list:[
+      {pos:4,n:'Felipe Gomes',uid:'FG',city:'SP',m2:fmt(Math.round(34700*m)),km:Math.round(82*m),wins:Math.round(5*m),av:'FG',t:'up'},
+      {pos:5,n:'Lucas Pinto', uid:'LP',city:'RJ',m2:fmt(Math.round(27100*m)),km:Math.round(64*m),wins:Math.round(3*m),av:'LP',t:'dn'},
+      {pos:6,n:'Ana Costa',   uid:'AC',city:'SP',m2:fmt(Math.round(19300*m)),km:Math.round(45*m),wins:Math.round(2*m),av:'AC',t:'up'},
+    ],
+    myPos:3, myTrend:'up'
+  };
+}
+
+const BUILDERS = { cidade:mkCidade, global:mkGlobal, amigos:mkAmigos };
+
+let currentScope  = 'cidade';
+let currentPeriod = 'diario';
+
+/* ── RENDER PÓDIO ── */
+const ME_STYLE = `background:var(--p-dim);color:var(--p-l);border-color:var(--p);`;
+const crown = `<div style="position:absolute;top:-12px;left:50%;transform:translateX(-50%);"><svg width="22" height="14" viewBox="0 0 36 22" fill="var(--gold)"><polygon points="2,22 8,4 18,14 28,4 34,22"/><circle cx="2" cy="4" r="2.5"/><circle cx="18" cy="2" r="2.5"/><circle cx="34" cy="4" r="2.5"/></svg></div>`;
+
+function avStyle(uid){
+  const c = AV_C[uid]||'#a084fd';
+  return `background:${c}1e;color:${c};border-color:${c}65;`;
+}
+
+function renderPodium(list){
+  // list[0]=2nd, list[1]=1st, list[2]=3rd
+  const [sec,fst,thd] = list;
+  document.getElementById('podium').innerHTML = `
+    <div class="pd p2" onclick="goProfile('${sec.uid}')">
+      <div class="pd-av" style="${sec.isMe?ME_STYLE:avStyle(sec.av)}">${sec.av}</div>
+      <div class="pd-name">${sec.name.replace('\n','<br>')}</div>
+      <div class="pd-score">${sec.score}<small>m²</small></div>
+      <div class="pd-plat"><span class="pd-num">2</span></div>
+    </div>
+    <div class="pd p1" onclick="goProfile('${fst.uid}')">
+      <div style="position:relative;display:inline-block;">${crown}
+        <div class="pd-av" style="margin-top:8px;${fst.isMe?ME_STYLE:avStyle(fst.av)}">${fst.av}</div>
+      </div>
+      <div class="pd-name" style="font-size:12px;font-weight:800;">${fst.name.replace('\n','<br>')}</div>
+      <div class="pd-score">${fst.score}<small>m²</small></div>
+      <div class="pd-plat"><span class="pd-num">1</span></div>
+    </div>
+    <div class="pd p3" onclick="goProfile('${thd.uid}')">
+      <div class="pd-av" style="${thd.isMe?ME_STYLE:avStyle(thd.av)}">${thd.av}</div>
+      <div class="pd-name">${thd.name.replace('\n','<br>')}</div>
+      <div class="pd-score" style="color:var(--bronze);">${thd.score}<small>m²</small></div>
+      <div class="pd-plat"><span class="pd-num">3</span></div>
     </div>`;
+}
 
-    const meStyle = `background:var(--p-dim);color:var(--p-l);border-color:var(--p);`;
+/* ── RENDER LISTA ── */
+const locIco=`<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>`;
 
-    document.getElementById('podium').innerHTML = `
-      <!-- 2º lugar -->
-      <div class="pd p2">
-        <div class="pd-av" ${second.isMe ? `style="${meStyle}"` : ''}>${second.av}</div>
-        <div class="pd-name">${second.name.replace('\n','<br>')}</div>
-        <div class="pd-score">${second.score}<small>m²</small></div>
-        <div class="pd-plat"><span class="pd-num">2</span></div>
+function renderList(listData){
+  const c=document.getElementById('rankList');
+  c.innerHTML='';
+  listData.forEach((r,i)=>{
+    const col = AV_C[r.av]||'#a084fd';
+    const el=document.createElement('a');
+    el.className='ritem';
+    el.href = `perfil.html?user=${r.uid||r.av}`;
+    el.style.animationDelay=`${i*55}ms`;
+    el.innerHTML=`
+      <div class="rpos">${r.pos}</div>
+      <div class="rav" style="background:${col}1e;color:${col};border-color:${col}65;">${r.av}</div>
+      <div class="rinfo">
+        <div class="rname">${r.n}</div>
+        <div class="rsub">${locIco} ${r.city} · ${r.wins} vitórias</div>
       </div>
-
-      <!-- 1º lugar -->
-      <div class="pd p1">
-        <div style="position:relative;display:inline-block;">
-          ${crown}
-          <div class="pd-av" style="margin-top:8px;${first.isMe ? meStyle : ''}">${first.av}</div>
-        </div>
-        <div class="pd-name" style="font-size:12px;font-weight:800;">${first.name.replace('\n','<br>')}</div>
-        <div class="pd-score">${first.score}<small>m²</small></div>
-        <div class="pd-plat"><span class="pd-num">1</span></div>
+      <div class="rmeta">
+        <div class="rm2">${r.m2} m²</div>
+        <div class="rkm">${r.km} km</div>
       </div>
+      <div class="trend ${r.t}">${r.t==='up'?'↑':'↓'}</div>`;
+    c.appendChild(el);
+  });
+}
 
-      <!-- 3º lugar -->
-      <div class="pd p3">
-        <div class="pd-av" ${third.isMe ? `style="${meStyle}"` : ''}>${third.av}</div>
-        <div class="pd-name">${third.name.replace('\n','<br>')}</div>
-        <div class="pd-score" style="color:var(--bronze);">${third.score}<small>m²</small></div>
-        <div class="pd-plat"><span class="pd-num">3</span></div>
-      </div>
-    `;
-  }
-
-  /* ────────────────────────────────────────
-     RENDER LISTA
-  ──────────────────────────────────────── */
-  const locIcon = `<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>`;
-
-  function renderList(listData) {
-    const container = document.getElementById('rankList');
-    container.innerHTML = '';
-    listData.forEach((r, i) => {
-      const el = document.createElement('div');
-      el.className = 'ritem';
-      el.style.animationDelay = `${i * 55}ms`;
-      el.innerHTML = `
-        <div class="rpos">${r.pos}</div>
-        <div class="rav" style="background:${r.c}18;color:${r.c};border-color:${r.c}65;">${r.av}</div>
-        <div class="rinfo">
-          <div class="rname">${r.n}</div>
-          <div class="rsub">${locIcon} ${r.city} · ${r.wins} vitórias</div>
-        </div>
-        <div class="rmeta">
-          <div class="rm2">${r.m2} m²</div>
-          <div class="rkm">${r.km} km</div>
-        </div>
-        <div class="trend ${r.t}">${r.t === 'up' ? '↑' : '↓'}</div>
-      `;
-      el.addEventListener('click', () => showToast(`Ver perfil de ${r.n}`));
-      container.appendChild(el);
-    });
-  }
-
-  /* ────────────────────────────────────────
-     RENDER MINHA POSIÇÃO
-  ──────────────────────────────────────── */
-  function renderMyPos(pos, trend) {
-    document.getElementById('myPosItem').innerHTML = `
+/* ── RENDER MINHA POSIÇÃO ── */
+function renderMyPos(pos,trend){
+  document.getElementById('myPosItem').innerHTML=`
+    <a class="ritem me" href="perfil.html">
       <div class="rpos" style="color:var(--p-l);">${pos}</div>
       <div class="rav" style="background:var(--p-dim);color:var(--p-l);border-color:var(--p);">JS</div>
       <div class="rinfo">
         <div class="rname">João Silva <span class="you-tag">Você</span></div>
-        <div class="rsub">${locIcon} São Paulo · 8 vitórias</div>
+        <div class="rsub">${locIco} São Paulo · 8 vitórias</div>
       </div>
       <div class="rmeta">
         <div class="rm2">48.3k m²</div>
         <div class="rkm">87 km</div>
       </div>
-      <div class="trend ${trend}">${trend === 'up' ? '↑' : '↓'}</div>
-    `;
-  }
+      <div class="trend ${trend}">${trend==='up'?'↑':'↓'}</div>
+    </a>`;
+}
 
-  /* ────────────────────────────────────────
-     TROCAR ESCOPO
-  ──────────────────────────────────────── */
-  let currentScope = 'cidade';
+/* ── NAVEGAR PARA PERFIL ── */
+function goProfile(uid){
+  window.location.href=`perfil.html?user=${uid}`;
+}
 
-  function changeScope(scope, el) {
-    if (scope === currentScope) return;
-    currentScope = scope;
+/* ── RENDER RANKING (escopo + período) ── */
+function renderRanking(scope, period){
+  const data = BUILDERS[scope](period);
+  document.getElementById('scopeLabel').textContent = data.label;
 
-    // Atualiza tab ativa
-    document.querySelectorAll('#scopeG .seg-opt').forEach(o => o.classList.remove('active'));
-    el.classList.add('active');
-
-    // Fade out pódio
-    const podium = document.getElementById('podium');
-    podium.classList.add('fading');
-
-    setTimeout(() => {
-      const data = DATASETS[scope];
-      document.getElementById('scopeLabel').textContent = data.label;
-      renderPodium(data.podium);
-      renderList(data.list);
-      renderMyPos(data.myPos, data.myTrend);
-      podium.classList.remove('fading');
-    }, 200);
-  }
-
-  /* ────────────────────────────────────────
-     PILLS (período)
-  ──────────────────────────────────────── */
-  function pill(el) {
-    el.closest('.pills').querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
-    el.classList.add('active');
-    // Re-renderiza com pequena variação de números para dar feedback visual
-    const data = DATASETS[currentScope];
-    renderList(data.list);
-  }
-
-  /* ────────────────────────────────────────
-     TOAST
-  ──────────────────────────────────────── */
-  let _tt;
-  function showToast(msg) {
-    const t = document.getElementById('toast');
-    t.textContent = msg; t.classList.add('show');
-    clearTimeout(_tt); _tt = setTimeout(() => t.classList.remove('show'), 2200);
-  }
-
-  /* ────────────────────────────────────────
-     RELÓGIO
-  ──────────────────────────────────────── */
-  function tick() {
-    const d = new Date();
-    document.getElementById('relogio').textContent =
-      String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
-  }
-  tick(); setInterval(tick, 30000);
-
-  /* ────────────────────────────────────────
-     INIT — renderiza escopo inicial
-  ──────────────────────────────────────── */
-  (function init() {
-    const data = DATASETS['cidade'];
+  const podium = document.getElementById('podium');
+  podium.classList.add('fading');
+  setTimeout(()=>{
     renderPodium(data.podium);
     renderList(data.list);
     renderMyPos(data.myPos, data.myTrend);
-  })();
+    podium.classList.remove('fading');
+  }, 200);
+}
 
-  /* ── Lê o tema salvo pelo perfil ── */
-  try {
-    if (localStorage.getItem('rc_theme') === 'light') {
-      document.documentElement.setAttribute('data-theme', 'light');
-    }
-  } catch(e) {}
+/* ── CHANGE SCOPE ── */
+function changeScope(scope, el){
+  if(scope===currentScope) return;
+  currentScope=scope;
+  document.querySelectorAll('#scopeG .seg-opt').forEach(o=>o.classList.remove('active'));
+  el.classList.add('active');
+  renderRanking(scope, currentPeriod);
+}
+
+/* ── PILL (período) ── */
+function pill(el, period){
+  document.querySelectorAll('#pillsRow .pill').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  currentPeriod=period;
+  renderRanking(currentScope, period);
+}
+
+/* ── TOAST ── */
+let _tt;
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  clearTimeout(_tt); _tt=setTimeout(()=>t.classList.remove('show'),2200);
+}
+
+/* ── RELÓGIO ── */
+function tick(){
+  const d=new Date();
+  document.getElementById('relogio').textContent=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
+}
+tick(); setInterval(tick,30000);
+
+/* ── INIT ── */
+(function(){
+  renderRanking('cidade','diario');
+})();
+
+try{
+  if(localStorage.getItem('rc_theme')==='light'){
+    document.documentElement.setAttribute('data-theme','light');
+  }
+}catch(e){}
 </script>
 </body>
 </html>
