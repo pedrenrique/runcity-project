@@ -81,7 +81,7 @@
 
     /* ── SCREEN HEADER ── */
     .shdr {
-      display:flex; align-items:center; gap:12px;
+      display:flex; align-items:center; gap:10px;
       padding:10px 20px 14px;
       position:sticky; top:0; z-index:50;
       background:var(--bg); border-bottom:1px solid var(--brd2);
@@ -110,6 +110,21 @@
       flex-shrink:0;
     }
     .theme-btn:hover { background:var(--p-dim); border-color:var(--p-mid); color:var(--p-l); }
+
+    /* ── BOTÃO LOGOUT ── */
+    .logout-btn {
+      width:36px; height:36px; border-radius:50%;
+      background:var(--c0); border:1px solid var(--brd);
+      display:flex; align-items:center; justify-content:center;
+      cursor:pointer; color:var(--t2); transition:all .22s;
+      flex-shrink:0; text-decoration:none;
+    }
+    .logout-btn:hover {
+      background:rgba(239,68,68,.12);
+      border-color:rgba(239,68,68,.35);
+      color:#ef4444;
+      transform:translateX(2px);
+    }
 
     /* ── PROFILE HERO ── */
     .p-hero { padding:20px 20px 16px; text-align:center; position:relative; }
@@ -218,18 +233,6 @@
     }
     .map-btn:hover { background:var(--p-mid); transform:translateY(-1px); }
 
-    .logout-btn {
-      width:100%; margin-top:8px;
-      background:transparent; border:1px solid var(--brd2);
-      color:var(--t2); padding:11px;
-      border-radius:13px;
-      font-size:12px; font-weight:600; font-family:var(--ff-b);
-      cursor:pointer; letter-spacing:.4px;
-      display:flex; align-items:center; justify-content:center; gap:7px;
-      transition:all .22s;
-    }
-    .logout-btn:hover { color:var(--err); border-color:rgba(239,68,68,.35); background:rgba(239,68,68,.05); }
-
     /* ── CONQUISTAS ── */
     .ach-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:12px; }
     .ach { background:var(--c0); border:1px solid var(--brd2); border-radius:13px; padding:14px 8px; text-align:center; transition:all .22s; }
@@ -311,7 +314,7 @@
 
     <div class="pbody">
 
-      <!-- Header com lua -->
+      <!-- Header com lua + logout -->
       <div class="shdr">
         <a class="back" href="javascript:history.back()" title="Voltar">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -319,12 +322,22 @@
           </svg>
         </a>
         <div class="shdr-title">Perfil</div>
+
         <!-- LUA / SOL -->
         <button class="theme-btn" id="themeBtn" onclick="toggleTheme()" title="Alternar tema">
           <svg id="themeIcon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
           </svg>
         </button>
+
+        <!-- LOGOUT -->
+        <a class="logout-btn" href="login.html" title="Sair da conta" onclick="return confirmLogout()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>
+            <polyline points="16 17 21 12 16 7"/>
+            <line x1="21" y1="12" x2="9" y2="12"/>
+          </svg>
+        </a>
       </div>
 
       <!-- Hero -->
@@ -389,21 +402,12 @@
               <div class="bc-sub">8 de 15 partidas</div>
             </div>
           </div>
-          <button class="map-btn" onclick="abrirTerritorio()">
+          <button class="map-btn" onclick="showToast('Abrindo mapa de território…')">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/>
               <line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/>
             </svg>
             Ver meu território na cidade
-          </button>
-
-          <button class="logout-btn" onclick="RC.logout()">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>
-              <polyline points="16 17 21 12 16 7"/>
-              <line x1="21" y1="12" x2="9" y2="12"/>
-            </svg>
-            Sair da conta
           </button>
         </div>
 
@@ -456,7 +460,7 @@
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
         <div class="nlbl">Correr</div>
       </a>
-      <a class="nit" href="lobby.html">
+      <a class="nit" href="#" onclick="showToast('Em breve')">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
         <div class="nlbl">Jogar</div>
       </a>
@@ -473,74 +477,20 @@
   </div>
 </div>
 
-<script src="auth.js"></script>
 <script>
-  /* ── Sessão + perfil (próprio ou de outro via ?id=X) ── */
-  (async () => {
-    const me = await RC.requerLogin();
-    if (!me) return;
-
-    const params = new URLSearchParams(location.search);
-    const idAlvo = params.get('id');
-    const ehOutro = idAlvo && idAlvo !== me.id;
-
-    let perfil = me;
-    let naoEncontrado = false;
-    if (ehOutro) {
-      // sem backend: procura nos usuários cadastrados localmente
-      const users = RC._users.ler();
-      const u = users.find(x => x.id === idAlvo);
-      if (u) {
-        const { senha: _, ...pub } = u;
-        perfil = pub;
-      } else {
-        naoEncontrado = true;
-      }
-    }
-
-    if (naoEncontrado) {
-      document.querySelector('.av').textContent = '?';
-      document.querySelector('.p-name').textContent = 'NÃO ENCONTRADO';
-      document.querySelector('.p-role').textContent = 'Esse jogador não existe ou perfil não disponível';
-      document.querySelector('.p-loc').style.display = 'none';
-      document.querySelector('.xp').style.display = 'none';
-      document.querySelector('.stats').style.display = 'none';
-      document.querySelector('.ptabs').style.display = 'none';
-      document.querySelector('.tbody').innerHTML =
-        '<div style="text-align:center; padding:30px 20px; color:var(--t2); font-size:13px;">' +
-        '<a href="ranking.html" style="color:var(--p-l); text-decoration:none; font-weight:600;">← Voltar ao ranking</a></div>';
-      return;
-    }
-
-    const iniciais = (perfil.nome || '?').trim().split(/\s+/).map(s => s[0]).slice(0,2).join('').toUpperCase();
-    document.querySelector('.av').textContent = iniciais || '?';
-    document.querySelector('.p-name').textContent = (perfil.nome || '').toUpperCase();
-
-    // ajustes pra perfil de outro: esconde sair, troca título do header
-    if (ehOutro && perfil.id !== me.id) {
-      document.querySelector('.shdr-title').textContent = 'Perfil';
-      const btnSair = document.querySelector('.logout-btn');
-      if (btnSair) btnSair.style.display = 'none';
-      const btnMapa = document.querySelector('.map-btn');
-      if (btnMapa) {
-        btnMapa.lastChild.textContent = ' Ver território de ' + (perfil.nome || '').split(' ')[0];
-      }
-    }
-  })();
-
-  /* ── Abrir mapa do território (do user atual ou do alvo) ── */
-  function abrirTerritorio() {
-    const params = new URLSearchParams(location.search);
-    const idAlvo = params.get('id');
-    window.location.href = 'mapa-cidade.html?u=' + encodeURIComponent(idAlvo || 'me');
-  }
-
   /* ── ABAS ── */
   function mudarAba(id, el) {
     document.querySelectorAll('.ptab').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('.pane').forEach(p => p.classList.remove('active'));
     el.classList.add('active');
     document.getElementById('pane-' + id).classList.add('active');
+  }
+
+  /* ── LOGOUT ── */
+  function confirmLogout() {
+    showToast('Saindo da conta…');
+    setTimeout(() => { window.location.href = 'login.html'; }, 900);
+    return false;
   }
 
   /* ── HISTÓRICO ── */
@@ -620,7 +570,7 @@
   try {
     if (localStorage.getItem('rc_theme') === 'light') {
       dark = true;
-      toggleTheme(); /* começa dark=true, toggleTheme vira light */
+      toggleTheme();
     }
   } catch(e) {}
 </script>
