@@ -80,6 +80,11 @@
     }
     .marca span { color: var(--p-l); }
 
+    #lobby-titulo-area {
+      flex-shrink: 0;
+      min-width: 0;
+      max-width: 55%;
+    }
     .sala-tag {
       display:flex; align-items:center; gap:8px;
       background: var(--p-dim);
@@ -88,7 +93,7 @@
       padding: 5px 6px 5px 12px;
       cursor: pointer;
       transition: all .2s;
-      max-width: 60%;
+      max-width: 100%;
     }
     .sala-tag:hover { background: var(--p-mid); }
     .sala-tag .sala-nome {
@@ -96,6 +101,7 @@
       color: var(--p-ll);
       letter-spacing: .3px;
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      flex: 1; min-width: 0;
     }
     .sala-tag .sair-x {
       width: 22px; height: 22px;
@@ -563,9 +569,7 @@
   <!-- Status bar -->
   <!-- Header: marca ou tag da sala + chips dos jogadores -->
   <div class="lhdr">
-    <div id="lobby-titulo-area">
-      <div class="marca" id="marca">RUN<span>CITY</span></div>
-    </div>
+    <div id="lobby-titulo-area"></div>
     <div class="chips" id="lobby-jogadores"></div>
   </div>
 
@@ -634,10 +638,6 @@
     <a class="nit" href="index.html">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
       <div class="nlbl">Início</div>
-    </a>
-    <a class="nit" href="corrida-solo.html">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-      <div class="nlbl">Correr</div>
     </a>
     <a class="nit active" href="lobby.html">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
@@ -772,7 +772,7 @@
       btn.classList.remove('inativo');
       dica.style.display = 'none';
     } else {
-      titArea.innerHTML = `<div class="marca">RUN<span>CITY</span></div>`;
+      titArea.innerHTML = '';
       chips.innerHTML = '';
       btn.disabled = true;
       btn.classList.add('inativo');
