@@ -785,8 +785,18 @@
     abrir('popup-sair-sala');
   }
 
-  function sairDaSala() {
-    estado.sala = null;
+  async function sairDaSala() {
+    const codigo = estado.sala?.codigo;
+    const token  = RC.getToken();
+    if (codigo && token) {
+      try {
+        await fetch(`/api/salas/${codigo}/sair`, {
+          method: 'DELETE',
+          headers: { Authorization: 'Bearer ' + token },
+        });
+      } catch {}
+    }
+    estado.sala      = null;
     estado.ehCriador = false;
     estado.jogadores = [{ nome: meuNome, pronto: false, eu: true }];
     estado.convidados = [];
@@ -831,7 +841,29 @@
     abrir('popup-preparar');
   }
 
-  function togglePronto() {
+  async function togglePronto() {
+    const codigo = estado.sala?.codigo;
+    const token  = RC.getToken();
+    if (codigo && token) {
+      try {
+        const res = await fetch(`/api/salas/${codigo}/pronto`, {
+          method: 'PATCH',
+          headers: { Authorization: 'Bearer ' + token },
+        });
+        if (res.ok) {
+          const sala = await res.json();
+          const meId = RC.getUser()?.id;
+          estado.jogadores = (sala.jogadores || []).map(j => ({
+            nome: (j.nome || '').split(' ')[0],
+            pronto: j.pronto,
+            eu: j.user_id === meId,
+          }));
+          atualizarBarra();
+          abrirPreparar();
+          return;
+        }
+      } catch {}
+    }
     const eu = estado.jogadores.find(j => j.eu);
     eu.pronto = !eu.pronto;
     atualizarBarra();
@@ -852,7 +884,17 @@
     }
   }
 
-  function iniciarCorrida() {
+  async function iniciarCorrida() {
+    const codigo = estado.sala?.codigo;
+    const token  = RC.getToken();
+    if (codigo && token) {
+      try {
+        await fetch(`/api/salas/${codigo}/iniciar`, {
+          method: 'POST',
+          headers: { Authorization: 'Bearer ' + token },
+        });
+      } catch {}
+    }
     const tempo = estado.sala ? estado.sala.tempo : 10;
     window.location.href = `corrida.html?tempo=${tempo}`;
   }
@@ -902,19 +944,44 @@
   const SALAS_POR_PAG = 5;
   let pagSalas = 0;
 
-  function renderizarSalasAbertas() {
+  async function renderizarSalasAbertas() {
     const lista = document.getElementById('lista-salas-abertas');
-    const total = salasPublicas.length;
+    lista.innerHTML = '<li style="padding:12px;color:var(--t2,#888);text-align:center;font-size:13px;">Carregando…</li>';
+    try {
+      const res = await fetch('/api/salas');
+      if (res.ok) {
+        const salas = await res.json();
+        if (!salas.length) {
+          lista.innerHTML = '<li style="padding:12px;color:var(--t2,#888);text-align:center;font-size:13px;">Nenhuma sala aberta</li>';
+        } else {
+          lista.innerHTML = salas.map(s => `
+            <li class="item-popup">
+              <div>
+                <strong>${s.nome}</strong>
+                <small>${s.tempo} min · ${s.jogadores}/${s.max_jogadores} jogadores</small>
+              </div>
+              <button class="btn-acao-lista" onclick="entrarSala('${s.codigo}')">Entrar</button>
+            </li>`).join('');
+        }
+        document.getElementById('pagInfoSala').textContent = `${salas.length} sala${salas.length !== 1 ? 's' : ''}`;
+        document.getElementById('btnPrevSala').disabled = true;
+        document.getElementById('btnNextSala').disabled = true;
+        return;
+      }
+    } catch {}
+
+    // fallback mock
+    const total    = salasPublicas.length;
     const totalPag = Math.max(1, Math.ceil(total / SALAS_POR_PAG));
     if (pagSalas >= totalPag) pagSalas = totalPag - 1;
     const slice = salasPublicas.slice(pagSalas * SALAS_POR_PAG, (pagSalas + 1) * SALAS_POR_PAG);
-    lista.innerHTML = slice.map((sala) => `
+    lista.innerHTML = slice.map(s => `
       <li class="item-popup">
         <div>
-          <strong>${sala.nome}</strong>
-          <small>${sala.tempo} min · ${sala.jogadores}/${sala.max} jogadores</small>
+          <strong>${s.nome}</strong>
+          <small>${s.tempo} min · ${s.jogadores}/${s.max} jogadores</small>
         </div>
-        <button class="btn-acao-lista" onclick="entrarSala('${sala.codigo}')">Entrar</button>
+        <button class="btn-acao-lista" onclick="entrarSala('${s.codigo}')">Entrar</button>
       </li>`).join('');
     document.getElementById('pagInfoSala').textContent = `Página ${pagSalas + 1} de ${totalPag}`;
     document.getElementById('btnPrevSala').disabled = pagSalas === 0;
@@ -926,14 +993,40 @@
     if (pagSalas < t - 1) { pagSalas++; renderizarSalasAbertas(); }
   }
 
-  function entrarSala(codigo) {
+  async function entrarSala(codigo) {
+    const token = RC.getToken();
+    if (token) {
+      try {
+        const res = await fetch(`/api/salas/${codigo}/entrar`, {
+          method: 'POST',
+          headers: { Authorization: 'Bearer ' + token },
+        });
+        if (res.ok) {
+          const sala = await res.json();
+          const meId = RC.getUser()?.id;
+          estado.sala      = { nome: sala.nome, tempo: sala.tempo, codigo: sala.codigo, max: sala.max_jogadores };
+          estado.ehCriador = sala.criador_id === meId;
+          estado.jogadores = (sala.jogadores || []).map(j => ({
+            nome: (j.nome || '').split(' ')[0],
+            pronto: j.pronto,
+            eu: j.user_id === meId,
+          }));
+          atualizarBarra();
+          return;
+        }
+        const err = await res.json().catch(() => ({}));
+        toast(err.erro || 'Não foi possível entrar na sala');
+        return;
+      } catch {}
+    }
+    // fallback mock
     const sala = salasPublicas.find(s => s.codigo === codigo);
     if (!sala) { toast('Sala não encontrada'); return; }
-    estado.sala = { nome: sala.nome, tempo: sala.tempo, codigo: sala.codigo, max: sala.max };
+    estado.sala      = { nome: sala.nome, tempo: sala.tempo, codigo: sala.codigo, max: sala.max };
     estado.ehCriador = false;
     estado.jogadores = [
       ...Array.from({ length: sala.jogadores }, (_, k) => ({ nome: `Jogador ${k + 1}`, pronto: false })),
-      { nome: meuNome, pronto: false, eu: true }
+      { nome: meuNome, pronto: false, eu: true },
     ];
     atualizarBarra();
   }
@@ -942,9 +1035,7 @@
   function entrarPorCodigo() {
     const cod = document.getElementById('input-codigo').value.trim().toUpperCase();
     if (!cod) { toast('Informe um código'); return; }
-    const sala = salasPublicas.find(s => s.codigo === cod);
-    if (!sala) { toast('Código não encontrado'); return; }
-    entrarSala(sala.codigo);
+    entrarSala(cod);
     document.getElementById('input-codigo').value = '';
   }
 
@@ -959,12 +1050,40 @@
     return s;
   }
 
-  function criarSala() {
-    const nome = document.getElementById('input-nome-sala').value.trim() || 'Minha sala';
+  async function criarSala() {
+    const nome  = document.getElementById('input-nome-sala').value.trim() || 'Minha sala';
     const tempo = parseInt(document.getElementById('select-tempo-sala').value);
-    const max = parseInt(document.getElementById('select-jogadores').value);
+    const max   = parseInt(document.getElementById('select-jogadores').value);
+    const token = RC.getToken();
+
+    if (token) {
+      try {
+        const res = await fetch('/api/salas', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+          body: JSON.stringify({ nome, tempo, max_jogadores: max }),
+        });
+        if (res.ok) {
+          const sala = await res.json();
+          const meId = RC.getUser()?.id;
+          estado.sala      = { nome: sala.nome, tempo: sala.tempo, codigo: sala.codigo, max: sala.max_jogadores };
+          estado.ehCriador = true;
+          estado.jogadores = (sala.jogadores || []).map(j => ({
+            nome: (j.nome || '').split(' ')[0],
+            pronto: j.pronto,
+            eu: j.user_id === meId,
+          }));
+          atualizarBarra();
+          document.getElementById('input-nome-sala').value = '';
+          toast('Sala criada · ' + sala.codigo);
+          return;
+        }
+      } catch {}
+    }
+
+    // fallback mock
     const codigo = gerarCodigo();
-    estado.sala = { nome, tempo, codigo, max };
+    estado.sala      = { nome, tempo, codigo, max };
     estado.ehCriador = true;
     estado.jogadores = [{ nome: meuNome, pronto: false, eu: true }];
     atualizarBarra();
