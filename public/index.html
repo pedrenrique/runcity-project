@@ -52,7 +52,25 @@
     .notif-dot{
       position:absolute;top:7px;right:7px;width:7px;height:7px;
       border-radius:50%;background:#ef4444;border:1.5px solid var(--bg);
+      display:none;
     }
+    .notif-panel{
+      position:absolute;right:0;top:calc(100% + 8px);
+      width:272px;background:var(--c1);border:1px solid var(--brd);
+      border-radius:16px;z-index:200;overflow:hidden;
+      box-shadow:0 12px 40px rgba(0,0,0,.6);
+    }
+    .notif-panel-hdr{
+      padding:12px 16px 10px;font-size:10px;font-weight:800;
+      color:var(--t2);letter-spacing:.8px;text-transform:uppercase;
+      border-bottom:1px solid var(--brd2);display:flex;justify-content:space-between;align-items:center;
+    }
+    .notif-panel-hdr a{color:var(--p-l);cursor:pointer;font-size:10px;font-weight:700;letter-spacing:0;}
+    .notif-item{padding:11px 16px;border-bottom:1px solid var(--brd2);font-size:12px;color:var(--t1);line-height:1.4;}
+    .notif-item.nao-lida{background:var(--p-dim);}
+    .notif-item-sub{font-size:10px;color:var(--t2);margin-top:3px;}
+    .notif-vazia{padding:20px 16px;text-align:center;color:var(--t2);font-size:12px;}
+    .hdr-actions{position:relative;}
     .av-link{
       width:36px;height:36px;border-radius:50%;background:var(--p-dim);border:2px solid var(--p);
       display:flex;align-items:center;justify-content:center;
@@ -205,12 +223,19 @@
     <div class="hdr">
       <div class="marca">RUN<span>CITY</span></div>
       <div class="hdr-actions">
-        <div class="notif-btn" onclick="showToast('Nenhuma notificação nova')">
-          <div class="notif-dot"></div>
+        <div class="notif-btn" id="notifBtn" onclick="toggleNotifPanel()">
+          <div class="notif-dot" id="notifDot"></div>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/>
             <path d="M13.73 21a2 2 0 01-3.46 0"/>
           </svg>
+        </div>
+        <div class="notif-panel" id="notifPanel" style="display:none">
+          <div class="notif-panel-hdr">
+            Notificações
+            <a onclick="marcarNotifLidas()">Marcar lidas</a>
+          </div>
+          <div id="notifList"><div class="notif-vazia">Carregando…</div></div>
         </div>
         <a class="av-link" href="perfil.html" id="avTopo" title="Meu perfil"></a>
       </div>
@@ -499,7 +524,7 @@ function buildCard(post, idx){
         0
       </button>
       <div class="react-sep"></div>
-      <button class="react-btn" onclick="showToast('Link copiado!')">
+      <button class="react-btn" onclick="compartilhar(${post.user_id || 0}, '${post.nome.replace(/'/g, "\\'")}', '${post.area}')">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
         Compartilhar
       </button>
@@ -599,6 +624,87 @@ async function carregarFeed() {
   renderFeed(POSTS);
 }
 
+/* Compartilhar */
+async function compartilhar(userId, nome, area) {
+  const url = location.origin + '/perfil.html' + (userId ? '?user=' + userId : '');
+  const text = `${nome} conquistou ${area} m² no RunCity!`;
+  if (navigator.share) {
+    try { await navigator.share({ title: 'RunCity', text, url }); return; } catch {}
+  }
+  try {
+    await navigator.clipboard.writeText(url);
+    showToast('Link copiado!');
+  } catch {
+    showToast('Não foi possível copiar o link');
+  }
+}
+
+/* Notificações */
+let _notifAberto = false;
+
+function toggleNotifPanel() {
+  const panel = document.getElementById('notifPanel');
+  _notifAberto = !_notifAberto;
+  panel.style.display = _notifAberto ? 'block' : 'none';
+  if (_notifAberto) carregarNotificacoes();
+}
+
+document.addEventListener('click', e => {
+  if (_notifAberto && !document.getElementById('notifBtn').contains(e.target)) {
+    _notifAberto = false;
+    document.getElementById('notifPanel').style.display = 'none';
+  }
+});
+
+async function carregarNotificacoes() {
+  const token = RC.getToken();
+  const list  = document.getElementById('notifList');
+  if (!token) {
+    list.innerHTML = '<div class="notif-vazia">Faça login para ver notificações</div>';
+    return;
+  }
+  try {
+    const res = await fetch('/api/notificacoes', { headers: { Authorization: 'Bearer ' + token } });
+    if (res.ok) {
+      const { notificacoes, nao_lidas } = await res.json();
+      document.getElementById('notifDot').style.display = nao_lidas > 0 ? 'block' : 'none';
+      if (!notificacoes.length) {
+        list.innerHTML = '<div class="notif-vazia">Nenhuma notificação ainda</div>';
+        return;
+      }
+      list.innerHTML = notificacoes.map(n => `
+        <div class="notif-item${n.lida ? '' : ' nao-lida'}">
+          ${n.mensagem}
+          <div class="notif-item-sub">${new Date(n.criado_em).toLocaleDateString('pt-BR', { day:'2-digit', month:'short' })}</div>
+        </div>`).join('');
+      return;
+    }
+  } catch {}
+  list.innerHTML = '<div class="notif-vazia">Nenhuma notificação ainda</div>';
+}
+
+async function marcarNotifLidas() {
+  const token = RC.getToken();
+  if (!token) return;
+  try {
+    await fetch('/api/notificacoes/ler', { method:'PATCH', headers:{ Authorization:'Bearer '+token } });
+    document.getElementById('notifDot').style.display = 'none';
+    document.querySelectorAll('.notif-item.nao-lida').forEach(el => el.classList.remove('nao-lida'));
+  } catch {}
+}
+
+async function initNotifDot() {
+  const token = RC.getToken();
+  if (!token) return;
+  try {
+    const res = await fetch('/api/notificacoes', { headers: { Authorization: 'Bearer ' + token } });
+    if (res.ok) {
+      const { nao_lidas } = await res.json();
+      if (nao_lidas > 0) document.getElementById('notifDot').style.display = 'block';
+    }
+  } catch {}
+}
+
 /* Toast */
 let _tt;
 function showToast(msg){
@@ -618,6 +724,7 @@ try{
 }catch(e){}
 
 carregarFeed();
+initNotifDot();
 </script>
 </body>
 </html>
