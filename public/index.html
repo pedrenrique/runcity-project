@@ -605,23 +605,38 @@ const POSTS_MOCK = [
 
 /* Carrega o feed */
 async function carregarFeed() {
-  const meId = RC.getUser()?.id ?? null;
-  try {
-    const headers = {};
-    const token = RC.getToken();
-    if (token) headers.Authorization = 'Bearer ' + token;
+  const meId  = RC.getUser()?.id ?? null;
+  const token = RC.getToken();
+  const headers = token ? { Authorization: 'Bearer ' + token } : {};
 
+  try {
     const res = await fetch('/api/corridas/feed', { headers });
     if (res.ok) {
-      POSTS = (await res.json()).map(c => apiParaPost(c, meId));
+      const items = await res.json();
+      if (items.length === 0 && token) {
+        document.getElementById('feed').innerHTML = `
+          <div style="text-align:center;padding:48px 24px 32px;">
+            <div style="font-size:36px;margin-bottom:14px;">🏃</div>
+            <div style="color:var(--t1);font-weight:700;font-size:15px;margin-bottom:8px;">Seu feed está vazio</div>
+            <div style="color:var(--t2);font-size:13px;line-height:1.6;margin-bottom:20px;">Adicione amigos para ver as corridas deles aqui!</div>
+            <a href="ranking.html" style="display:inline-block;padding:10px 24px;background:var(--p);color:#fff;border-radius:12px;font-size:13px;font-weight:700;text-decoration:none;">Descobrir corredores</a>
+          </div>`;
+        return;
+      }
+      POSTS = items.map(c => apiParaPost(c, meId));
       renderFeed(POSTS);
       return;
     }
   } catch {}
 
-  // fallback mock
-  POSTS = POSTS_MOCK;
-  renderFeed(POSTS);
+  if (!token) {
+    // Sem login — exibe mock como demonstração
+    POSTS = POSTS_MOCK;
+    renderFeed(POSTS);
+  } else {
+    document.getElementById('feed').innerHTML =
+      '<p style="text-align:center;color:var(--t2);padding:40px 0;">Erro ao carregar o feed. Tente novamente.</p>';
+  }
 }
 
 /* Compartilhar */

@@ -96,6 +96,9 @@
     .trend{font-size:11px;font-weight:800;margin-left:2px;}
     .trend.up{color:var(--ok);}
     .trend.dn{color:var(--err);}
+    .radd{width:26px;height:26px;border-radius:50%;background:transparent;border:1.5px solid var(--brd);color:var(--t2);font-size:16px;line-height:1;cursor:pointer;flex-shrink:0;transition:all .2s;display:flex;align-items:center;justify-content:center;margin-left:2px;padding:0;}
+    .radd:hover{border-color:var(--p-mid);color:var(--p-l);background:var(--p-dim);}
+    .radd:disabled{border-color:rgba(34,197,94,.3);color:var(--ok);cursor:default;background:transparent;}
     .mypos{padding:14px 20px 0;}
     .mypos-lbl{font-size:10px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--t2);margin-bottom:8px;}
 
@@ -180,6 +183,7 @@
   </div>
 </div>
 
+<script src="auth.js"></script>
 <script>
 /* ── COR DOS AVATARES ── */
 const AV_C = { JS:'#a084fd',AC:'#e8a020',PL:'#fb923c',TB:'#38bdf8',CM:'#c084fc',FG:'#f97316',LP:'#2dd4bf',KS:'#ef4444',MR:'#f472b6',RT:'#f97316',LN:'#2dd4bf',MS:'#f472b6',BC:'#a78bfa',SA:'#38bdf8',ML:'#c084fc',DP:'#38bdf8' };
@@ -254,6 +258,11 @@ function mkAmigos(period){
 
 const BUILDERS = { cidade:mkCidade, global:mkGlobal, amigos:mkAmigos };
 
+const PALETTE = ['#a084fd','#e8a020','#fb923c','#38bdf8','#c084fc','#f97316','#2dd4bf','#ef4444','#f472b6','#22c55e'];
+function userColor(id){ return PALETTE[(id||0) % PALETTE.length]; }
+function fmtM2(v){ return v >= 1000 ? (v/1000).toFixed(1)+'k' : String(Math.round(v)); }
+const SCOPE_LABELS = { cidade:'São Paulo, SP', global:'Mundo todo', amigos:'Seus amigos' };
+
 let currentScope  = 'cidade';
 let currentPeriod = 'diario';
 
@@ -261,8 +270,8 @@ let currentPeriod = 'diario';
 const ME_STYLE = `background:var(--p-dim);color:var(--p-l);border-color:var(--p);`;
 const crown = `<div style="position:absolute;top:-12px;left:50%;transform:translateX(-50%);"><svg width="22" height="14" viewBox="0 0 36 22" fill="var(--gold)"><polygon points="2,22 8,4 18,14 28,4 34,22"/><circle cx="2" cy="4" r="2.5"/><circle cx="18" cy="2" r="2.5"/><circle cx="34" cy="4" r="2.5"/></svg></div>`;
 
-function avStyle(uid){
-  const c = AV_C[uid]||'#a084fd';
+function avStyle(uid, col){
+  const c = col || AV_C[uid] || '#a084fd';
   return `background:${c}1e;color:${c};border-color:${c}65;`;
 }
 
@@ -271,21 +280,21 @@ function renderPodium(list){
   const [sec,fst,thd] = list;
   document.getElementById('podium').innerHTML = `
     <div class="pd p2" onclick="goProfile('${sec.uid}')">
-      <div class="pd-av" style="${sec.isMe?ME_STYLE:avStyle(sec.av)}">${sec.av}</div>
+      <div class="pd-av" style="${sec.isMe?ME_STYLE:avStyle(sec.av,sec.col)}">${sec.av}</div>
       <div class="pd-name">${sec.name.replace('\n','<br>')}</div>
       <div class="pd-score">${sec.score}<small>m²</small></div>
       <div class="pd-plat"><span class="pd-num">2</span></div>
     </div>
     <div class="pd p1" onclick="goProfile('${fst.uid}')">
       <div style="position:relative;display:inline-block;">${crown}
-        <div class="pd-av" style="margin-top:8px;${fst.isMe?ME_STYLE:avStyle(fst.av)}">${fst.av}</div>
+        <div class="pd-av" style="margin-top:8px;${fst.isMe?ME_STYLE:avStyle(fst.av,fst.col)}">${fst.av}</div>
       </div>
       <div class="pd-name" style="font-size:12px;font-weight:800;">${fst.name.replace('\n','<br>')}</div>
       <div class="pd-score">${fst.score}<small>m²</small></div>
       <div class="pd-plat"><span class="pd-num">1</span></div>
     </div>
     <div class="pd p3" onclick="goProfile('${thd.uid}')">
-      <div class="pd-av" style="${thd.isMe?ME_STYLE:avStyle(thd.av)}">${thd.av}</div>
+      <div class="pd-av" style="${thd.isMe?ME_STYLE:avStyle(thd.av,thd.col)}">${thd.av}</div>
       <div class="pd-name">${thd.name.replace('\n','<br>')}</div>
       <div class="pd-score" style="color:var(--bronze);">${thd.score}<small>m²</small></div>
       <div class="pd-plat"><span class="pd-num">3</span></div>
@@ -299,42 +308,87 @@ function renderList(listData){
   const c=document.getElementById('rankList');
   c.innerHTML='';
   listData.forEach((r,i)=>{
-    const col = AV_C[r.av]||'#a084fd';
+    const col = r.col || AV_C[r.av] || '#a084fd';
+    const href = r.id ? `perfil.html?user=${r.id}` : `perfil.html?user=${r.uid||r.av}`;
+    const addBtn = (r.id && !r.isMe && !r.ehAmigo)
+      ? `<button class="radd" onclick="event.preventDefault();event.stopPropagation();addFriend(${r.id},this)" title="Adicionar amigo">+</button>`
+      : '';
+    const sublbl = r.id ? `${r.wins} corridas` : `${r.wins} vitórias`;
     const el=document.createElement('a');
-    el.className='ritem';
-    el.href = `perfil.html?user=${r.uid||r.av}`;
+    el.className='ritem' + (r.isMe ? ' me' : '');
+    el.href = href;
     el.style.animationDelay=`${i*55}ms`;
     el.innerHTML=`
       <div class="rpos">${r.pos}</div>
       <div class="rav" style="background:${col}1e;color:${col};border-color:${col}65;">${r.av}</div>
       <div class="rinfo">
-        <div class="rname">${r.n}</div>
-        <div class="rsub">${locIco} ${r.city} · ${r.wins} vitórias</div>
+        <div class="rname">${r.n}${r.isMe?' <span class="you-tag">Você</span>':''}</div>
+        <div class="rsub">${locIco} ${r.city} · ${sublbl}</div>
       </div>
       <div class="rmeta">
         <div class="rm2">${r.m2} m²</div>
         <div class="rkm">${r.km} km</div>
       </div>
-      <div class="trend ${r.t}">${r.t==='up'?'↑':'↓'}</div>`;
+      <div class="trend ${r.t}">${r.t==='up'?'↑':'↓'}</div>
+      ${addBtn}`;
     c.appendChild(el);
   });
 }
 
-/* ── RENDER MINHA POSIÇÃO ── */
+/* ── RENDER MINHA POSIÇÃO (mock fallback) ── */
 function renderMyPos(pos,trend){
+  const u = (typeof RC !== 'undefined') ? RC.getUser() : null;
+  const ini = u ? u.nome.trim().split(' ').filter(Boolean).map(w=>w[0]).slice(0,2).join('').toUpperCase() : 'JS';
+  const nome = u ? u.nome : 'João Silva';
   document.getElementById('myPosItem').innerHTML=`
     <a class="ritem me" href="perfil.html">
       <div class="rpos" style="color:var(--p-l);">${pos}</div>
-      <div class="rav" style="background:var(--p-dim);color:var(--p-l);border-color:var(--p);">JS</div>
+      <div class="rav" style="background:var(--p-dim);color:var(--p-l);border-color:var(--p);">${ini}</div>
       <div class="rinfo">
-        <div class="rname">João Silva <span class="you-tag">Você</span></div>
-        <div class="rsub">${locIco} São Paulo · 8 vitórias</div>
+        <div class="rname">${nome} <span class="you-tag">Você</span></div>
+        <div class="rsub">${locIco} ${u?.cidade||'São Paulo'} · 0 corridas</div>
       </div>
       <div class="rmeta">
-        <div class="rm2">48.3k m²</div>
-        <div class="rkm">87 km</div>
+        <div class="rm2">0 m²</div>
+        <div class="rkm">0 km</div>
       </div>
       <div class="trend ${trend}">${trend==='up'?'↑':'↓'}</div>
+    </a>`;
+}
+
+/* ── RENDER MINHA POSIÇÃO (dados reais) ── */
+function renderMyPosReal(myItem){
+  const ion = document.getElementById('myPosItem');
+  if (!myItem) {
+    const u = (typeof RC !== 'undefined') ? RC.getUser() : null;
+    if (!u) { ion.innerHTML = ''; return; }
+    const ini = u.nome.trim().split(' ').filter(Boolean).map(w=>w[0]).slice(0,2).join('').toUpperCase();
+    ion.innerHTML=`
+      <div class="ritem me" style="cursor:default;">
+        <div class="rpos" style="color:var(--p-l);">—</div>
+        <div class="rav" style="background:var(--p-dim);color:var(--p-l);border-color:var(--p);">${ini}</div>
+        <div class="rinfo">
+          <div class="rname">${u.nome} <span class="you-tag">Você</span></div>
+          <div class="rsub">${locIco} Brasil · 0 corridas</div>
+        </div>
+        <div class="rmeta"><div class="rm2">0 m²</div><div class="rkm">0 km</div></div>
+        <div class="trend up">—</div>
+      </div>`;
+    return;
+  }
+  ion.innerHTML=`
+    <a class="ritem me" href="perfil.html">
+      <div class="rpos" style="color:var(--p-l);">${myItem.pos}</div>
+      <div class="rav" style="background:var(--p-dim);color:var(--p-l);border-color:var(--p);">${myItem.iniciais}</div>
+      <div class="rinfo">
+        <div class="rname">${myItem.nome} <span class="you-tag">Você</span></div>
+        <div class="rsub">${locIco} ${myItem.cidade} · ${myItem.corridas} corridas</div>
+      </div>
+      <div class="rmeta">
+        <div class="rm2">${fmtM2(myItem.m2)} m²</div>
+        <div class="rkm">${Math.round(myItem.km)} km</div>
+      </div>
+      <div class="trend up">↑</div>
     </a>`;
 }
 
@@ -343,19 +397,95 @@ function goProfile(uid){
   window.location.href=`perfil.html?user=${uid}`;
 }
 
-/* ── RENDER RANKING (escopo + período) ── */
-function renderRanking(scope, period){
-  const data = BUILDERS[scope](period);
-  document.getElementById('scopeLabel').textContent = data.label;
+/* ── CARREGAR RANKING DA API ── */
+async function carregarRankingAPI(scope, period){
+  const token = (typeof RC !== 'undefined') ? RC.getToken() : null;
+  const headers = token ? { Authorization: 'Bearer ' + token } : {};
+  try {
+    const params = new URLSearchParams({ escopo: scope, periodo: period });
+    const res = await fetch(`/api/ranking?${params}`, { headers });
+    if (res.ok) return await res.json();
+  } catch {}
+  return null;
+}
 
+/* ── ADICIONAR AMIGO ── */
+async function addFriend(id, btn){
+  const token = (typeof RC !== 'undefined') ? RC.getToken() : null;
+  if (!token) { showToast('Faça login para adicionar amigos'); return; }
+  btn.disabled = true;
+  btn.textContent = '…';
+  try {
+    const res = await fetch(`/api/amigos/${id}`, {
+      method: 'POST',
+      headers: { Authorization: 'Bearer ' + token }
+    });
+    if (res.ok) {
+      btn.textContent = '✓';
+      btn.style.color = 'var(--ok)';
+      btn.style.borderColor = 'rgba(34,197,94,.3)';
+      showToast('Pedido de amizade enviado!');
+    } else {
+      const d = await res.json().catch(()=>({}));
+      showToast(d.erro || 'Erro ao enviar pedido');
+      btn.disabled = false;
+      btn.textContent = '+';
+    }
+  } catch {
+    showToast('Sem conexão');
+    btn.disabled = false;
+    btn.textContent = '+';
+  }
+}
+
+/* ── RENDER RANKING (escopo + período) ── */
+async function renderRanking(scope, period){
   const podium = document.getElementById('podium');
   podium.classList.add('fading');
-  setTimeout(()=>{
+
+  const [apiItems] = await Promise.all([
+    carregarRankingAPI(scope, period),
+    new Promise(r => setTimeout(r, 200))
+  ]);
+
+  if (apiItems && apiItems.length >= 3) {
+    document.getElementById('scopeLabel').textContent = SCOPE_LABELS[scope] || scope;
+
+    // Converter para formato dos renders
+    const toItem = r => ({
+      id:      r.id,
+      uid:     String(r.id),
+      av:      r.iniciais,
+      n:       r.nome,
+      name:    r.nome.replace(/\s+/, '\n'),
+      score:   fmtM2(r.m2),
+      city:    r.cidade,
+      m2:      fmtM2(r.m2),
+      km:      Math.round(r.km),
+      wins:    r.corridas,
+      pos:     r.pos,
+      t:       'up',
+      isMe:    r.isMe,
+      ehAmigo: r.ehAmigo,
+      col:     userColor(r.id),
+    });
+
+    const top3 = apiItems.slice(0, 3).map(toItem);
+    const rest = apiItems.slice(3).map(toItem);
+
+    // Pódio: [2º, 1º, 3º]
+    renderPodium([top3[1] || top3[0], top3[0], top3[2] || top3[0]]);
+    renderList(rest);
+    renderMyPosReal(apiItems.find(r => r.isMe) || null);
+  } else {
+    const data = BUILDERS[scope](period);
+    document.getElementById('scopeLabel').textContent = data.label;
     renderPodium(data.podium);
     renderList(data.list);
     renderMyPos(data.myPos, data.myTrend);
-    podium.classList.remove('fading');
-  }, 200);
+  }
+
+  podium.classList.remove('fading');
 }
 
 /* ── CHANGE SCOPE ── */
