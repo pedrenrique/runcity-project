@@ -1032,6 +1032,7 @@
       }).addTo(mapa);
     } else {
       marcador.setLatLng([nova.lat, nova.lng]);
+      mapa.panTo([nova.lat, nova.lng]);
     }
 
     if (!posAnterior) {
