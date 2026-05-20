@@ -1122,7 +1122,7 @@
     toast('Sala criada · código ' + codigo);
   }
 
-  /* ── Poll sala (detetar início da corrida) ── */
+  /* ── Poll sala (atualiza jogadores e deteta início da corrida) ── */
   let _pollSala = null;
 
   function iniciarPollSala() {
@@ -1134,6 +1134,22 @@
         const res = await fetch(`/api/salas/${codigo}`);
         if (!res.ok) return;
         const sala = await res.json();
+        const meId = RC.getUser()?.id;
+
+        // Atualiza lista de jogadores em tempo real
+        const novosJogadores = (sala.jogadores || []).map(j => ({
+          nome: (j.nome || '').split(' ')[0],
+          pronto: j.pronto,
+          eu: j.user_id === meId,
+        }));
+        if (JSON.stringify(novosJogadores) !== JSON.stringify(estado.jogadores)) {
+          estado.jogadores = novosJogadores;
+          atualizarBarra();
+          if (!document.getElementById('popup-preparar').classList.contains('escondido')) {
+            abrirPreparar();
+          }
+        }
+
         if (sala.status === 'em_jogo') {
           pararPollSala();
           const tempo   = estado.sala?.tempo || sala.tempo || 10;
