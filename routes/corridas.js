@@ -84,6 +84,28 @@ router.post('/', auth, async (req, res) => {
   }
 });
 
+// DELETE /api/corridas/:id
+router.delete('/:id', auth, async (req, res) => {
+  const corridaId = parseInt(req.params.id);
+  if (isNaN(corridaId)) return res.status(400).json({ erro: 'ID inválido.' });
+  try {
+    const { rows } = await pool.query(
+      'DELETE FROM corridas WHERE id = $1 AND user_id = $2 RETURNING xp_ganho',
+      [corridaId, req.user.id]
+    );
+    if (!rows.length) return res.status(404).json({ erro: 'Corrida não encontrada.' });
+    if (rows[0].xp_ganho > 0) {
+      await pool.query(
+        'UPDATE users SET xp = GREATEST(xp - $1, 0) WHERE id = $2',
+        [rows[0].xp_ganho, req.user.id]
+      );
+    }
+    res.json({ ok: true });
+  } catch {
+    res.status(500).json({ erro: 'Erro interno.' });
+  }
+});
+
 // POST /api/corridas/:id/curtir
 router.post('/:id/curtir', auth, async (req, res) => {
   const corridaId = parseInt(req.params.id);
