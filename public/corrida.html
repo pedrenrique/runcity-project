@@ -712,9 +712,12 @@
   const minutos    = parseInt(params.get('tempo')) || 10;
   const codigoSala = params.get('sala') || null;
   const meuId      = RC.getUser()?.id ?? null;
-  let segundosRestantes = minutos * 60;
-  const totalSegundos = segundosRestantes;
+  const totalSegundos = minutos * 60;
+  let segundosRestantes = totalSegundos;
   let pausado = false;
+  let _timerStart = Date.now();
+  let _pausedMs   = 0;
+  let _pauseStart = null;
 
   /* ── Ranking ao vivo ── */
   let rankingAtual     = [];
@@ -820,6 +823,10 @@
   }
 
   function atualizarCronometro() {
+    if (!pausado) {
+      const elapsed = Date.now() - _timerStart - _pausedMs;
+      segundosRestantes = Math.max(0, totalSegundos - Math.floor(elapsed / 1000));
+    }
     const m = Math.floor(segundosRestantes / 60).toString().padStart(2, '0');
     const s = (segundosRestantes % 60).toString().padStart(2, '0');
     document.getElementById('cronometro').textContent = `${m}:${s}`;
@@ -827,16 +834,25 @@
     if (segundosRestantes <= 0) {
       clearInterval(intervalo);
       mostrarResultado();
-      return;
     }
-    if (!pausado) segundosRestantes--;
   }
 
   atualizarCronometro();
   const intervalo = setInterval(atualizarCronometro, 1000);
 
+  // Atualiza imediatamente ao voltar para a aba
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden && !pausado) atualizarCronometro();
+  });
+
   function alternarPause() {
     pausado = !pausado;
+    if (pausado) {
+      _pauseStart = Date.now();
+    } else {
+      _pausedMs += Date.now() - _pauseStart;
+      _pauseStart = null;
+    }
     const btn = document.getElementById('btn-pause');
     btn.classList.toggle('retomar', pausado);
     btn.innerHTML = pausado
