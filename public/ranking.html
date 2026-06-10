@@ -445,47 +445,71 @@ async function renderRanking(scope, period){
   const podium = document.getElementById('podium');
   podium.classList.add('fading');
 
+  const token = (typeof RC !== 'undefined') ? RC.getToken() : null;
   const [apiItems] = await Promise.all([
     carregarRankingAPI(scope, period),
     new Promise(r => setTimeout(r, 200))
   ]);
 
-  if (apiItems && apiItems.length >= 3) {
+  if (apiItems !== null) {
+    // Temos resposta da API — usa sempre, independente de quantos itens
     document.getElementById('scopeLabel').textContent = SCOPE_LABELS[scope] || scope;
 
-    // Converter para formato dos renders
     const toItem = r => ({
-      id:      r.id,
-      uid:     String(r.id),
-      av:      r.iniciais,
-      n:       r.nome,
-      name:    r.nome.replace(/\s+/, '\n'),
-      score:   fmtM2(r.m2),
-      city:    r.cidade,
-      m2:      fmtM2(r.m2),
-      km:      Math.round(r.km),
-      wins:    r.corridas,
-      pos:     r.pos,
-      t:       'up',
-      isMe:    r.isMe,
-      ehAmigo: r.ehAmigo,
-      col:     userColor(r.id),
+      id:       r.id,
+      uid:      String(r.id),
+      av:       r.iniciais,
+      n:        r.nome,
+      name:     r.nome.replace(/\s+/, '\n'),
+      score:    fmtM2(r.m2),
+      city:     r.cidade,
+      m2:       fmtM2(r.m2),
+      km:       Math.round(r.km),
+      wins:     r.corridas,
+      pos:      r.pos,
+      t:        'up',
+      isMe:     r.isMe,
+      ehAmigo:  r.ehAmigo,
+      col:      userColor(r.id),
       username: r.username || null,
     });
 
-    const top3 = apiItems.slice(0, 3).map(toItem);
-    const rest = apiItems.slice(3).map(toItem);
-
-    // Pódio: [2º, 1º, 3º]
-    renderPodium([top3[1] || top3[0], top3[0], top3[2] || top3[0]]);
-    renderList(rest);
-    renderMyPosReal(apiItems.find(r => r.isMe) || null);
-  } else {
+    if (apiItems.length === 0) {
+      // Ranking vazio — mensagem contextual
+      const msgs = {
+        cidade:  'Nenhum corredor na sua cidade ainda. Seja o primeiro!',
+        amigos:  'Você ainda não tem amigos no ranking. Adicione alguém!',
+        global:  'Nenhuma corrida registrada ainda.',
+      };
+      document.getElementById('podium').innerHTML = '';
+      document.getElementById('rankList').innerHTML =
+        `<p style="text-align:center;color:var(--t2);padding:32px 0;font-size:13px;">${msgs[scope] || 'Nenhum resultado.'}</p>`;
+      renderMyPosReal(null);
+    } else if (apiItems.length < 3) {
+      // Menos de 3 — renderiza lista simples sem pódio
+      document.getElementById('podium').innerHTML = '';
+      renderList(apiItems.map(toItem));
+      renderMyPosReal(apiItems.find(r => r.isMe) || null);
+    } else {
+      const top3 = apiItems.slice(0, 3).map(toItem);
+      const rest = apiItems.slice(3).map(toItem);
+      renderPodium([top3[1] || top3[0], top3[0], top3[2] || top3[0]]);
+      renderList(rest);
+      renderMyPosReal(apiItems.find(r => r.isMe) || null);
+    }
+  } else if (!token) {
+    // Sem login e sem resposta — exibe mock como demonstração
     const data = BUILDERS[scope](period);
     document.getElementById('scopeLabel').textContent = data.label;
     renderPodium(data.podium);
     renderList(data.list);
     renderMyPos(data.myPos, data.myTrend);
+  } else {
+    // Erro de rede com login — mensagem de erro
+    document.getElementById('podium').innerHTML = '';
+    document.getElementById('rankList').innerHTML =
+      '<p style="text-align:center;color:var(--t2);padding:32px 0;font-size:13px;">Erro ao carregar ranking. Tente novamente.</p>';
+    renderMyPosReal(null);
   }
 
   podium.classList.remove('fading');
