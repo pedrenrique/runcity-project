@@ -243,46 +243,11 @@
 
     <div class="pbody">
 
-      <!-- Stories — atividade recente dos amigos -->
+      <!-- Stories — amigos que logaram hoje -->
       <div class="stories-wrap">
         <div class="stories-lbl">Ativos hoje</div>
-        <div class="stories">
-          <a class="story" href="perfil.html?user=AC">
-            <div class="story-ring gold-ring">
-              <div class="story-av" style="background:#e8a02018;color:#e8a020;border-color:#e8a02040;">AC</div>
-            </div>
-            <div class="story-name">Ana</div>
-          </a>
-          <a class="story" href="perfil.html?user=TB">
-            <div class="story-ring active">
-              <div class="story-av" style="background:#38bdf818;color:#38bdf8;border-color:#38bdf840;">TB</div>
-            </div>
-            <div class="story-name">Thiago</div>
-          </a>
-          <a class="story" href="perfil.html?user=PL">
-            <div class="story-ring active">
-              <div class="story-av" style="background:#fb923c18;color:#fb923c;border-color:#fb923c40;">PL</div>
-            </div>
-            <div class="story-name">Pedro</div>
-          </a>
-          <a class="story" href="perfil.html?user=CM">
-            <div class="story-ring inactive">
-              <div class="story-av" style="background:#c084fc18;color:#c084fc;border-color:#c084fc40;">CM</div>
-            </div>
-            <div class="story-name">Carla</div>
-          </a>
-          <a class="story" href="perfil.html?user=FG">
-            <div class="story-ring inactive">
-              <div class="story-av" style="background:#f9731618;color:#f97316;border-color:#f9731640;">FG</div>
-            </div>
-            <div class="story-name">Felipe</div>
-          </a>
-          <a class="story" href="perfil.html?user=LP">
-            <div class="story-ring inactive">
-              <div class="story-av" style="background:#2dd4bf18;color:#2dd4bf;border-color:#2dd4bf40;">LP</div>
-            </div>
-            <div class="story-name">Lucas</div>
-          </a>
+        <div class="stories" id="storiesRow">
+          <div style="color:var(--t2);font-size:11px;padding:18px 4px;">Carregando…</div>
         </div>
       </div>
 
@@ -728,6 +693,50 @@ function showToast(msg){
   clearTimeout(_tt); _tt=setTimeout(()=>t.classList.remove('show'),2200);
 }
 
+/* Amigos ativos hoje */
+async function carregarAmigosAtivos() {
+  const row   = document.getElementById('storiesRow');
+  const token = RC.getToken();
+
+  if (!token) {
+    row.innerHTML = '<div style="color:var(--t2);font-size:11px;padding:18px 4px;">Faça login para ver amigos ativos</div>';
+    return;
+  }
+
+  try {
+    const res = await fetch('/api/amigos/ativos', {
+      headers: { Authorization: 'Bearer ' + token }
+    });
+
+    if (!res.ok) throw new Error();
+
+    const amigos = await res.json();
+
+    if (!amigos.length) {
+      row.innerHTML = '<div style="color:var(--t2);font-size:11px;padding:18px 4px;">Nenhum amigo ativo hoje ainda</div>';
+      return;
+    }
+
+    row.innerHTML = amigos.map(a => {
+      const nome    = a.nome || '';
+      const ini     = nome.trim().split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
+      const cor     = userColor(a.id);
+      const mins    = (Date.now() - new Date(a.ultimo_login)) / 60000;
+      const ringCls = mins <= 120 ? 'active' : 'gold-ring';
+      return `
+        <a class="story" href="perfil.html?user=${a.id}">
+          <div class="story-ring ${ringCls}">
+            <div class="story-av" style="background:${cor}18;color:${cor};border-color:${cor}40;">${ini}</div>
+          </div>
+          <div class="story-name">${nome.split(' ')[0]}</div>
+        </a>`;
+    }).join('');
+
+  } catch {
+    row.innerHTML = '<div style="color:var(--t2);font-size:11px;padding:18px 4px;">Não foi possível carregar</div>';
+  }
+}
+
 try{ if(localStorage.getItem('rc_theme')==='light') document.documentElement.setAttribute('data-theme','light'); }catch(e){}
 
 try{
@@ -739,6 +748,7 @@ try{
 }catch(e){}
 
 carregarFeed();
+carregarAmigosAtivos();
 initNotifDot();
 </script>
 </body>

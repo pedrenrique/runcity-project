@@ -94,3 +94,6 @@ CREATE INDEX IF NOT EXISTS idx_amizades_user  ON amizades(user_id);
 CREATE INDEX IF NOT EXISTS idx_amizades_amigo ON amizades(amigo_id);
 CREATE INDEX IF NOT EXISTS idx_notif_user     ON notificacoes(user_id, lida);
 CREATE INDEX IF NOT EXISTS idx_salas_status   ON salas(status);
+
+ALTER TABLE users ADD COLUMN IF NOT EXISTS ultimo_login TIMESTAMPTZ;
+CREATE INDEX IF NOT EXISTS idx_users_ultimo_login ON users(ultimo_login);

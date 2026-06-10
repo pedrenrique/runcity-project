@@ -58,6 +58,8 @@ router.post('/login', async (req, res) => {
     if (!user || !(await bcrypt.compare(senha, user.senha_hash)))
       return res.status(401).json({ erro: 'E-mail ou senha incorretos.' });
 
+    await pool.query('UPDATE users SET ultimo_login = NOW() WHERE id = $1', [user.id]);
+
     const { senha_hash, ...userPub } = user;
     res.json({ token: gerarToken(userPub), user: userPub });
   } catch {

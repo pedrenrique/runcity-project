@@ -2,6 +2,28 @@ const router = require('express').Router();
 const pool   = require('../db');
 const auth   = require('../middleware/auth');
 
+// GET /api/amigos/ativos — amigos que fizeram login hoje
+router.get('/ativos', auth, async (req, res) => {
+  try {
+    const { rows } = await pool.query(
+      `SELECT u.id, u.nome, u.cidade, u.nivel, u.ultimo_login
+       FROM amizades a
+       JOIN users u ON u.id = CASE
+         WHEN a.user_id = $1 THEN a.amigo_id
+         ELSE a.user_id
+       END
+       WHERE (a.user_id = $1 OR a.amigo_id = $1)
+         AND a.status = 'aceite'
+         AND u.ultimo_login >= CURRENT_DATE
+       ORDER BY u.ultimo_login DESC`,
+      [req.user.id]
+    );
+    res.json(rows);
+  } catch {
+    res.status(500).json({ erro: 'Erro interno.' });
+  }
+});
+
 // GET /api/amigos — lista amigos aceites
 router.get('/', auth, async (req, res) => {
   try {
