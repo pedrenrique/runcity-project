@@ -854,6 +854,8 @@ async function responderAmizade(solicitanteId, acao, notifId, btn) {
     btn.closest('.notif-acoes').querySelectorAll('button').forEach(b => b.disabled = false);
   }
 }
+
+async function marcarNotifLidas() {
   const token = RC.getToken();
   if (!token) return;
   try {
