@@ -14,9 +14,9 @@ function gerarToken(user) {
 
 // POST /api/auth/register
 router.post('/register', async (req, res) => {
-  const { nome, email, senha, username } = req.body;
+  const { nome, email, senha, username, pais, cidade } = req.body;
 
-  if (!nome || !email || !senha || !username)
+  if (!nome || !email || !senha || !username || !pais || !cidade)
     return res.status(400).json({ erro: 'Preencha todos os campos.' });
   if (senha.length < 6)
     return res.status(400).json({ erro: 'A senha precisa ter pelo menos 6 caracteres.' });
@@ -36,10 +36,10 @@ router.post('/register', async (req, res) => {
 
     const senha_hash = await bcrypt.hash(senha, 10);
     const { rows } = await pool.query(
-      `INSERT INTO users (nome, email, senha_hash, username)
-       VALUES ($1, $2, $3, $4)
-       RETURNING id, nome, email, nivel, xp, cidade, username`,
-      [nome.trim(), email.toLowerCase().trim(), senha_hash, usernameLimpo]
+      `INSERT INTO users (nome, email, senha_hash, username, pais, cidade)
+       VALUES ($1, $2, $3, $4, $5, $6)
+       RETURNING id, nome, email, nivel, xp, cidade, pais, username`,
+      [nome.trim(), email.toLowerCase().trim(), senha_hash, usernameLimpo, pais.trim(), cidade.trim()]
     );
 
     const user = rows[0];
@@ -58,7 +58,7 @@ router.post('/login', async (req, res) => {
 
   try {
     const { rows } = await pool.query(
-      'SELECT id, nome, email, senha_hash, nivel, xp, cidade, username FROM users WHERE email = $1',
+      'SELECT id, nome, email, senha_hash, nivel, xp, cidade, pais, username FROM users WHERE email = $1',
       [email.toLowerCase().trim()]
     );
     const user = rows[0];
@@ -87,17 +87,15 @@ router.post('/forgot-password', async (req, res) => {
     );
     const user = rows[0];
 
-    // responde sempre igual para não revelar se o e-mail existe
     const resposta = { mensagem: 'Se essa conta existir, o link de recuperação foi enviado.' };
 
     if (user) {
       const token = crypto.randomBytes(32).toString('hex');
-      const expira = new Date(Date.now() + 60 * 60 * 1000); // 1 hora
+      const expira = new Date(Date.now() + 60 * 60 * 1000);
       await pool.query(
         'INSERT INTO reset_tokens (token, user_id, expira_em) VALUES ($1, $2, $3)',
         [token, user.id, expira]
       );
-      // em produção: enviar por e-mail. Por ora retorna o token para demo.
       resposta.token = token;
     }
 

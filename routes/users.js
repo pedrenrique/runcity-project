@@ -13,7 +13,7 @@ function fmtM2(v) {
 
 async function montarPerfil(userId, incluirEmail) {
   const { rows } = await pool.query(
-    `SELECT u.id, u.nome, u.email, u.cidade, u.nivel, u.xp, u.criado_em, u.username,
+    `SELECT u.id, u.nome, u.email, u.cidade, u.pais, u.nivel, u.xp, u.criado_em, u.username,
             COUNT(c.id)::int                                AS corridas,
             COALESCE(SUM(c.m2),  0)                        AS m2_total,
             COALESCE(SUM(c.km),  0)                        AS km_total,
@@ -44,6 +44,7 @@ async function montarPerfil(userId, incluirEmail) {
     nome:      u.nome,
     username:  u.username,
     cidade:    u.cidade,
+    pais:      u.pais,
     nivel:     u.nivel,
     xp:        u.xp,
     xp_max:    xpParaProxNivel(u.nivel),
@@ -66,7 +67,6 @@ router.get('/buscar', async (req, res) => {
   const q = (req.query.q || '').trim();
   if (q.length < 2) return res.json([]);
 
-  // Tenta extrair o usuário do token se existir, mas não exige
   let meId = null;
   const authHeader = req.headers.authorization;
   if (authHeader && authHeader.startsWith('Bearer ')) {
@@ -82,9 +82,8 @@ router.get('/buscar', async (req, res) => {
     let rows;
 
     if (meId) {
-      // Usuário autenticado: exclui ele mesmo e mostra status de amizade
       ({ rows } = await pool.query(
-        `SELECT u.id, u.nome, u.username, u.cidade, u.nivel,
+        `SELECT u.id, u.nome, u.username, u.cidade, u.pais, u.nivel,
                 a.status AS amizade_status
          FROM users u
          LEFT JOIN amizades a
@@ -101,9 +100,8 @@ router.get('/buscar', async (req, res) => {
         [meId, termo, q.toLowerCase()]
       ));
     } else {
-      // Não autenticado: busca simples (usado na checagem de username no cadastro)
       ({ rows } = await pool.query(
-        `SELECT u.id, u.nome, u.username, u.cidade, u.nivel
+        `SELECT u.id, u.nome, u.username, u.cidade, u.pais, u.nivel
          FROM users u
          WHERE LOWER(u.nome) LIKE $1 OR LOWER(u.username) LIKE $1
          ORDER BY
