@@ -228,6 +228,15 @@
     .nota-cripto svg { flex-shrink: 0; margin-top: 1px; color: var(--p-l); }
     .nota-cripto strong { color: var(--p-ll); font-weight: 700; }
 
+    .username-status {
+      font-size: 11px; font-weight: 600;
+      padding: 5px 10px; border-radius: 7px;
+      margin-top: -6px; display: none;
+    }
+    .username-status.ok  { display:block; color: var(--ok);  background: rgba(34,197,94,.08);  border: 1px solid rgba(34,197,94,.2); }
+    .username-status.err { display:block; color: var(--err); background: rgba(239,68,68,.08);  border: 1px solid rgba(239,68,68,.2); }
+    .username-status.chk { display:block; color: var(--t2);  background: var(--c0);             border: 1px solid var(--brd2); }
+
     .ok-msg {
       font-size: 12px; color: var(--ok);
       padding: 8px 12px;
@@ -419,6 +428,14 @@
 
         <div class="field">
           <svg class="lead" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M2 20h.01"/><path d="M7 20v-4"/><path d="M12 20v-8"/><path d="M17 20V8"/><path d="M22 4v16"/>
+          </svg>
+          <input type="text" name="username" id="input-username" placeholder="@username (ex: joao_silva)" autocomplete="off" required oninput="onUsernameInput(this.value)">
+        </div>
+        <div class="username-status" id="username-status"></div>
+
+        <div class="field">
+          <svg class="lead" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <rect x="3" y="11" width="18" height="11" rx="2"/>
             <path d="M7 11V7a5 5 0 0110 0v4"/>
           </svg>
@@ -586,22 +603,83 @@
     }
   }
 
+  /* ── Username check ── */
+  let _usernameTimer = null;
+  let _usernameValido = false;
+
+  function onUsernameInput(val) {
+    clearTimeout(_usernameTimer);
+    const status = document.getElementById('username-status');
+    const limpo = val.trim().toLowerCase().replace(/[^a-z0-9_]/g, '');
+
+    if (!limpo) {
+      status.className = 'username-status';
+      _usernameValido = false;
+      return;
+    }
+    if (limpo.length < 3) {
+      status.className = 'username-status err';
+      status.textContent = 'Username muito curto (mínimo 3 caracteres)';
+      _usernameValido = false;
+      return;
+    }
+    if (limpo.length > 30) {
+      status.className = 'username-status err';
+      status.textContent = 'Username muito longo (máximo 30 caracteres)';
+      _usernameValido = false;
+      return;
+    }
+
+    status.className = 'username-status chk';
+    status.textContent = 'Verificando disponibilidade…';
+    _usernameValido = false;
+
+    _usernameTimer = setTimeout(() => checarUsername(limpo), 400);
+  }
+
+  async function checarUsername(username) {
+    const status = document.getElementById('username-status');
+    try {
+      const res = await fetch(`/api/users/buscar?q=${encodeURIComponent(username)}`);
+      if (!res.ok) throw new Error();
+      const users = await res.json();
+      const ocupado = users.some(u => u.username === username);
+      if (ocupado) {
+        status.className = 'username-status err';
+        status.textContent = `@${username} já está em uso`;
+        _usernameValido = false;
+      } else {
+        status.className = 'username-status ok';
+        status.textContent = `@${username} está disponível ✓`;
+        _usernameValido = true;
+      }
+    } catch {
+      // Se a API falhar, deixa passar e o backend valida
+      status.className = 'username-status chk';
+      status.textContent = 'Não foi possível verificar — continuaremos na criação';
+      _usernameValido = true;
+    }
+  }
+
   async function cadastrar(ev) {
     ev.preventDefault();
     const f = ev.target;
-    const nome = f.nome.value.trim();
-    const email = f.email.value.trim().toLowerCase();
-    const senha = f.senha.value;
-    const conf = f.confirmar.value;
+    const nome     = f.nome.value.trim();
+    const email    = f.email.value.trim().toLowerCase();
+    const username = f.username.value.trim().toLowerCase().replace(/[^a-z0-9_]/g, '');
+    const senha    = f.senha.value;
+    const conf     = f.confirmar.value;
     document.getElementById('erro-cadastro').classList.remove('show');
 
-    if (!nome || !email || !senha) return mostrarErro('erro-cadastro', 'Preencha todos os campos.');
-    if (senha.length < 6)         return mostrarErro('erro-cadastro', 'A senha precisa ter pelo menos 6 caracteres.');
-    if (senha !== conf)           return mostrarErro('erro-cadastro', 'As senhas não conferem.');
+    if (!nome || !email || !username || !senha) return mostrarErro('erro-cadastro', 'Preencha todos os campos.');
+    if (username.length < 3)  return mostrarErro('erro-cadastro', 'Username deve ter pelo menos 3 caracteres.');
+    if (!_usernameValido)     return mostrarErro('erro-cadastro', 'Escolha um username disponível.');
+    if (senha.length < 6)     return mostrarErro('erro-cadastro', 'A senha precisa ter pelo menos 6 caracteres.');
+    if (senha !== conf)       return mostrarErro('erro-cadastro', 'As senhas não conferem.');
 
     travar(f, true);
     try {
-      const user = await RC.register(nome, email, senha);
+      const user = await RC.register(nome, email, senha, username);
       showToast('Conta criada! Bora correr.');
       setTimeout(() => { window.location.href = 'index.html'; }, 600);
     } catch (e) {
