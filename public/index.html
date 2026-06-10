@@ -70,12 +70,33 @@
     .notif-item.nao-lida{background:var(--p-dim);}
     .notif-item-sub{font-size:10px;color:var(--t2);margin-top:3px;}
     .notif-vazia{padding:20px 16px;text-align:center;color:var(--t2);font-size:12px;}
+    .hdr-actions{position:relative;}
     .notif-acoes{display:flex;gap:6px;margin-top:8px;}
     .notif-btn-aceitar{flex:1;padding:5px 0;border-radius:7px;border:none;background:var(--ok);color:#fff;font-size:11px;font-weight:700;cursor:pointer;font-family:var(--ff-b);}
     .notif-btn-recusar{flex:1;padding:5px 0;border-radius:7px;border:1px solid var(--brd);background:transparent;color:var(--t2);font-size:11px;font-weight:700;cursor:pointer;font-family:var(--ff-b);}
     .notif-btn-aceitar:hover{filter:brightness(1.1);}
     .notif-btn-recusar:hover{color:var(--err);border-color:var(--err);}
-    .hdr-actions{position:relative;}
+
+    /* BUSCA */
+    .search-panel{position:absolute;right:0;top:calc(100% + 8px);width:300px;background:var(--c1);border:1px solid var(--brd);border-radius:16px;z-index:200;overflow:hidden;box-shadow:0 12px 40px rgba(0,0,0,.6);}
+    .search-panel-hdr{padding:10px 12px;border-bottom:1px solid var(--brd2);display:flex;align-items:center;gap:8px;}
+    .search-input{flex:1;background:var(--c0);border:1px solid var(--brd2);border-radius:8px;padding:7px 10px;font-size:12px;color:var(--t1);font-family:var(--ff-b);outline:none;transition:border-color .2s;}
+    .search-input::placeholder{color:var(--t2);}
+    .search-input:focus{border-color:var(--p-mid);}
+    .search-results{max-height:280px;overflow-y:auto;}
+    .search-results::-webkit-scrollbar{width:2px;}
+    .search-results::-webkit-scrollbar-thumb{background:var(--brd);}
+    .search-item{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--brd2);cursor:pointer;transition:background .15s;text-decoration:none;}
+    .search-item:hover{background:var(--p-dim);}
+    .search-av{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--ff-d);font-size:12px;border:2px solid;flex-shrink:0;}
+    .search-info{flex:1;min-width:0;}
+    .search-name{font-size:13px;font-weight:700;color:var(--t1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .search-user{font-size:10px;color:var(--p-l);margin-top:1px;}
+    .search-city{font-size:10px;color:var(--t2);margin-top:1px;}
+    .search-add{width:26px;height:26px;border-radius:50%;background:transparent;border:1.5px solid var(--brd);color:var(--t2);font-size:16px;line-height:1;cursor:pointer;flex-shrink:0;transition:all .2s;display:flex;align-items:center;justify-content:center;padding:0;}
+    .search-add:hover{border-color:var(--p-mid);color:var(--p-l);background:var(--p-dim);}
+    .search-add:disabled{border-color:rgba(34,197,94,.3);color:var(--ok);cursor:default;}
+    .search-vazia{padding:20px 16px;text-align:center;color:var(--t2);font-size:12px;}
     .av-link{
       width:36px;height:36px;border-radius:50%;background:var(--p-dim);border:2px solid var(--p);
       display:flex;align-items:center;justify-content:center;
@@ -228,6 +249,19 @@
     <div class="hdr">
       <div class="marca">RUN<span>CITY</span></div>
       <div class="hdr-actions">
+        <!-- Busca -->
+        <div class="notif-btn" id="searchBtn" onclick="toggleSearchPanel()" title="Buscar usuários">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </div>
+        <div class="search-panel" id="searchPanel" style="display:none">
+          <div class="search-panel-hdr">
+            <input class="search-input" id="searchInput" type="text" placeholder="Buscar por nome ou @username" autocomplete="off" oninput="onSearchInput(this.value)">
+          </div>
+          <div class="search-results" id="searchResults">
+            <div class="search-vazia">Digite para buscar</div>
+          </div>
+        </div>
+
         <div class="notif-btn" id="notifBtn" onclick="toggleNotifPanel()">
           <div class="notif-dot" id="notifDot"></div>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -624,6 +658,107 @@ async function compartilhar(userId, nome, area) {
   }
 }
 
+/* Busca */
+let _searchAberto = false;
+let _searchTimer  = null;
+
+function toggleSearchPanel() {
+  const panel = document.getElementById('searchPanel');
+  _searchAberto = !_searchAberto;
+  panel.style.display = _searchAberto ? 'block' : 'none';
+  if (_searchAberto) {
+    _notifAberto = false;
+    document.getElementById('notifPanel').style.display = 'none';
+    setTimeout(() => document.getElementById('searchInput').focus(), 50);
+  }
+}
+
+function onSearchInput(val) {
+  clearTimeout(_searchTimer);
+  const q = val.trim();
+  if (q.length < 2) {
+    document.getElementById('searchResults').innerHTML = '<div class="search-vazia">Digite para buscar</div>';
+    return;
+  }
+  document.getElementById('searchResults').innerHTML = '<div class="search-vazia">Buscando…</div>';
+  _searchTimer = setTimeout(() => executarBusca(q), 350);
+}
+
+async function executarBusca(q) {
+  const token = RC.getToken();
+  if (!token) {
+    document.getElementById('searchResults').innerHTML = '<div class="search-vazia">Faça login para buscar</div>';
+    return;
+  }
+  try {
+    const res = await fetch(`/api/users/buscar?q=${encodeURIComponent(q)}`, {
+      headers: { Authorization: 'Bearer ' + token }
+    });
+    if (!res.ok) throw new Error();
+    const users = await res.json();
+    renderSearchResults(users);
+  } catch {
+    document.getElementById('searchResults').innerHTML = '<div class="search-vazia">Erro ao buscar</div>';
+  }
+}
+
+function renderSearchResults(users) {
+  const el = document.getElementById('searchResults');
+  if (!users.length) {
+    el.innerHTML = '<div class="search-vazia">Nenhum usuário encontrado</div>';
+    return;
+  }
+  el.innerHTML = users.map(u => {
+    const ini = u.nome.trim().split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
+    const cor = userColor(u.id);
+    const jaAmigo = u.amizade_status === 'aceite';
+    const pendente = u.amizade_status === 'pendente' || u.amizade_status === 'enviado';
+    const addBtn = jaAmigo
+      ? `<button class="search-add" disabled title="Já são amigos" style="color:var(--ok);border-color:rgba(34,197,94,.3);">✓</button>`
+      : pendente
+        ? `<button class="search-add" disabled title="Pedido enviado" style="color:var(--t2);">…</button>`
+        : `<button class="search-add" onclick="searchAddFriend(${u.id},this)" title="Adicionar amigo">+</button>`;
+    return `
+      <a class="search-item" href="perfil.html?user=${u.id}" onclick="toggleSearchPanel()">
+        <div class="search-av" style="background:${cor}18;color:${cor};border-color:${cor}50;">${ini}</div>
+        <div class="search-info">
+          <div class="search-name">${u.nome}</div>
+          <div class="search-user">@${u.username}</div>
+          <div class="search-city">${(u.cidade || 'Brasil').split(',')[0]} · Nível ${u.nivel}</div>
+        </div>
+        ${addBtn}
+      </a>`;
+  }).join('');
+}
+
+async function searchAddFriend(id, btn) {
+  const token = RC.getToken();
+  if (!token) return;
+  btn.disabled = true;
+  btn.textContent = '…';
+  try {
+    const res = await fetch(`/api/amigos/${id}`, {
+      method: 'POST',
+      headers: { Authorization: 'Bearer ' + token }
+    });
+    if (res.ok) {
+      btn.textContent = '✓';
+      btn.style.color = 'var(--ok)';
+      btn.style.borderColor = 'rgba(34,197,94,.3)';
+      showToast('Pedido de amizade enviado!');
+    } else {
+      const d = await res.json().catch(() => ({}));
+      showToast(d.erro || 'Erro ao enviar pedido');
+      btn.disabled = false;
+      btn.textContent = '+';
+    }
+  } catch {
+    showToast('Sem conexão');
+    btn.disabled = false;
+    btn.textContent = '+';
+  }
+}
+
 /* Notificações */
 let _notifAberto = false;
 
@@ -631,13 +766,25 @@ function toggleNotifPanel() {
   const panel = document.getElementById('notifPanel');
   _notifAberto = !_notifAberto;
   panel.style.display = _notifAberto ? 'block' : 'none';
-  if (_notifAberto) carregarNotificacoes();
+  if (_notifAberto) {
+    _searchAberto = false;
+    document.getElementById('searchPanel').style.display = 'none';
+    carregarNotificacoes();
+  }
 }
 
 document.addEventListener('click', e => {
-  if (_notifAberto && !document.getElementById('notifBtn').contains(e.target)) {
+  const sb = document.getElementById('searchBtn');
+  const sp = document.getElementById('searchPanel');
+  const nb = document.getElementById('notifBtn');
+  const np = document.getElementById('notifPanel');
+  if (_searchAberto && !sb.contains(e.target) && !sp.contains(e.target)) {
+    _searchAberto = false;
+    sp.style.display = 'none';
+  }
+  if (_notifAberto && !nb.contains(e.target) && !np.contains(e.target)) {
     _notifAberto = false;
-    document.getElementById('notifPanel').style.display = 'none';
+    np.style.display = 'none';
   }
 });
 
@@ -680,9 +827,7 @@ async function carregarNotificacoes() {
 async function responderAmizade(solicitanteId, acao, notifId, btn) {
   const token = RC.getToken();
   if (!token) return;
-
   btn.closest('.notif-acoes').querySelectorAll('button').forEach(b => b.disabled = true);
-
   try {
     if (acao === 'aceitar') {
       const res = await fetch(`/api/amigos/${solicitanteId}/aceitar`, {
@@ -699,7 +844,6 @@ async function responderAmizade(solicitanteId, acao, notifId, btn) {
       if (!res.ok) throw new Error();
       showToast('Pedido recusado.');
     }
-
     const item = document.getElementById(`notif-${notifId}`);
     if (item) {
       item.querySelector('.notif-acoes')?.remove();
@@ -710,8 +854,6 @@ async function responderAmizade(solicitanteId, acao, notifId, btn) {
     btn.closest('.notif-acoes').querySelectorAll('button').forEach(b => b.disabled = false);
   }
 }
-
-async function marcarNotifLidas() {
   const token = RC.getToken();
   if (!token) return;
   try {
@@ -741,10 +883,21 @@ function showToast(msg){
   clearTimeout(_tt); _tt=setTimeout(()=>t.classList.remove('show'),2200);
 }
 
+try{ if(localStorage.getItem('rc_theme')==='light') document.documentElement.setAttribute('data-theme','light'); }catch(e){}
+
+try{
+  const _u = RC.getUser();
+  if(_u){
+    const _ini = _u.nome.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
+    document.getElementById('avTopo').textContent = _ini;
+  }
+}catch(e){}
+
 /* Amigos ativos hoje */
 async function carregarAmigosAtivos() {
   const row   = document.getElementById('storiesRow');
   const token = RC.getToken();
+  const meId  = RC.getUser()?.id ?? null;
 
   if (!token) {
     row.innerHTML = '<div style="color:var(--t2);font-size:11px;padding:18px 4px;">Faça login para ver amigos ativos</div>';
@@ -766,11 +919,13 @@ async function carregarAmigosAtivos() {
     }
 
     row.innerHTML = amigos.map(a => {
-      const nome    = a.nome || '';
-      const ini     = nome.trim().split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
-      const cor     = userColor(a.id);
-      const mins    = (Date.now() - new Date(a.ultimo_login)) / 60000;
-      const ringCls = mins <= 120 ? 'active' : 'gold-ring';
+      const nome   = a.nome || '';
+      const ini    = nome.trim().split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
+      const cor    = userColor(a.id);
+      const isMe   = a.id === meId;
+      // Último login nas últimas 2h = anel roxo ativo; antes disso = ouro; o próprio user = gold
+      const mins   = (Date.now() - new Date(a.ultimo_login)) / 60000;
+      const ringCls = isMe ? 'gold-ring' : (mins <= 120 ? 'active' : 'gold-ring');
       return `
         <a class="story" href="perfil.html?user=${a.id}">
           <div class="story-ring ${ringCls}">
@@ -784,16 +939,6 @@ async function carregarAmigosAtivos() {
     row.innerHTML = '<div style="color:var(--t2);font-size:11px;padding:18px 4px;">Não foi possível carregar</div>';
   }
 }
-
-try{ if(localStorage.getItem('rc_theme')==='light') document.documentElement.setAttribute('data-theme','light'); }catch(e){}
-
-try{
-  const _u = RC.getUser();
-  if(_u){
-    const _ini = _u.nome.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
-    document.getElementById('avTopo').textContent = _ini;
-  }
-}catch(e){}
 
 carregarFeed();
 carregarAmigosAtivos();

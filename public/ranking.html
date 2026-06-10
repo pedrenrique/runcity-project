@@ -89,6 +89,7 @@
     .rinfo{flex:1;min-width:0;}
     .rname{font-size:14px;font-weight:700;color:var(--t1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
     .rsub{font-size:11px;color:var(--t2);margin-top:1px;display:flex;align-items:center;gap:5px;}
+    .rusername{font-size:10px;color:var(--p-l);margin-top:1px;}
     .rmeta{text-align:right;flex-shrink:0;}
     .rm2{font-family:var(--ff-d);font-size:16px;letter-spacing:.4px;color:var(--p-l);}
     .rkm{font-size:10px;color:var(--t2);margin-top:1px;}
@@ -314,6 +315,7 @@ function renderList(listData){
       ? `<button class="radd" onclick="event.preventDefault();event.stopPropagation();addFriend(${r.id},this)" title="Adicionar amigo">+</button>`
       : '';
     const sublbl = r.id ? `${r.wins} corridas` : `${r.wins} vitórias`;
+    const usernameHtml = r.username ? `<div class="rusername">@${r.username}</div>` : '';
     const el=document.createElement('a');
     el.className='ritem' + (r.isMe ? ' me' : '');
     el.href = href;
@@ -323,6 +325,7 @@ function renderList(listData){
       <div class="rav" style="background:${col}1e;color:${col};border-color:${col}65;">${r.av}</div>
       <div class="rinfo">
         <div class="rname">${r.n}${r.isMe?' <span class="you-tag">Você</span>':''}</div>
+        ${usernameHtml}
         <div class="rsub">${locIco} ${r.city} · ${sublbl}</div>
       </div>
       <div class="rmeta">
@@ -340,12 +343,14 @@ function renderMyPos(pos,trend){
   const u = (typeof RC !== 'undefined') ? RC.getUser() : null;
   const ini = u ? u.nome.trim().split(' ').filter(Boolean).map(w=>w[0]).slice(0,2).join('').toUpperCase() : 'JS';
   const nome = u ? u.nome : 'João Silva';
+  const usernameHtml = u?.username ? `<div class="rusername">@${u.username}</div>` : '';
   document.getElementById('myPosItem').innerHTML=`
     <a class="ritem me" href="perfil.html">
       <div class="rpos" style="color:var(--p-l);">${pos}</div>
       <div class="rav" style="background:var(--p-dim);color:var(--p-l);border-color:var(--p);">${ini}</div>
       <div class="rinfo">
         <div class="rname">${nome} <span class="you-tag">Você</span></div>
+        ${usernameHtml}
         <div class="rsub">${locIco} ${u?.cidade||'São Paulo'} · 0 corridas</div>
       </div>
       <div class="rmeta">
@@ -369,6 +374,7 @@ function renderMyPosReal(myItem){
         <div class="rav" style="background:var(--p-dim);color:var(--p-l);border-color:var(--p);">${ini}</div>
         <div class="rinfo">
           <div class="rname">${u.nome} <span class="you-tag">Você</span></div>
+          ${u.username ? `<div class="rusername">@${u.username}</div>` : ''}
           <div class="rsub">${locIco} Brasil · 0 corridas</div>
         </div>
         <div class="rmeta"><div class="rm2">0 m²</div><div class="rkm">0 km</div></div>
@@ -382,6 +388,7 @@ function renderMyPosReal(myItem){
       <div class="rav" style="background:var(--p-dim);color:var(--p-l);border-color:var(--p);">${myItem.iniciais}</div>
       <div class="rinfo">
         <div class="rname">${myItem.nome} <span class="you-tag">Você</span></div>
+        ${myItem.username ? `<div class="rusername">@${myItem.username}</div>` : ''}
         <div class="rsub">${locIco} ${myItem.cidade} · ${myItem.corridas} corridas</div>
       </div>
       <div class="rmeta">
@@ -468,6 +475,7 @@ async function renderRanking(scope, period){
       isMe:    r.isMe,
       ehAmigo: r.ehAmigo,
       col:     userColor(r.id),
+      username: r.username || null,
     });
 
     const top3 = apiItems.slice(0, 3).map(toItem);
