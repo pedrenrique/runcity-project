@@ -526,7 +526,7 @@
     });
   }
 
-  function recuperar(ev) {
+  async function recuperar(ev) {
     ev.preventDefault();
     const f = ev.target;
     const email = f.email.value.trim().toLowerCase();
@@ -537,23 +537,29 @@
 
     if (!email) { mostrarErro('erro-recuperar', 'Informe seu e-mail.'); return; }
 
-    // mock — sem backend, gera token local e oferece link direto
-    const users = RC._users.ler();
-    const u = users.find(x => x.email === email);
+    const btn = f.querySelector('.btn-primary');
+    btn.disabled = true; btn.textContent = 'Aguarde…';
 
-    ok.textContent = 'Se essa conta existir, o link de recuperação foi enviado.';
-    ok.classList.add('show');
+    try {
+      const res = await fetch('/api/auth/forgot-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+      const data = await res.json();
 
-    if (u) {
-      const token = 'reset_' + Math.random().toString(36).slice(2);
-      const expira = Date.now() + 60 * 60 * 1000;
-      const resets = JSON.parse(localStorage.getItem('rc_resets') || '{}');
-      resets[token] = { userId: u.id, expira, usado: false };
-      localStorage.setItem('rc_resets', JSON.stringify(resets));
+      ok.textContent = data.mensagem;
+      ok.classList.add('show');
 
-      const link = location.origin + '/redefinir.html?token=' + token;
-      dev.innerHTML = '<strong>Modo demo — link direto:</strong><a href="' + link + '">' + link + '</a>';
-      dev.classList.add('show');
+      if (data.token) {
+        const link = location.origin + '/redefinir.html?token=' + data.token;
+        dev.innerHTML = '<strong>Modo demo — link direto:</strong><a href="' + link + '">' + link + '</a>';
+        dev.classList.add('show');
+      }
+    } catch {
+      mostrarErro('erro-recuperar', 'Erro ao processar. Tente novamente.');
+    } finally {
+      btn.disabled = false; btn.textContent = 'Enviar link';
     }
   }
 

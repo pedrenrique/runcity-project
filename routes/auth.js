@@ -1,6 +1,7 @@
 const router = require('express').Router();
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 const pool = require('../db');
 
 function gerarToken(user) {
@@ -59,6 +60,66 @@ router.post('/login', async (req, res) => {
 
     const { senha_hash, ...userPub } = user;
     res.json({ token: gerarToken(userPub), user: userPub });
+  } catch {
+    res.status(500).json({ erro: 'Erro interno.' });
+  }
+});
+
+// POST /api/auth/forgot-password
+router.post('/forgot-password', async (req, res) => {
+  const { email } = req.body;
+  if (!email) return res.status(400).json({ erro: 'Informe o e-mail.' });
+
+  try {
+    const { rows } = await pool.query(
+      'SELECT id FROM users WHERE email = $1',
+      [email.toLowerCase().trim()]
+    );
+    const user = rows[0];
+
+    // responde sempre igual para não revelar se o e-mail existe
+    const resposta = { mensagem: 'Se essa conta existir, o link de recuperação foi enviado.' };
+
+    if (user) {
+      const token = crypto.randomBytes(32).toString('hex');
+      const expira = new Date(Date.now() + 60 * 60 * 1000); // 1 hora
+      await pool.query(
+        'INSERT INTO reset_tokens (token, user_id, expira_em) VALUES ($1, $2, $3)',
+        [token, user.id, expira]
+      );
+      // em produção: enviar por e-mail. Por ora retorna o token para demo.
+      resposta.token = token;
+    }
+
+    res.json(resposta);
+  } catch {
+    res.status(500).json({ erro: 'Erro interno.' });
+  }
+});
+
+// POST /api/auth/reset-password
+router.post('/reset-password', async (req, res) => {
+  const { token, nova_senha } = req.body;
+  if (!token || !nova_senha)
+    return res.status(400).json({ erro: 'Dados incompletos.' });
+  if (nova_senha.length < 6)
+    return res.status(400).json({ erro: 'A senha precisa ter pelo menos 6 caracteres.' });
+
+  try {
+    const { rows } = await pool.query(
+      'SELECT * FROM reset_tokens WHERE token = $1',
+      [token]
+    );
+    const reset = rows[0];
+
+    if (!reset || reset.usado || new Date() > new Date(reset.expira_em))
+      return res.status(400).json({ erro: 'Link inválido ou expirado.' });
+
+    const senha_hash = await bcrypt.hash(nova_senha, 10);
+    await pool.query('UPDATE users SET senha_hash = $1 WHERE id = $2', [senha_hash, reset.user_id]);
+    await pool.query('UPDATE reset_tokens SET usado = TRUE WHERE token = $1', [token]);
+
+    res.json({ mensagem: 'Senha redefinida com sucesso.' });
   } catch {
     res.status(500).json({ erro: 'Erro interno.' });
   }

@@ -182,7 +182,7 @@
     const nova = f.nova.value;
     const conf = f.conf.value;
     const erro = document.getElementById('erro');
-    const ok = document.getElementById('ok');
+    const ok   = document.getElementById('ok');
     erro.classList.remove('show');
     ok.classList.remove('show');
 
@@ -199,31 +199,30 @@
 
     const btn = f.querySelector('.btn');
     btn.disabled = true;
-    // mock local — valida token contra localStorage (rc_resets) e atualiza senha em rc_users
-    const resets = JSON.parse(localStorage.getItem('rc_resets') || '{}');
-    const reset = resets[token];
-    if (!reset || reset.usado || Date.now() > reset.expira) {
-      erro.textContent = 'Link inválido ou expirado.';
-      erro.classList.add('show');
-      btn.disabled = false;
-      return;
-    }
-    const users = JSON.parse(localStorage.getItem('rc_users') || '[]');
-    const u = users.find(x => x.id === reset.userId);
-    if (!u) {
-      erro.textContent = 'Conta não encontrada.';
-      erro.classList.add('show');
-      btn.disabled = false;
-      return;
-    }
-    u.senha = nova;
-    localStorage.setItem('rc_users', JSON.stringify(users));
-    reset.usado = true;
-    localStorage.setItem('rc_resets', JSON.stringify(resets));
 
-    ok.textContent = 'Senha redefinida! Redirecionando...';
-    ok.classList.add('show');
-    setTimeout(() => { window.location.href = 'login.html'; }, 1200);
+    try {
+      const res = await fetch('/api/auth/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token, nova_senha: nova }),
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        erro.textContent = data.erro || 'Erro ao redefinir senha.';
+        erro.classList.add('show');
+        btn.disabled = false;
+        return;
+      }
+
+      ok.textContent = 'Senha redefinida! Redirecionando...';
+      ok.classList.add('show');
+      setTimeout(() => { window.location.href = 'login.html'; }, 1200);
+    } catch {
+      erro.textContent = 'Erro ao conectar. Tente novamente.';
+      erro.classList.add('show');
+      btn.disabled = false;
+    }
   }
 
   try {
