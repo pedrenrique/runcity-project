@@ -453,7 +453,14 @@ async function renderRanking(scope, period){
 
   if (apiItems !== null) {
     // Temos resposta da API — usa sempre, independente de quantos itens
-    document.getElementById('scopeLabel').textContent = SCOPE_LABELS[scope] || scope;
+    let scopeLabelText = SCOPE_LABELS[scope] || scope;
+    if (scope === 'cidade') {
+      // Usa a cidade do usuário logado, ou do primeiro item disponível
+      const me = apiItems.find(r => r.isMe);
+      const cidade = me?.cidade || apiItems[0]?.cidade || null;
+      if (cidade) scopeLabelText = cidade;
+    }
+    document.getElementById('scopeLabel').textContent = scopeLabelText;
 
     const toItem = r => ({
       id:       r.id,
