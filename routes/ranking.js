@@ -10,7 +10,7 @@ const PERIOD_SQL = {
 
 router.get('/', optAuth, async (req, res) => {
   try {
-    const meId   = req.userId || null;
+    const meId   = req.user?.id || null;
     const escopo  = ['cidade','global','amigos'].includes(req.query.escopo) ? req.query.escopo : 'global';
     const pCond   = PERIOD_SQL[req.query.periodo];
 
