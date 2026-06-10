@@ -46,8 +46,9 @@
     .av{width:84px;height:84px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--ff-d);font-size:26px;background:var(--p-dim);color:var(--p-l);border:3px solid var(--p);box-shadow:0 0 0 5px var(--p-dim),0 0 30px var(--p-glow);animation:glow 3s ease-in-out infinite;}
     @keyframes glow{0%,100%{box-shadow:0 0 0 5px var(--p-dim),0 0 26px rgba(124,92,252,.3);}50%{box-shadow:0 0 0 8px var(--p-dim),0 0 42px rgba(124,92,252,.55);}}
     .lv{position:absolute;bottom:0;right:-8px;background:var(--p);color:#fff;font-size:11px;font-weight:800;padding:3px 9px;border-radius:20px;border:2px solid var(--bg);white-space:nowrap;letter-spacing:.3px;}
-    .p-name{font-family:var(--ff-d);font-size:28px;letter-spacing:2px;color:var(--t1);margin-bottom:5px;}
-    .p-role{font-size:12px;font-weight:600;color:var(--p-l);margin-bottom:8px;letter-spacing:.3px;}
+    .p-name{font-family:var(--ff-d);font-size:28px;letter-spacing:2px;color:var(--t1);margin-bottom:4px;}
+    .p-username{font-size:13px;font-weight:600;color:var(--p-l);margin-bottom:5px;letter-spacing:.3px;}
+    .p-role{font-size:12px;font-weight:600;color:var(--t3);margin-bottom:8px;letter-spacing:.3px;}
     .p-loc{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--t2);font-weight:500;}
 
     /* XP */
@@ -127,6 +128,7 @@
     .friend-item:hover .f-av{transform:scale(1.08);}
     .f-info{flex:1;min-width:0;}
     .f-name{font-size:14px;font-weight:700;color:var(--t1);}
+    .f-username{font-size:11px;color:var(--p-l);margin-top:1px;}
     .f-sub{font-size:11px;color:var(--t2);margin-top:2px;display:flex;align-items:center;gap:5px;}
     .f-meta{text-align:right;flex-shrink:0;}
     .f-m2{font-family:var(--ff-d);font-size:15px;color:var(--p-l);}
@@ -190,6 +192,7 @@
           <div class="lv" id="heroLv"></div>
         </div>
         <div class="p-name" id="heroName"></div>
+        <div class="p-username" id="heroUsername"></div>
         <div class="p-role" id="heroRole"></div>
         <div class="p-loc">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
@@ -318,6 +321,7 @@ function apiParaPerfil(d, isMe) {
     id:    d.id,
     av:    iniciais,
     name:  d.nome.toUpperCase(),
+    username: d.username || null,
     role:  'Corredor Urbano',
     city:  d.cidade || 'Brasil',
     lv,
@@ -364,6 +368,7 @@ async function carregarPerfil() {
     const iniciais = sessao.nome.trim().split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
     renderProfile({
       av: iniciais, name: sessao.nome.toUpperCase(),
+      username: sessao.username || null,
       role: 'Corredor Urbano', city: sessao.cidade || 'Brasil',
       lv: sessao.nivel || 1, xpCur: sessao.xp || 0, xpMax: (sessao.nivel || 1) * 1000,
       stats: { m2: '0', corridas: 0, vitorias: 0, km: '0 km' },
@@ -402,6 +407,9 @@ function renderProfile(u){
   avEl.style.cssText = `background:${AV_BG(u.av)};color:${AV_C[u.av]||'var(--p-l)'};border-color:${AV_C[u.av]||'var(--p)'};`;
   document.getElementById('heroLv').textContent   = `Nível ${u.lv}`;
   document.getElementById('heroName').textContent = u.name;
+  const usernameEl = document.getElementById('heroUsername');
+  usernameEl.textContent  = u.username ? `@${u.username}` : '';
+  usernameEl.style.display = u.username ? 'block' : 'none';
   document.getElementById('heroRole').textContent = u.role;
   document.getElementById('heroCity').textContent = u.city;
 
@@ -504,6 +512,7 @@ async function carregarAmigos() {
             <div class="f-av" style="background:${cor}1e;color:${cor};border-color:${cor};">${ini}</div>
             <div class="f-info">
               <div class="f-name">${f.nome}</div>
+              ${f.username ? `<div class="f-username">@${f.username}</div>` : ''}
               <div class="f-sub">${locIco} ${(f.cidade || 'Brasil').split(',')[0]} · Nível ${f.nivel}</div>
             </div>
             <div class="f-arrow">${arrowIco}</div>`;

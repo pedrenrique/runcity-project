@@ -13,7 +13,7 @@ function fmtM2(v) {
 
 async function montarPerfil(userId, incluirEmail) {
   const { rows } = await pool.query(
-    `SELECT u.id, u.nome, u.email, u.cidade, u.nivel, u.xp, u.criado_em,
+    `SELECT u.id, u.nome, u.email, u.cidade, u.nivel, u.xp, u.criado_em, u.username,
             COUNT(c.id)::int                                AS corridas,
             COALESCE(SUM(c.m2),  0)                        AS m2_total,
             COALESCE(SUM(c.km),  0)                        AS km_total,
@@ -42,6 +42,7 @@ async function montarPerfil(userId, incluirEmail) {
   const perfil = {
     id:        u.id,
     nome:      u.nome,
+    username:  u.username,
     cidade:    u.cidade,
     nivel:     u.nivel,
     xp:        u.xp,
@@ -58,6 +59,36 @@ async function montarPerfil(userId, incluirEmail) {
 
   return perfil;
 }
+
+// GET /api/users/buscar?q=termo — busca por nome ou username
+router.get('/buscar', auth, async (req, res) => {
+  const q = (req.query.q || '').trim();
+  if (q.length < 2) return res.json([]);
+
+  try {
+    const termo = '%' + q.toLowerCase() + '%';
+    const { rows } = await pool.query(
+      `SELECT u.id, u.nome, u.username, u.cidade, u.nivel,
+              a.status AS amizade_status
+       FROM users u
+       LEFT JOIN amizades a
+         ON (a.user_id = $1 AND a.amigo_id = u.id)
+         OR (a.amigo_id = $1 AND a.user_id = u.id)
+       WHERE u.id != $1
+         AND (LOWER(u.nome) LIKE $2 OR LOWER(u.username) LIKE $2)
+       ORDER BY
+         CASE WHEN LOWER(u.username) = $3 THEN 0
+              WHEN LOWER(u.username) LIKE $2 THEN 1
+              ELSE 2 END,
+         u.nome
+       LIMIT 20`,
+      [req.user.id, termo, q.toLowerCase()]
+    );
+    res.json(rows);
+  } catch {
+    res.status(500).json({ erro: 'Erro interno.' });
+  }
+});
 
 // GET /api/users/me
 router.get('/me', auth, async (req, res) => {

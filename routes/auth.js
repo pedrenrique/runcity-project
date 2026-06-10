@@ -14,24 +14,32 @@ function gerarToken(user) {
 
 // POST /api/auth/register
 router.post('/register', async (req, res) => {
-  const { nome, email, senha } = req.body;
+  const { nome, email, senha, username } = req.body;
 
-  if (!nome || !email || !senha)
+  if (!nome || !email || !senha || !username)
     return res.status(400).json({ erro: 'Preencha todos os campos.' });
   if (senha.length < 6)
     return res.status(400).json({ erro: 'A senha precisa ter pelo menos 6 caracteres.' });
+
+  const usernameLimpo = username.trim().toLowerCase().replace(/[^a-z0-9_]/g, '');
+  if (usernameLimpo.length < 3 || usernameLimpo.length > 30)
+    return res.status(400).json({ erro: 'Username deve ter entre 3 e 30 caracteres (letras, números e _).' });
 
   try {
     const existe = await pool.query('SELECT id FROM users WHERE email = $1', [email.toLowerCase().trim()]);
     if (existe.rows.length > 0)
       return res.status(409).json({ erro: 'Já existe uma conta com esse e-mail.' });
 
+    const usernameExiste = await pool.query('SELECT id FROM users WHERE username = $1', [usernameLimpo]);
+    if (usernameExiste.rows.length > 0)
+      return res.status(409).json({ erro: 'Esse username já está em uso.' });
+
     const senha_hash = await bcrypt.hash(senha, 10);
     const { rows } = await pool.query(
-      `INSERT INTO users (nome, email, senha_hash)
-       VALUES ($1, $2, $3)
-       RETURNING id, nome, email, nivel, xp, cidade`,
-      [nome.trim(), email.toLowerCase().trim(), senha_hash]
+      `INSERT INTO users (nome, email, senha_hash, username)
+       VALUES ($1, $2, $3, $4)
+       RETURNING id, nome, email, nivel, xp, cidade, username`,
+      [nome.trim(), email.toLowerCase().trim(), senha_hash, usernameLimpo]
     );
 
     const user = rows[0];
@@ -50,7 +58,7 @@ router.post('/login', async (req, res) => {
 
   try {
     const { rows } = await pool.query(
-      'SELECT id, nome, email, senha_hash, nivel, xp, cidade FROM users WHERE email = $1',
+      'SELECT id, nome, email, senha_hash, nivel, xp, cidade, username FROM users WHERE email = $1',
       [email.toLowerCase().trim()]
     );
     const user = rows[0];
