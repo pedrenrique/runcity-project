@@ -9,7 +9,6 @@ router.get('/feed', optAuth, async (req, res) => {
   try {
     let rows;
     if (meId) {
-      // Feed autenticado: próprias corridas + corridas de amigos
       ({ rows } = await pool.query(
         `SELECT c.id, c.m2, c.km, c.duracao, c.posicao, c.xp_ganho, c.criada_em,
                 c.rota_svg,
@@ -17,11 +16,13 @@ router.get('/feed', optAuth, async (req, res) => {
                 u.nome,
                 u.nivel,
                 u.cidade,
-                COUNT(cu.user_id)::int   AS curtidas,
-                BOOL_OR(cu.user_id = $1) AS curtida_por_mim
+                COUNT(DISTINCT cu.user_id)::int          AS curtidas,
+                BOOL_OR(cu.user_id = $1)                 AS curtida_por_mim,
+                COUNT(DISTINCT cm.id)::int               AS comentarios
          FROM corridas c
          JOIN users u ON u.id = c.user_id
          LEFT JOIN curtidas cu ON cu.corrida_id = c.id
+         LEFT JOIN comentarios cm ON cm.corrida_id = c.id
          WHERE c.user_id = $1
             OR c.user_id IN (
               SELECT CASE WHEN a.user_id = $1 THEN a.amigo_id ELSE a.user_id END
@@ -34,7 +35,6 @@ router.get('/feed', optAuth, async (req, res) => {
         [meId]
       ));
     } else {
-      // Feed público: últimas corridas
       ({ rows } = await pool.query(
         `SELECT c.id, c.m2, c.km, c.duracao, c.posicao, c.xp_ganho, c.criada_em,
                 c.rota_svg,
@@ -42,11 +42,13 @@ router.get('/feed', optAuth, async (req, res) => {
                 u.nome,
                 u.nivel,
                 u.cidade,
-                COUNT(cu.user_id)::int AS curtidas,
-                FALSE                  AS curtida_por_mim
+                COUNT(DISTINCT cu.user_id)::int AS curtidas,
+                FALSE                           AS curtida_por_mim,
+                COUNT(DISTINCT cm.id)::int      AS comentarios
          FROM corridas c
          JOIN users u ON u.id = c.user_id
          LEFT JOIN curtidas cu ON cu.corrida_id = c.id
+         LEFT JOIN comentarios cm ON cm.corrida_id = c.id
          GROUP BY c.id, u.id
          ORDER BY c.criada_em DESC
          LIMIT 20`
@@ -117,6 +119,59 @@ router.delete('/:id/curtir', auth, async (req, res) => {
       [corridaId]
     );
     res.json({ curtidas: rows[0].n });
+  } catch {
+    res.status(500).json({ erro: 'Erro interno.' });
+  }
+});
+
+// GET /api/corridas/:id/comentarios
+router.get('/:id/comentarios', optAuth, async (req, res) => {
+  const corridaId = parseInt(req.params.id);
+  if (isNaN(corridaId)) return res.status(400).json({ erro: 'ID inválido.' });
+
+  try {
+    const { rows } = await pool.query(
+      `SELECT cm.id, cm.texto, cm.criado_em,
+              u.id AS user_id, u.nome, u.username, u.nivel
+       FROM comentarios cm
+       JOIN users u ON u.id = cm.user_id
+       WHERE cm.corrida_id = $1
+       ORDER BY cm.criado_em ASC`,
+      [corridaId]
+    );
+    res.json(rows);
+  } catch {
+    res.status(500).json({ erro: 'Erro interno.' });
+  }
+});
+
+// POST /api/corridas/:id/comentarios
+router.post('/:id/comentarios', auth, async (req, res) => {
+  const corridaId = parseInt(req.params.id);
+  if (isNaN(corridaId)) return res.status(400).json({ erro: 'ID inválido.' });
+
+  const texto = (req.body.texto || '').trim();
+  if (!texto) return res.status(400).json({ erro: 'Comentário não pode ser vazio.' });
+  if (texto.length > 300) return res.status(400).json({ erro: 'Máximo de 300 caracteres.' });
+
+  try {
+    const { rows } = await pool.query(
+      `INSERT INTO comentarios (corrida_id, user_id, texto)
+       VALUES ($1, $2, $3)
+       RETURNING id, texto, criado_em`,
+      [corridaId, req.user.id, texto]
+    );
+    const { rows: uRows } = await pool.query(
+      'SELECT id, nome, username, nivel FROM users WHERE id = $1',
+      [req.user.id]
+    );
+    res.status(201).json({
+      ...rows[0],
+      user_id:  req.user.id,
+      nome:     uRows[0].nome,
+      username: uRows[0].username,
+      nivel:    uRows[0].nivel,
+    });
   } catch {
     res.status(500).json({ erro: 'Erro interno.' });
   }

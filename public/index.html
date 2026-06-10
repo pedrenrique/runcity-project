@@ -218,6 +218,26 @@
     .react-btn.liked svg{fill:var(--err);stroke:var(--err);}
     .react-sep{flex:1;}
 
+    /* COMENTÁRIOS */
+    .cmt-panel{border-top:1px solid var(--brd2);padding:0 0 4px;}
+    .cmt-list{max-height:220px;overflow-y:auto;padding:8px 16px 0;}
+    .cmt-list::-webkit-scrollbar{width:2px;}
+    .cmt-list::-webkit-scrollbar-thumb{background:var(--brd);border-radius:2px;}
+    .cmt-item{display:flex;gap:8px;margin-bottom:10px;}
+    .cmt-av{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--ff-d);font-size:10px;border:1.5px solid;flex-shrink:0;}
+    .cmt-body{flex:1;min-width:0;}
+    .cmt-author{font-size:11px;font-weight:700;color:var(--p-l);}
+    .cmt-text{font-size:12px;color:var(--t1);margin-top:2px;line-height:1.4;word-break:break-word;}
+    .cmt-time{font-size:10px;color:var(--t2);margin-top:2px;}
+    .cmt-vazia{text-align:center;color:var(--t2);font-size:12px;padding:16px 0;}
+    .cmt-form{display:flex;align-items:center;gap:8px;padding:8px 14px;border-top:1px solid var(--brd2);}
+    .cmt-input{flex:1;background:var(--c0);border:1.5px solid var(--brd2);border-radius:20px;padding:7px 14px;font-size:12px;color:var(--t1);font-family:var(--ff-b);outline:none;transition:border-color .2s;}
+    .cmt-input::placeholder{color:var(--t2);}
+    .cmt-input:focus{border-color:var(--p-mid);}
+    .cmt-send{width:32px;height:32px;border-radius:50%;background:var(--p);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;flex-shrink:0;}
+    .cmt-send:hover{background:var(--p-d);transform:scale(1.06);}
+    .cmt-send:disabled{opacity:.5;cursor:default;transform:none;}
+
     /* NAV */
     .nav{position:absolute;bottom:0;left:0;right:0;height:78px;background:var(--bg);border-top:1px solid var(--brd);display:flex;z-index:100;transition:background .3s,border-color .3s;}
     @supports (backdrop-filter:blur(1px)){.nav{backdrop-filter:blur(24px);background:color-mix(in srgb,var(--bg) 90%,transparent);}}
@@ -523,15 +543,26 @@ function buildCard(post, idx){
         <svg width="15" height="15" viewBox="0 0 24 24" fill="${post.liked?'currentColor':'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
         <span id="like-count-${idx}">${post.likes}</span>
       </button>
-      <button class="react-btn" onclick="showToast('Comentários em breve!')">
+      <button class="react-btn" id="cmtBtn-${idx}" onclick="toggleComentarios(${idx}, ${post.id || 0})">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
-        0
+        <span id="cmt-count-${idx}">${post.comentarios || 0}</span>
       </button>
       <div class="react-sep"></div>
       <button class="react-btn" onclick="compartilhar(${post.user_id || 0}, '${post.nome.replace(/'/g, "\\'")}', '${post.area}')">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
         Compartilhar
       </button>
+    </div>
+    <div class="cmt-panel" id="cmt-panel-${idx}" style="display:none">
+      <div class="cmt-list" id="cmt-list-${idx}">
+        <div class="cmt-vazia">Carregando…</div>
+      </div>
+      <div class="cmt-form">
+        <input class="cmt-input" id="cmt-input-${idx}" type="text" placeholder="Escreva um comentário…" maxlength="300" onkeydown="if(event.key==='Enter')enviarComentario(${idx},${post.id || 0})">
+        <button class="cmt-send" onclick="enviarComentario(${idx}, ${post.id || 0})" title="Enviar">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        </button>
+      </div>
     </div>
   </div>`;
 }
@@ -564,6 +595,7 @@ function apiParaPost(c, meId) {
     dur:     fmtDuracao(parseInt(c.duracao)),
     likes:   c.curtidas || 0,
     liked:   !!c.curtida_por_mim,
+    comentarios: c.comentarios || 0,
     pts:     '+' + (c.xp_ganho || 0) + ' XP',
     rota_svg: c.rota_svg || null,
     isMe:    c.user_id === meId,
@@ -640,6 +672,97 @@ async function carregarFeed() {
   } else {
     document.getElementById('feed').innerHTML =
       '<p style="text-align:center;color:var(--t2);padding:40px 0;">Erro ao carregar o feed. Tente novamente.</p>';
+  }
+}
+
+/* Comentários */
+const _cmtAbertos = new Set();
+
+async function toggleComentarios(idx, corridaId) {
+  const panel = document.getElementById(`cmt-panel-${idx}`);
+  const aberto = _cmtAbertos.has(idx);
+  if (aberto) {
+    panel.style.display = 'none';
+    _cmtAbertos.delete(idx);
+  } else {
+    panel.style.display = 'block';
+    _cmtAbertos.add(idx);
+    if (corridaId) await carregarComentarios(idx, corridaId);
+  }
+}
+
+async function carregarComentarios(idx, corridaId) {
+  const lista = document.getElementById(`cmt-list-${idx}`);
+  lista.innerHTML = '<div class="cmt-vazia">Carregando…</div>';
+  try {
+    const token = RC.getToken();
+    const headers = token ? { Authorization: 'Bearer ' + token } : {};
+    const res = await fetch(`/api/corridas/${corridaId}/comentarios`, { headers });
+    if (!res.ok) throw new Error();
+    const cmts = await res.json();
+    if (!cmts.length) {
+      lista.innerHTML = '<div class="cmt-vazia">Nenhum comentário ainda. Seja o primeiro!</div>';
+      return;
+    }
+    lista.innerHTML = cmts.map(c => {
+      const ini = (c.nome || '').trim().split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
+      const cor = userColor(c.user_id);
+      const tempo = tempoRelativo(c.criado_em);
+      return `
+        <div class="cmt-item">
+          <a href="perfil.html?user=${c.user_id}" style="text-decoration:none">
+            <div class="cmt-av" style="background:${cor}18;color:${cor};border-color:${cor}50;">${ini}</div>
+          </a>
+          <div class="cmt-body">
+            <div class="cmt-author">${c.nome}${c.username ? ' <span style="color:var(--t2);font-weight:400;">@'+c.username+'</span>' : ''}</div>
+            <div class="cmt-text">${c.texto.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>
+            <div class="cmt-time">${tempo}</div>
+          </div>
+        </div>`;
+    }).join('');
+    // Rola para o fim
+    lista.scrollTop = lista.scrollHeight;
+  } catch {
+    lista.innerHTML = '<div class="cmt-vazia">Erro ao carregar comentários.</div>';
+  }
+}
+
+async function enviarComentario(idx, corridaId) {
+  const token = RC.getToken();
+  if (!token) { showToast('Faça login para comentar'); return; }
+  if (!corridaId) return;
+
+  const input = document.getElementById(`cmt-input-${idx}`);
+  const texto = input.value.trim();
+  if (!texto) return;
+
+  const btn = input.nextElementSibling;
+  btn.disabled = true;
+  input.disabled = true;
+
+  try {
+    const res = await fetch(`/api/corridas/${corridaId}/comentarios`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+      body: JSON.stringify({ texto }),
+    });
+    if (!res.ok) {
+      const d = await res.json().catch(() => ({}));
+      showToast(d.erro || 'Erro ao comentar');
+      return;
+    }
+    input.value = '';
+    // Atualiza contador
+    const countEl = document.getElementById(`cmt-count-${idx}`);
+    if (countEl) countEl.textContent = parseInt(countEl.textContent || 0) + 1;
+    // Recarrega lista
+    await carregarComentarios(idx, corridaId);
+  } catch {
+    showToast('Sem conexão');
+  } finally {
+    btn.disabled = false;
+    input.disabled = false;
+    input.focus();
   }
 }
 
@@ -805,21 +928,12 @@ async function carregarNotificacoes() {
         return;
       }
       list.innerHTML = notificacoes.map(n => {
-        let acoes = '';
-        if (n.tipo === 'amizade_pedido' && n.ref_id) {
-          if (n.amizade_status === 'aceite') {
-            acoes = '<span style="color:var(--ok);font-size:11px;font-weight:700;">✓ Pedido aceito</span>';
-          } else if (!n.amizade_status) {
-            // amizade foi recusada/removida ou nunca respondida — mostra botões só se ainda pendente
-            // como não temos status 'pendente' aqui, não mostra nada (pedido foi recusado)
-            acoes = '<span style="color:var(--t2);font-size:11px;font-weight:700;">✕ Pedido recusado</span>';
-          } else if (n.amizade_status === 'pendente') {
-            acoes = `<div class="notif-acoes">
+        const acoes = (n.tipo === 'amizade_pedido' && n.ref_id)
+          ? `<div class="notif-acoes">
                <button class="notif-btn-aceitar" onclick="responderAmizade(${n.ref_id}, 'aceitar', ${n.id}, this)">Aceitar</button>
                <button class="notif-btn-recusar" onclick="responderAmizade(${n.ref_id}, 'recusar', ${n.id}, this)">Recusar</button>
-             </div>`;
-          }
-        }
+             </div>`
+          : '';
         return `
           <div class="notif-item${n.lida ? '' : ' nao-lida'}" id="notif-${n.id}">
             ${n.mensagem}
@@ -857,10 +971,6 @@ async function responderAmizade(solicitanteId, acao, notifId, btn) {
     if (item) {
       item.querySelector('.notif-acoes')?.remove();
       item.classList.remove('nao-lida');
-      const msg = acao === 'aceitar'
-        ? '<span style="color:var(--ok);font-size:11px;font-weight:700;">✓ Pedido aceito</span>'
-        : '<span style="color:var(--t2);font-size:11px;font-weight:700;">✕ Pedido recusado</span>';
-      item.insertAdjacentHTML('beforeend', msg);
     }
   } catch {
     showToast('Erro ao processar. Tente novamente.');
