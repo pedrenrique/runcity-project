@@ -212,7 +212,7 @@
             <path d="M13.73 21a2 2 0 01-3.46 0"/>
           </svg>
         </div>
-        <a class="av-link" href="perfil.html" id="avTopo" title="Meu perfil">JS</a>
+        <a class="av-link" href="perfil.html" id="avTopo" title="Meu perfil"></a>
       </div>
     </div>
 
@@ -292,6 +292,16 @@
   </div>
 </div>
 
+<script src="auth.js"></script>
+<script>
+(function(){
+  const u = RC.getUser();
+  if (u) {
+    const ini = u.nome.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
+    document.getElementById('avTopo').textContent = ini;
+  }
+})();
+</script>
 <script>
 /* ── DADOS DO FEED ── */
 const AV_C = {

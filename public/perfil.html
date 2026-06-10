@@ -294,9 +294,34 @@ const USERS = {
 function toTitleCase(s){ return s.split(' ').map(w=>w[0]+w.slice(1).toLowerCase()).join(' '); }
 
 /* ── LÊ QUERY PARAM ── */
-const params = new URLSearchParams(location.search);
-const userId = (params.get('user')||'JS').toUpperCase();
-const user   = USERS[userId]||USERS['JS'];
+const params    = new URLSearchParams(location.search);
+const userParam = params.get('user');
+
+let user;
+if (!userParam) {
+  const sessao = RC.getUser();
+  if (!sessao) { window.location.replace('login.html'); }
+  const iniciais = sessao.nome.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
+  user = {
+    av: iniciais,
+    name: sessao.nome.toUpperCase(),
+    role: 'Corredor Urbano',
+    city: sessao.cidade || 'Brasil',
+    lv: sessao.nivel || 1,
+    xpCur: sessao.xp || 0,
+    xpMax: 10000,
+    stats: { m2: '0', corridas: 0, vitorias: 0, km: '0 km' },
+    bestGame: '—', bestGameSub: 'Nenhuma partida ainda',
+    maxArea: '—', maxAreaSub: '—',
+    winRate: '—', winRateSub: '—',
+    historico: [],
+    friends: [],
+    isMe: true,
+  };
+} else {
+  const userId = userParam.toUpperCase();
+  user = USERS[userId] || USERS['JS'];
+}
 
 /* ── RENDERIZA ── */
 function renderProfile(u){
