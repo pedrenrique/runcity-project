@@ -61,29 +61,61 @@ async function montarPerfil(userId, incluirEmail) {
 }
 
 // GET /api/users/buscar?q=termo — busca por nome ou username
-router.get('/buscar', auth, async (req, res) => {
+// Rota pública: aceita token opcional para enriquecer resultado com status de amizade
+router.get('/buscar', async (req, res) => {
   const q = (req.query.q || '').trim();
   if (q.length < 2) return res.json([]);
 
+  // Tenta extrair o usuário do token se existir, mas não exige
+  let meId = null;
+  const authHeader = req.headers.authorization;
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    try {
+      const jwt = require('jsonwebtoken');
+      const decoded = jwt.verify(authHeader.split(' ')[1], process.env.JWT_SECRET);
+      meId = decoded.id;
+    } catch {}
+  }
+
   try {
     const termo = '%' + q.toLowerCase() + '%';
-    const { rows } = await pool.query(
-      `SELECT u.id, u.nome, u.username, u.cidade, u.nivel,
-              a.status AS amizade_status
-       FROM users u
-       LEFT JOIN amizades a
-         ON (a.user_id = $1 AND a.amigo_id = u.id)
-         OR (a.amigo_id = $1 AND a.user_id = u.id)
-       WHERE u.id != $1
-         AND (LOWER(u.nome) LIKE $2 OR LOWER(u.username) LIKE $2)
-       ORDER BY
-         CASE WHEN LOWER(u.username) = $3 THEN 0
-              WHEN LOWER(u.username) LIKE $2 THEN 1
-              ELSE 2 END,
-         u.nome
-       LIMIT 20`,
-      [req.user.id, termo, q.toLowerCase()]
-    );
+    let rows;
+
+    if (meId) {
+      // Usuário autenticado: exclui ele mesmo e mostra status de amizade
+      ({ rows } = await pool.query(
+        `SELECT u.id, u.nome, u.username, u.cidade, u.nivel,
+                a.status AS amizade_status
+         FROM users u
+         LEFT JOIN amizades a
+           ON (a.user_id = $1 AND a.amigo_id = u.id)
+           OR (a.amigo_id = $1 AND a.user_id = u.id)
+         WHERE u.id != $1
+           AND (LOWER(u.nome) LIKE $2 OR LOWER(u.username) LIKE $2)
+         ORDER BY
+           CASE WHEN LOWER(u.username) = $3 THEN 0
+                WHEN LOWER(u.username) LIKE $2 THEN 1
+                ELSE 2 END,
+           u.nome
+         LIMIT 20`,
+        [meId, termo, q.toLowerCase()]
+      ));
+    } else {
+      // Não autenticado: busca simples (usado na checagem de username no cadastro)
+      ({ rows } = await pool.query(
+        `SELECT u.id, u.nome, u.username, u.cidade, u.nivel
+         FROM users u
+         WHERE LOWER(u.nome) LIKE $1 OR LOWER(u.username) LIKE $1
+         ORDER BY
+           CASE WHEN LOWER(u.username) = $2 THEN 0
+                WHEN LOWER(u.username) LIKE $1 THEN 1
+                ELSE 2 END,
+           u.nome
+         LIMIT 20`,
+        [termo, q.toLowerCase()]
+      ));
+    }
+
     res.json(rows);
   } catch {
     res.status(500).json({ erro: 'Erro interno.' });
