@@ -70,6 +70,11 @@
     .notif-item.nao-lida{background:var(--p-dim);}
     .notif-item-sub{font-size:10px;color:var(--t2);margin-top:3px;}
     .notif-vazia{padding:20px 16px;text-align:center;color:var(--t2);font-size:12px;}
+    .notif-acoes{display:flex;gap:6px;margin-top:8px;}
+    .notif-btn-aceitar{flex:1;padding:5px 0;border-radius:7px;border:none;background:var(--ok);color:#fff;font-size:11px;font-weight:700;cursor:pointer;font-family:var(--ff-b);}
+    .notif-btn-recusar{flex:1;padding:5px 0;border-radius:7px;border:1px solid var(--brd);background:transparent;color:var(--t2);font-size:11px;font-weight:700;cursor:pointer;font-family:var(--ff-b);}
+    .notif-btn-aceitar:hover{filter:brightness(1.1);}
+    .notif-btn-recusar:hover{color:var(--err);border-color:var(--err);}
     .hdr-actions{position:relative;}
     .av-link{
       width:36px;height:36px;border-radius:50%;background:var(--p-dim);border:2px solid var(--p);
@@ -652,15 +657,58 @@ async function carregarNotificacoes() {
         list.innerHTML = '<div class="notif-vazia">Nenhuma notificação ainda</div>';
         return;
       }
-      list.innerHTML = notificacoes.map(n => `
-        <div class="notif-item${n.lida ? '' : ' nao-lida'}">
-          ${n.mensagem}
-          <div class="notif-item-sub">${new Date(n.criado_em).toLocaleDateString('pt-BR', { day:'2-digit', month:'short' })}</div>
-        </div>`).join('');
+      list.innerHTML = notificacoes.map(n => {
+        const acoes = (n.tipo === 'amizade_pedido' && n.ref_id)
+          ? `<div class="notif-acoes">
+               <button class="notif-btn-aceitar" onclick="responderAmizade(${n.ref_id}, 'aceitar', ${n.id}, this)">Aceitar</button>
+               <button class="notif-btn-recusar" onclick="responderAmizade(${n.ref_id}, 'recusar', ${n.id}, this)">Recusar</button>
+             </div>`
+          : '';
+        return `
+          <div class="notif-item${n.lida ? '' : ' nao-lida'}" id="notif-${n.id}">
+            ${n.mensagem}
+            ${acoes}
+            <div class="notif-item-sub">${new Date(n.criado_em).toLocaleDateString('pt-BR', { day:'2-digit', month:'short' })}</div>
+          </div>`;
+      }).join('');
       return;
     }
   } catch {}
   list.innerHTML = '<div class="notif-vazia">Nenhuma notificação ainda</div>';
+}
+
+async function responderAmizade(solicitanteId, acao, notifId, btn) {
+  const token = RC.getToken();
+  if (!token) return;
+
+  btn.closest('.notif-acoes').querySelectorAll('button').forEach(b => b.disabled = true);
+
+  try {
+    if (acao === 'aceitar') {
+      const res = await fetch(`/api/amigos/${solicitanteId}/aceitar`, {
+        method: 'POST',
+        headers: { Authorization: 'Bearer ' + token },
+      });
+      if (!res.ok) throw new Error();
+      showToast('Amizade aceita!');
+    } else {
+      const res = await fetch(`/api/amigos/${solicitanteId}`, {
+        method: 'DELETE',
+        headers: { Authorization: 'Bearer ' + token },
+      });
+      if (!res.ok) throw new Error();
+      showToast('Pedido recusado.');
+    }
+
+    const item = document.getElementById(`notif-${notifId}`);
+    if (item) {
+      item.querySelector('.notif-acoes')?.remove();
+      item.classList.remove('nao-lida');
+    }
+  } catch {
+    showToast('Erro ao processar. Tente novamente.');
+    btn.closest('.notif-acoes').querySelectorAll('button').forEach(b => b.disabled = false);
+  }
 }
 
 async function marcarNotifLidas() {
