@@ -848,6 +848,10 @@ async function responderAmizade(solicitanteId, acao, notifId, btn) {
     if (item) {
       item.querySelector('.notif-acoes')?.remove();
       item.classList.remove('nao-lida');
+      const msg = acao === 'aceitar'
+        ? '<span style="color:var(--ok);font-size:11px;font-weight:700;">✓ Pedido aceito</span>'
+        : '<span style="color:var(--t2);font-size:11px;font-weight:700;">✕ Pedido recusado</span>';
+      item.insertAdjacentHTML('beforeend', msg);
     }
   } catch {
     showToast('Erro ao processar. Tente novamente.');
