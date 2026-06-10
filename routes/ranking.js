@@ -23,7 +23,7 @@ router.get('/', optAuth, async (req, res) => {
 
     if (escopo === 'amigos' && meId) {
       params.push(meId);
-      whereClause = `WHERE u.id = $1 OR u.id IN (
+      whereClause = `WHERE u.id IN (
         SELECT CASE WHEN a.user_id = $1 THEN a.amigo_id ELSE a.user_id END
         FROM amizades a
         WHERE (a.user_id = $1 OR a.amigo_id = $1) AND a.status = 'aceite'
@@ -39,6 +39,7 @@ router.get('/', optAuth, async (req, res) => {
       SELECT
         u.id,
         u.nome,
+        u.username,
         u.cidade,
         COALESCE(SUM(c.m2), 0)  AS m2_total,
         COALESCE(SUM(c.km), 0)  AS km_total,
@@ -46,7 +47,7 @@ router.get('/', optAuth, async (req, res) => {
       FROM users u
       ${joinCond}
       ${whereClause}
-      GROUP BY u.id, u.nome, u.cidade
+      GROUP BY u.id, u.nome, u.username, u.cidade
       ORDER BY m2_total DESC
       LIMIT 50
     `, params);
@@ -70,6 +71,7 @@ router.get('/', optAuth, async (req, res) => {
         id:       r.id,
         nome,
         iniciais,
+        username: r.username || null,
         cidade:   r.cidade || 'Brasil',
         m2:       parseFloat(r.m2_total) || 0,
         km:       parseFloat(r.km_total) || 0,
