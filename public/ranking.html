@@ -32,8 +32,6 @@
     .back{width:36px;height:36px;border-radius:50%;background:var(--c0);border:1px solid var(--brd);display:flex;align-items:center;justify-content:center;text-decoration:none;color:var(--t1);transition:all .22s;flex-shrink:0;}
     .back:hover{background:var(--p-dim);border-color:var(--p-mid);color:var(--p-l);transform:translateX(-2px);}
     .shdr-title{font-family:var(--ff-d);font-size:22px;letter-spacing:2px;color:var(--t1);flex:1;}
-    .icon-btn{width:36px;height:36px;border-radius:50%;background:var(--c0);border:1px solid var(--brd);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--t3);transition:all .2s;}
-    .icon-btn:hover{border-color:var(--p-mid);color:var(--p-l);}
 
     /* SEGMENTED */
     .seg-wrap{padding:12px 20px 8px;}
@@ -137,9 +135,6 @@
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="M12 5l-7 7 7 7"/></svg>
         </a>
         <div class="shdr-title">Ranking</div>
-        <div class="icon-btn" onclick="showToast('Link copiado!')" title="Compartilhar">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-        </div>
       </div>
 
       <!-- Escopo -->
@@ -205,11 +200,11 @@ function mkCidade(period){
       {av:'JS',name:'João\nSilva',  score:fmt(Math.round(48300*m)), city:'SP', isMe:true,  uid:'JS'}
     ],
     list:[
-      {pos:4,n:'Carlos Melo',   uid:'CM',city:'SP',m2:fmt(Math.round(39800*m)),km:Math.round(98*m) ,wins:Math.round(7*m) ,av:'CM',t:'up'},
-      {pos:5,n:'Rafael Torres', uid:'RT',city:'SP',m2:fmt(Math.round(28400*m)),km:Math.round(65*m) ,wins:Math.round(4*m) ,av:'RT',t:'dn'},
-      {pos:6,n:'Luiza Neves',   uid:'LN',city:'SP',m2:fmt(Math.round(21000*m)),km:Math.round(52*m) ,wins:Math.round(3*m) ,av:'LN',t:'up'},
-      {pos:7,n:'Marina Santos', uid:'MS',city:'SP',m2:fmt(Math.round(18200*m)),km:Math.round(44*m) ,wins:Math.round(2*m) ,av:'MS',t:'dn'},
-      {pos:8,n:'Bruno Carvalho',uid:'BC',city:'SP',m2:fmt(Math.round(15600*m)),km:Math.round(38*m) ,wins:Math.round(2*m) ,av:'BC',t:'up'},
+      {pos:4,n:'Carlos Melo',   uid:'CM',city:'SP',m2:fmt(Math.round(39800*m)),km:Math.round(98*m) ,wins:Math.round(7*m) ,av:'CM',t:'up', username:'carlosmelo'},
+      {pos:5,n:'Rafael Torres', uid:'RT',city:'SP',m2:fmt(Math.round(28400*m)),km:Math.round(65*m) ,wins:Math.round(4*m) ,av:'RT',t:'dn', username:'rafaeltorres'},
+      {pos:6,n:'Luiza Neves',   uid:'LN',city:'SP',m2:fmt(Math.round(21000*m)),km:Math.round(52*m) ,wins:Math.round(3*m) ,av:'LN',t:'up', username:'luizaneves'},
+      {pos:7,n:'Marina Santos', uid:'MS',city:'SP',m2:fmt(Math.round(18200*m)),km:Math.round(44*m) ,wins:Math.round(2*m) ,av:'MS',t:'dn', username:'marinasantos'},
+      {pos:8,n:'Bruno Carvalho',uid:'BC',city:'SP',m2:fmt(Math.round(15600*m)),km:Math.round(38*m) ,wins:Math.round(2*m) ,av:'BC',t:'up', username:'brunocarvalho'},
     ],
     myPos:3, myTrend:'up'
   };
@@ -227,11 +222,11 @@ function mkGlobal(period){
       {av:'ML',name:'Mei\nLin',       score:fmt(Math.round(298400*m)),city:'Xangai',  isMe:false,uid:'ML'}
     ],
     list:[
-      {pos:4, n:'Ana Costa',    uid:'AC',city:'SP',      m2:fmt(Math.round(127400*m)),km:Math.round(312*m),wins:Math.round(45*m),av:'AC',t:'up'},
-      {pos:5, n:'David Park',   uid:'DP',city:'Nova York',m2:fmt(Math.round(118200*m)),km:Math.round(290*m),wins:Math.round(38*m),av:'DP',t:'dn'},
-      {pos:6, n:'Emma Weber',   uid:'EW',city:'Berlim',  m2:fmt(Math.round(109600*m)),km:Math.round(270*m),wins:Math.round(31*m),av:'EW',t:'up'},
-      {pos:7, n:'Pedro Lopes',  uid:'PL',city:'SP',      m2:fmt(Math.round(98200*m)), km:Math.round(241*m),wins:Math.round(27*m),av:'PL',t:'dn'},
-      {pos:8, n:'Yuki Tanaka',  uid:'YT',city:'Tóquio', m2:fmt(Math.round(91000*m)), km:Math.round(218*m),wins:Math.round(24*m),av:'YT',t:'up'},
+      {pos:4, n:'Ana Costa',    uid:'AC',city:'SP',      m2:fmt(Math.round(127400*m)),km:Math.round(312*m),wins:Math.round(45*m),av:'AC',t:'up', username:'anacosta'},
+      {pos:5, n:'David Park',   uid:'DP',city:'Nova York',m2:fmt(Math.round(118200*m)),km:Math.round(290*m),wins:Math.round(38*m),av:'DP',t:'dn', username:'davidpark'},
+      {pos:6, n:'Emma Weber',   uid:'EW',city:'Berlim',  m2:fmt(Math.round(109600*m)),km:Math.round(270*m),wins:Math.round(31*m),av:'EW',t:'up', username:'emmaweber'},
+      {pos:7, n:'Pedro Lopes',  uid:'PL',city:'SP',      m2:fmt(Math.round(98200*m)), km:Math.round(241*m),wins:Math.round(27*m),av:'PL',t:'dn', username:'pedrolopes'},
+      {pos:8, n:'Yuki Tanaka',  uid:'YT',city:'Tóquio', m2:fmt(Math.round(91000*m)), km:Math.round(218*m),wins:Math.round(24*m),av:'YT',t:'up', username:'yukitanaka'},
     ],
     myPos:21, myTrend:'up'
   };
@@ -249,9 +244,9 @@ function mkAmigos(period){
       {av:'JS',name:'João\nSilva',   score:fmt(Math.round(48300*m)),city:'SP',isMe:true, uid:'JS'}
     ],
     list:[
-      {pos:4,n:'Felipe Gomes',uid:'FG',city:'SP',m2:fmt(Math.round(34700*m)),km:Math.round(82*m),wins:Math.round(5*m),av:'FG',t:'up'},
-      {pos:5,n:'Lucas Pinto', uid:'LP',city:'RJ',m2:fmt(Math.round(27100*m)),km:Math.round(64*m),wins:Math.round(3*m),av:'LP',t:'dn'},
-      {pos:6,n:'Ana Costa',   uid:'AC',city:'SP',m2:fmt(Math.round(19300*m)),km:Math.round(45*m),wins:Math.round(2*m),av:'AC',t:'up'},
+      {pos:4,n:'Felipe Gomes',uid:'FG',city:'SP',m2:fmt(Math.round(34700*m)),km:Math.round(82*m),wins:Math.round(5*m),av:'FG',t:'up', username:'felipegomes'},
+      {pos:5,n:'Lucas Pinto', uid:'LP',city:'RJ',m2:fmt(Math.round(27100*m)),km:Math.round(64*m),wins:Math.round(3*m),av:'LP',t:'dn', username:'lucaspinto'},
+      {pos:6,n:'Ana Costa',   uid:'AC',city:'SP',m2:fmt(Math.round(19300*m)),km:Math.round(45*m),wins:Math.round(2*m),av:'AC',t:'up', username:'anacosta'},
     ],
     myPos:3, myTrend:'up'
   };
