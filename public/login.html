@@ -576,7 +576,7 @@
     e.classList.add('show');
   }
 
-  function entrar(ev) {
+  async function entrar(ev) {
     ev.preventDefault();
     const f = ev.target;
     const email = f.email.value.trim().toLowerCase();
@@ -588,21 +588,19 @@
       return;
     }
 
-    // sem backend ainda — autenticação 100% local. Sobrevive entre reloads via localStorage.
-    const users = RC._users.ler();
-    const u = users.find(x => x.email === email);
-    if (!u || u.senha !== senha) {
-      mostrarErro('erro-login', 'E-mail ou senha incorretos.');
-      return;
+    travar(f, true);
+    try {
+      const user = await RC.login(email, senha);
+      showToast('Bem-vindo, ' + user.nome.split(' ')[0] + '!');
+      setTimeout(() => { window.location.href = 'index.html'; }, 500);
+    } catch (e) {
+      mostrarErro('erro-login', e.message);
+    } finally {
+      travar(f, false);
     }
-
-    const { senha: _, ...userPub } = u;
-    RC.setSessao(RC._gerarToken(), userPub);
-    showToast('Bem-vindo, ' + userPub.nome.split(' ')[0] + '!');
-    setTimeout(() => { window.location.href = 'index.html'; }, 500);
   }
 
-  function cadastrar(ev) {
+  async function cadastrar(ev) {
     ev.preventDefault();
     const f = ev.target;
     const nome = f.nome.value.trim();
@@ -615,20 +613,16 @@
     if (senha.length < 6)         return mostrarErro('erro-cadastro', 'A senha precisa ter pelo menos 6 caracteres.');
     if (senha !== conf)           return mostrarErro('erro-cadastro', 'As senhas não conferem.');
 
-    const users = RC._users.ler();
-    if (users.some(u => u.email === email)) {
-      mostrarErro('erro-cadastro', 'Já existe uma conta com esse e-mail.');
-      return;
+    travar(f, true);
+    try {
+      const user = await RC.register(nome, email, senha);
+      showToast('Conta criada! Bora correr.');
+      setTimeout(() => { window.location.href = 'index.html'; }, 600);
+    } catch (e) {
+      mostrarErro('erro-cadastro', e.message);
+    } finally {
+      travar(f, false);
     }
-
-    const novo = { id: RC._gerarId(), nome, email, senha, criadoEm: new Date().toISOString() };
-    users.push(novo);
-    RC._users.salvar(users);
-
-    const { senha: _, ...userPub } = novo;
-    RC.setSessao(RC._gerarToken(), userPub);
-    showToast('Conta criada! Bora correr.');
-    setTimeout(() => { window.location.href = 'index.html'; }, 600);
   }
 
   /* ── Google Sign-In ──

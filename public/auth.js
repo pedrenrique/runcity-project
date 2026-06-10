@@ -1,10 +1,7 @@
-// Camada de sessão front-only. Sem backend ainda — tudo mockado no localStorage.
-// Vai virar fetch real quando o servidor estiver pronto.
-
 (function () {
   const KEY_TOKEN = 'rc_token';
   const KEY_USER  = 'rc_user';
-  const KEY_USERS = 'rc_users'; // "tabela" de usuários cadastrados
+  const API = '/api';
 
   function getToken() {
     try { return localStorage.getItem(KEY_TOKEN); } catch { return null; }
@@ -22,22 +19,6 @@
     localStorage.removeItem(KEY_USER);
   }
 
-  function lerUsuarios() {
-    try { return JSON.parse(localStorage.getItem(KEY_USERS) || '[]'); }
-    catch { return []; }
-  }
-  function salvarUsuarios(lista) {
-    localStorage.setItem(KEY_USERS, JSON.stringify(lista));
-  }
-
-  function gerarToken() {
-    return 'tk_' + Math.random().toString(36).slice(2) + Date.now().toString(36);
-  }
-  function gerarId() {
-    return 'u_' + Math.random().toString(36).slice(2, 10);
-  }
-
-  // chame no topo das páginas que exigem login
   async function requerLogin() {
     const token = getToken();
     const user  = getUser();
@@ -53,6 +34,30 @@
     window.location.replace('login.html');
   }
 
+  async function login(email, senha) {
+    const res = await fetch(`${API}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, senha }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.erro || 'Erro ao entrar.');
+    setSessao(data.token, data.user);
+    return data.user;
+  }
+
+  async function register(nome, email, senha) {
+    const res = await fetch(`${API}/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nome, email, senha }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.erro || 'Erro ao criar conta.');
+    setSessao(data.token, data.user);
+    return data.user;
+  }
+
   window.RC = {
     getToken,
     getUser,
@@ -60,9 +65,7 @@
     limparSessao,
     requerLogin,
     logout,
-    // helpers que login.html e perfil.html usam pro mock local
-    _users: { ler: lerUsuarios, salvar: salvarUsuarios },
-    _gerarToken: gerarToken,
-    _gerarId: gerarId
+    login,
+    register,
   };
 })();
