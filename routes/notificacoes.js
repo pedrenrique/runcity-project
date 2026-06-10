@@ -6,10 +6,18 @@ const auth   = require('../middleware/auth');
 router.get('/', auth, async (req, res) => {
   try {
     const { rows } = await pool.query(
-      `SELECT id, tipo, mensagem, lida, ref_id, criado_em
-       FROM notificacoes
-       WHERE user_id = $1
-       ORDER BY criado_em DESC
+      `SELECT n.id, n.tipo, n.mensagem, n.lida, n.ref_id, n.criado_em,
+              a.status AS amizade_status
+       FROM notificacoes n
+       LEFT JOIN amizades a
+         ON n.tipo = 'amizade_pedido'
+        AND (
+          (a.user_id = n.ref_id AND a.amigo_id = $1)
+          OR
+          (a.user_id = $1 AND a.amigo_id = n.ref_id)
+        )
+       WHERE n.user_id = $1
+       ORDER BY n.criado_em DESC
        LIMIT 30`,
       [req.user.id]
     );
