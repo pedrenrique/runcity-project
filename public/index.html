@@ -237,6 +237,19 @@
     .cmt-send{width:32px;height:32px;border-radius:50%;background:var(--p);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;flex-shrink:0;}
     .cmt-send:hover{background:var(--p-d);transform:scale(1.06);}
     .cmt-send:disabled{opacity:.5;cursor:default;transform:none;}
+    .cmt-actions{display:flex;align-items:center;gap:4px;margin-top:4px;}
+    .cmt-like-btn{display:flex;align-items:center;gap:3px;background:none;border:none;font-size:10px;font-weight:600;color:var(--t2);cursor:pointer;padding:2px 6px;border-radius:6px;font-family:var(--ff-b);transition:all .18s;}
+    .cmt-like-btn:hover{color:var(--err);background:rgba(239,68,68,.08);}
+    .cmt-like-btn.liked{color:var(--err);}
+    .cmt-like-btn.liked svg{fill:var(--err);stroke:var(--err);}
+    .cmt-act-btn{display:flex;align-items:center;background:none;border:none;font-size:10px;font-weight:600;color:var(--t2);cursor:pointer;padding:2px 6px;border-radius:6px;font-family:var(--ff-b);transition:all .18s;}
+    .cmt-act-btn:hover{color:var(--p-l);background:var(--p-dim);}
+    .cmt-act-btn.del:hover{color:var(--err);background:rgba(239,68,68,.08);}
+    .cmt-edit-form{display:none;margin-top:6px;gap:6px;align-items:center;}
+    .cmt-edit-form.show{display:flex;}
+    .cmt-edit-input{flex:1;background:var(--c0);border:1.5px solid var(--p-mid);border-radius:8px;padding:5px 10px;font-size:12px;color:var(--t1);font-family:var(--ff-b);outline:none;}
+    .cmt-edit-save{padding:4px 12px;border-radius:8px;background:var(--p);border:none;color:#fff;font-size:11px;font-weight:700;cursor:pointer;font-family:var(--ff-b);}
+    .cmt-edit-cancel{padding:4px 10px;border-radius:8px;background:transparent;border:1px solid var(--brd);color:var(--t2);font-size:11px;font-weight:700;cursor:pointer;font-family:var(--ff-b);}
 
     /* NAV */
     .nav{position:absolute;bottom:0;left:0;right:0;height:78px;background:var(--bg);border-top:1px solid var(--brd);display:flex;z-index:100;transition:background .3s,border-color .3s;}
@@ -696,6 +709,7 @@ async function carregarComentarios(idx, corridaId) {
   lista.innerHTML = '<div class="cmt-vazia">Carregando…</div>';
   try {
     const token = RC.getToken();
+    const meId  = RC.getUser()?.id ?? null;
     const headers = token ? { Authorization: 'Bearer ' + token } : {};
     const res = await fetch(`/api/corridas/${corridaId}/comentarios`, { headers });
     if (!res.ok) throw new Error();
@@ -705,25 +719,125 @@ async function carregarComentarios(idx, corridaId) {
       return;
     }
     lista.innerHTML = cmts.map(c => {
-      const ini = (c.nome || '').trim().split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
-      const cor = userColor(c.user_id);
-      const tempo = tempoRelativo(c.criado_em);
+      const ini    = (c.nome || '').trim().split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
+      const cor    = userColor(c.user_id);
+      const tempo  = tempoRelativo(c.criado_em);
+      const isAutor = meId && c.user_id === meId;
+      const curtido = !!c.curtido_por_mim;
+      const nCurtidas = c.curtidas || 0;
+
+      const likeBtn = `
+        <button class="cmt-like-btn${curtido ? ' liked' : ''}"
+                onclick="curtirComentario(${corridaId}, ${c.id}, this)"
+                data-liked="${curtido}" data-count="${nCurtidas}">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="${curtido ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+          <span>${nCurtidas > 0 ? nCurtidas : ''}</span>
+        </button>`;
+
+      const autorBtns = isAutor ? `
+        <button class="cmt-act-btn" onclick="iniciarEdicao(${c.id})" title="Editar">Editar</button>
+        <button class="cmt-act-btn del" onclick="excluirComentario(${corridaId}, ${c.id}, ${idx})" title="Excluir">Excluir</button>` : '';
+
       return `
-        <div class="cmt-item">
+        <div class="cmt-item" id="cmt-item-${c.id}">
           <a href="perfil.html?user=${c.user_id}" style="text-decoration:none">
             <div class="cmt-av" style="background:${cor}18;color:${cor};border-color:${cor}50;">${ini}</div>
           </a>
           <div class="cmt-body">
             <div class="cmt-author">${c.nome}${c.username ? ' <span style="color:var(--t2);font-weight:400;">@'+c.username+'</span>' : ''}</div>
-            <div class="cmt-text">${c.texto.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>
-            <div class="cmt-time">${tempo}</div>
+            <div class="cmt-text" id="cmt-text-${c.id}">${c.texto.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>
+            <div class="cmt-edit-form" id="cmt-edit-${c.id}">
+              <input class="cmt-edit-input" id="cmt-edit-input-${c.id}" value="${c.texto.replace(/"/g,'&quot;')}" maxlength="300">
+              <button class="cmt-edit-save" onclick="salvarEdicao(${corridaId}, ${c.id}, ${idx})">Salvar</button>
+              <button class="cmt-edit-cancel" onclick="cancelarEdicao(${c.id})">✕</button>
+            </div>
+            <div class="cmt-actions">
+              <span class="cmt-time">${tempo}</span>
+              ${likeBtn}
+              ${autorBtns}
+            </div>
           </div>
         </div>`;
     }).join('');
-    // Rola para o fim
     lista.scrollTop = lista.scrollHeight;
   } catch {
     lista.innerHTML = '<div class="cmt-vazia">Erro ao carregar comentários.</div>';
+  }
+}
+
+async function curtirComentario(corridaId, cmtId, btn) {
+  const token = RC.getToken();
+  if (!token) { showToast('Faça login para curtir'); return; }
+
+  const curtido = btn.dataset.liked === 'true';
+  const method  = curtido ? 'DELETE' : 'POST';
+  try {
+    const res = await fetch(`/api/corridas/${corridaId}/comentarios/${cmtId}/curtir`, {
+      method,
+      headers: { Authorization: 'Bearer ' + token },
+    });
+    if (!res.ok) throw new Error();
+    const data = await res.json();
+    const novo = !curtido;
+    btn.dataset.liked = String(novo);
+    btn.classList.toggle('liked', novo);
+    btn.querySelector('svg').setAttribute('fill', novo ? 'currentColor' : 'none');
+    btn.querySelector('span').textContent = data.curtidas > 0 ? data.curtidas : '';
+  } catch {
+    showToast('Erro ao curtir');
+  }
+}
+
+function iniciarEdicao(cmtId) {
+  document.getElementById(`cmt-text-${cmtId}`).style.display = 'none';
+  const form = document.getElementById(`cmt-edit-${cmtId}`);
+  form.classList.add('show');
+  document.getElementById(`cmt-edit-input-${cmtId}`).focus();
+}
+
+function cancelarEdicao(cmtId) {
+  document.getElementById(`cmt-text-${cmtId}`).style.display = '';
+  document.getElementById(`cmt-edit-${cmtId}`).classList.remove('show');
+}
+
+async function salvarEdicao(corridaId, cmtId, idx) {
+  const token = RC.getToken();
+  if (!token) return;
+  const input = document.getElementById(`cmt-edit-input-${cmtId}`);
+  const texto = input.value.trim();
+  if (!texto) return;
+
+  try {
+    const res = await fetch(`/api/corridas/${corridaId}/comentarios/${cmtId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+      body: JSON.stringify({ texto }),
+    });
+    if (!res.ok) { showToast('Erro ao editar'); return; }
+    const data = await res.json();
+    document.getElementById(`cmt-text-${cmtId}`).textContent = data.texto;
+    cancelarEdicao(cmtId);
+  } catch {
+    showToast('Sem conexão');
+  }
+}
+
+async function excluirComentario(corridaId, cmtId, idx) {
+  const token = RC.getToken();
+  if (!token) return;
+  try {
+    const res = await fetch(`/api/corridas/${corridaId}/comentarios/${cmtId}`, {
+      method: 'DELETE',
+      headers: { Authorization: 'Bearer ' + token },
+    });
+    if (!res.ok) { showToast('Erro ao excluir'); return; }
+    document.getElementById(`cmt-item-${cmtId}`)?.remove();
+    // Decrementa contador
+    const countEl = document.getElementById(`cmt-count-${idx}`);
+    if (countEl) countEl.textContent = Math.max(0, parseInt(countEl.textContent || 0) - 1);
+    showToast('Comentário removido.');
+  } catch {
+    showToast('Sem conexão');
   }
 }
 

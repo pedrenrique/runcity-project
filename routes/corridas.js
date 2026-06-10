@@ -129,15 +129,21 @@ router.get('/:id/comentarios', optAuth, async (req, res) => {
   const corridaId = parseInt(req.params.id);
   if (isNaN(corridaId)) return res.status(400).json({ erro: 'ID inválido.' });
 
+  const meId = req.user?.id ?? null;
+
   try {
     const { rows } = await pool.query(
       `SELECT cm.id, cm.texto, cm.criado_em,
-              u.id AS user_id, u.nome, u.username, u.nivel
+              u.id AS user_id, u.nome, u.username, u.nivel,
+              COUNT(DISTINCT cc.user_id)::int          AS curtidas,
+              BOOL_OR(cc.user_id = $2)                 AS curtido_por_mim
        FROM comentarios cm
        JOIN users u ON u.id = cm.user_id
+       LEFT JOIN curtidas_comentarios cc ON cc.comentario_id = cm.id
        WHERE cm.corrida_id = $1
+       GROUP BY cm.id, u.id
        ORDER BY cm.criado_em ASC`,
-      [corridaId]
+      [corridaId, meId]
     );
     res.json(rows);
   } catch {
@@ -167,11 +173,93 @@ router.post('/:id/comentarios', auth, async (req, res) => {
     );
     res.status(201).json({
       ...rows[0],
-      user_id:  req.user.id,
-      nome:     uRows[0].nome,
-      username: uRows[0].username,
-      nivel:    uRows[0].nivel,
+      user_id:       req.user.id,
+      nome:          uRows[0].nome,
+      username:      uRows[0].username,
+      nivel:         uRows[0].nivel,
+      curtidas:      0,
+      curtido_por_mim: false,
     });
+  } catch {
+    res.status(500).json({ erro: 'Erro interno.' });
+  }
+});
+
+// POST /api/corridas/:id/comentarios/:cmtId/curtir
+router.post('/:id/comentarios/:cmtId/curtir', auth, async (req, res) => {
+  const cmtId = parseInt(req.params.cmtId);
+  if (isNaN(cmtId)) return res.status(400).json({ erro: 'ID inválido.' });
+
+  try {
+    await pool.query(
+      'INSERT INTO curtidas_comentarios (user_id, comentario_id) VALUES ($1, $2) ON CONFLICT DO NOTHING',
+      [req.user.id, cmtId]
+    );
+    const { rows } = await pool.query(
+      'SELECT COUNT(*)::int AS n FROM curtidas_comentarios WHERE comentario_id = $1',
+      [cmtId]
+    );
+    res.json({ curtidas: rows[0].n });
+  } catch {
+    res.status(500).json({ erro: 'Erro interno.' });
+  }
+});
+
+// DELETE /api/corridas/:id/comentarios/:cmtId/curtir
+router.delete('/:id/comentarios/:cmtId/curtir', auth, async (req, res) => {
+  const cmtId = parseInt(req.params.cmtId);
+  if (isNaN(cmtId)) return res.status(400).json({ erro: 'ID inválido.' });
+
+  try {
+    await pool.query(
+      'DELETE FROM curtidas_comentarios WHERE user_id = $1 AND comentario_id = $2',
+      [req.user.id, cmtId]
+    );
+    const { rows } = await pool.query(
+      'SELECT COUNT(*)::int AS n FROM curtidas_comentarios WHERE comentario_id = $1',
+      [cmtId]
+    );
+    res.json({ curtidas: rows[0].n });
+  } catch {
+    res.status(500).json({ erro: 'Erro interno.' });
+  }
+});
+
+// PATCH /api/corridas/:id/comentarios/:cmtId
+router.patch('/:id/comentarios/:cmtId', auth, async (req, res) => {
+  const cmtId = parseInt(req.params.cmtId);
+  if (isNaN(cmtId)) return res.status(400).json({ erro: 'ID inválido.' });
+
+  const texto = (req.body.texto || '').trim();
+  if (!texto) return res.status(400).json({ erro: 'Comentário não pode ser vazio.' });
+  if (texto.length > 300) return res.status(400).json({ erro: 'Máximo de 300 caracteres.' });
+
+  try {
+    const { rowCount, rows } = await pool.query(
+      `UPDATE comentarios SET texto = $1
+       WHERE id = $2 AND user_id = $3
+       RETURNING id, texto, criado_em`,
+      [texto, cmtId, req.user.id]
+    );
+    if (!rowCount) return res.status(403).json({ erro: 'Comentário não encontrado ou sem permissão.' });
+    res.json(rows[0]);
+  } catch {
+    res.status(500).json({ erro: 'Erro interno.' });
+  }
+});
+
+// DELETE /api/corridas/:id/comentarios/:cmtId
+router.delete('/:id/comentarios/:cmtId', auth, async (req, res) => {
+  const cmtId = parseInt(req.params.cmtId);
+  if (isNaN(cmtId)) return res.status(400).json({ erro: 'ID inválido.' });
+
+  try {
+    const { rowCount } = await pool.query(
+      'DELETE FROM comentarios WHERE id = $1 AND user_id = $2',
+      [cmtId, req.user.id]
+    );
+    if (!rowCount) return res.status(403).json({ erro: 'Comentário não encontrado ou sem permissão.' });
+    res.json({ mensagem: 'Comentário removido.' });
   } catch {
     res.status(500).json({ erro: 'Erro interno.' });
   }
