@@ -293,34 +293,98 @@ const USERS = {
 
 function toTitleCase(s){ return s.split(' ').map(w=>w[0]+w.slice(1).toLowerCase()).join(' '); }
 
-/* ── LÊ QUERY PARAM ── */
-const params    = new URLSearchParams(location.search);
-const userParam = params.get('user');
+function fmtM2(v) {
+  v = parseFloat(v) || 0;
+  return v >= 1000 ? (v / 1000).toFixed(1) + 'k' : String(Math.round(v));
+}
 
-let user;
-if (!userParam) {
-  const sessao = RC.getUser();
-  if (!sessao) { window.location.replace('login.html'); }
-  const iniciais = sessao.nome.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
-  user = {
-    av: iniciais,
-    name: sessao.nome.toUpperCase(),
-    role: 'Corredor Urbano',
-    city: sessao.cidade || 'Brasil',
-    lv: sessao.nivel || 1,
-    xpCur: sessao.xp || 0,
-    xpMax: 10000,
-    stats: { m2: '0', corridas: 0, vitorias: 0, km: '0 km' },
-    bestGame: '—', bestGameSub: 'Nenhuma partida ainda',
-    maxArea: '—', maxAreaSub: '—',
-    winRate: '—', winRateSub: '—',
-    historico: [],
-    friends: [],
-    isMe: true,
+function apiParaPerfil(d, isMe) {
+  const iniciais = d.nome.trim().split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
+  const lv    = d.nivel || 1;
+  const total = d.corridas || 0;
+  const wins  = d.vitorias || 0;
+  const taxa  = total > 0 ? Math.round(wins / total * 100) + '%' : '—';
+
+  const hist = (d.historico || []).map(h => {
+    const dt   = new Date(h.criada_em).toLocaleDateString('pt-BR', { day:'2-digit', month:'short', year:'numeric' });
+    const pos  = h.posicao;
+    const cls  = pos === 1 ? 'gold' : pos === 2 ? 'silver' : 'purple';
+    const txt  = pos <= 3 ? pos + 'º lugar' : pos + 'º lugar';
+    return { data: dt, m2: fmtM2(h.m2) + ' m²', res: { txt, cls } };
+  });
+
+  return {
+    id:    d.id,
+    av:    iniciais,
+    name:  d.nome.toUpperCase(),
+    role:  'Corredor Urbano',
+    city:  d.cidade || 'Brasil',
+    lv,
+    xpCur: d.xp || 0,
+    xpMax: d.xp_max || lv * 1000,
+    stats: {
+      m2:       fmtM2(d.m2_total),
+      corridas: total,
+      vitorias: wins,
+      km:       (parseFloat(d.km_total) || 0).toFixed(1) + ' km',
+    },
+    bestGame:    d.melhor_m2 > 0 ? fmtM2(d.melhor_m2) + ' m²' : '—',
+    bestGameSub: d.melhor_m2 > 0 ? 'Melhor resultado' : 'Nenhuma partida ainda',
+    maxArea:     d.melhor_m2 > 0 ? fmtM2(d.melhor_m2) + ' m²' : '—',
+    maxAreaSub:  d.cidade || '—',
+    winRate:     taxa,
+    winRateSub:  total > 0 ? `${wins} de ${total} partidas` : 'Nenhuma partida ainda',
+    historico:   hist,
+    friends:     [],
+    isMe,
   };
-} else {
+}
+
+/* ── RESOLUÇÃO DO PERFIL ── */
+const userParam = new URLSearchParams(location.search).get('user');
+
+async function carregarPerfil() {
+  // perfil próprio — sem parâmetro
+  if (!userParam) {
+    const sessao = RC.getUser();
+    if (!sessao || !RC.getToken()) { window.location.replace('login.html'); return; }
+
+    try {
+      const res = await fetch('/api/users/me', {
+        headers: { Authorization: 'Bearer ' + RC.getToken() },
+      });
+      if (res.ok) {
+        renderProfile(apiParaPerfil(await res.json(), true));
+        return;
+      }
+    } catch {}
+
+    // sem banco — usa dados da sessão
+    const iniciais = sessao.nome.trim().split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
+    renderProfile({
+      av: iniciais, name: sessao.nome.toUpperCase(),
+      role: 'Corredor Urbano', city: sessao.cidade || 'Brasil',
+      lv: sessao.nivel || 1, xpCur: sessao.xp || 0, xpMax: (sessao.nivel || 1) * 1000,
+      stats: { m2: '0', corridas: 0, vitorias: 0, km: '0 km' },
+      bestGame: '—', bestGameSub: 'Nenhuma partida ainda',
+      maxArea: '—', maxAreaSub: '—', winRate: '—', winRateSub: '—',
+      historico: [], friends: [], isMe: true,
+    });
+    return;
+  }
+
+  // perfil de outro utilizador — por ID numérico
+  const numId = parseInt(userParam);
+  if (!isNaN(numId)) {
+    try {
+      const res = await fetch('/api/users/' + numId);
+      if (res.ok) { renderProfile(apiParaPerfil(await res.json(), false)); return; }
+    } catch {}
+  }
+
+  // fallback para dados mock (IDs antigos baseados em iniciais)
   const userId = userParam.toUpperCase();
-  user = USERS[userId] || USERS['JS'];
+  renderProfile(USERS[userId] || USERS['JS']);
 }
 
 /* ── RENDERIZA ── */
@@ -363,16 +427,20 @@ function renderProfile(u){
   // Histórico — só partidas
   const icoPartida = `<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`;
   const hl = document.getElementById('histList');
-  hl.innerHTML='';
-  u.historico.forEach(h=>{
-    const el=document.createElement('div');
-    el.className='hitem';
-    el.innerHTML=`
-      <div class="hico partida">${icoPartida}</div>
-      <div class="hinfo"><div class="htype">Partida</div><div class="hdate">${h.data}</div></div>
-      <div class="hmeta"><div class="hm2">${h.m2}</div><span class="rtag ${h.res.cls}">${h.res.txt}</span></div>`;
-    hl.appendChild(el);
-  });
+  hl.innerHTML = '';
+  if (!u.historico.length) {
+    hl.innerHTML = '<p style="text-align:center;color:var(--t2);padding:28px 0;font-size:13px;">Nenhuma partida ainda</p>';
+  } else {
+    u.historico.forEach(h => {
+      const el = document.createElement('div');
+      el.className = 'hitem';
+      el.innerHTML = `
+        <div class="hico partida">${icoPartida}</div>
+        <div class="hinfo"><div class="htype">Partida</div><div class="hdate">${h.data}</div></div>
+        <div class="hmeta"><div class="hm2">${h.m2}</div><span class="rtag ${h.res.cls}">${h.res.txt}</span></div>`;
+      hl.appendChild(el);
+    });
+  }
 
   // Abas
   const tabs = document.getElementById('tabsRow');
@@ -452,9 +520,9 @@ function toggleTheme(){
   try{localStorage.setItem('rc_theme',dark?'dark':'light');}catch(e){}
 }
 
-renderProfile(user);
-
 try{ if(localStorage.getItem('rc_theme')==='light'){dark=true;toggleTheme();} }catch(e){}
+
+carregarPerfil();
 </script>
 </body>
 </html>
