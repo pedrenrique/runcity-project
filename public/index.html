@@ -294,15 +294,6 @@
 
 <script src="auth.js"></script>
 <script>
-(function(){
-  const u = RC.getUser();
-  if (u) {
-    const ini = u.nome.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
-    document.getElementById('avTopo').textContent = ini;
-  }
-})();
-</script>
-<script>
 /* ── DADOS DO FEED ── */
 const AV_C = {
   AC:'#e8a020', JS:'#a084fd', TB:'#38bdf8',
@@ -556,6 +547,14 @@ function showToast(msg){
 }
 
 try{ if(localStorage.getItem('rc_theme')==='light') document.documentElement.setAttribute('data-theme','light'); }catch(e){}
+
+try{
+  const _u = RC.getUser();
+  if(_u){
+    const _ini = _u.nome.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
+    document.getElementById('avTopo').textContent = _ini;
+  }
+}catch(e){}
 </script>
 </body>
 </html>
