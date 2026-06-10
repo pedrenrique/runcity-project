@@ -9,9 +9,9 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
 
-app.use('/api/auth',    require('./routes/auth'));
-app.use('/api/users',   require('./routes/users'));
-// app.use('/api/corridas', require('./routes/corridas'));
+app.use('/api/auth',     require('./routes/auth'));
+app.use('/api/users',    require('./routes/users'));
+app.use('/api/corridas', require('./routes/corridas'));
 // app.use('/api/ranking',  require('./routes/ranking'));
 
 app.listen(PORT, () => {

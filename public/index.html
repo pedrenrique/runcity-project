@@ -415,34 +415,30 @@ const ROTAS = {
 
 const locIco = `<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>`;
 
-/* Posts do feed */
-const POSTS = [
-  {
-    uid:'AC', nome:'Ana Costa', lv:12, local:'São Paulo, SP', tempo:'2h atrás',
-    pos:1, area:'14.8k', km:'8.2', dur:'41:20', likes:23, coms:5, liked:false,
-    pts:'+320 XP'
-  },
-  {
-    uid:'TB', nome:'Thiago Brum', lv:7, local:'São Paulo, SP', tempo:'5h atrás',
-    pos:1, area:'9.8k', km:'6.1', dur:'32:45', likes:11, coms:2, liked:false,
-    pts:'+210 XP'
-  },
-  {
-    uid:'JS', nome:'João Silva', lv:5, local:'São Paulo, SP', tempo:'ontem',
-    pos:1, area:'2.69k', km:'3.8', dur:'19:32', likes:18, coms:4, liked:false,
-    pts:'+185 XP', isMe:true
-  },
-  {
-    uid:'PL', nome:'Pedro Lopes', lv:9, local:'São Paulo, SP', tempo:'ontem',
-    pos:2, area:'10.1k', km:'7.2', dur:'38:10', likes:9, coms:1, liked:false,
-    pts:'+180 XP'
-  },
-  {
-    uid:'CM', nome:'Carla Mendes', lv:6, local:'São Paulo, SP', tempo:'2 dias',
-    pos:1, area:'8.2k', km:'5.9', dur:'31:20', likes:14, coms:3, liked:false,
-    pts:'+195 XP'
-  }
-];
+/* ── HELPERS ── */
+const PALETTE = ['#a084fd','#e8a020','#fb923c','#38bdf8','#c084fc','#f97316','#2dd4bf','#ef4444','#f472b6','#22c55e'];
+function userColor(id) { return PALETTE[(id || 0) % PALETTE.length]; }
+
+function fmtM2(v) {
+  v = parseFloat(v) || 0;
+  return v >= 1000 ? (v / 1000).toFixed(1) + 'k' : String(Math.round(v));
+}
+
+function tempoRelativo(isoStr) {
+  const diff = (Date.now() - new Date(isoStr)) / 3600000;
+  if (diff < 1)   return 'agora';
+  if (diff < 24)  return Math.round(diff) + 'h atrás';
+  if (diff < 48)  return 'ontem';
+  return Math.round(diff / 24) + ' dias';
+}
+
+function fmtDuracao(seg) {
+  const m = Math.floor(seg / 60), s = seg % 60;
+  return String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+}
+
+/* Posts armazenados (API ou mock) */
+let POSTS = [];
 
 function posLabel(p){
   if(p===1) return '<span class="result-badge gold">🥇 1º Lugar</span>';
@@ -452,17 +448,19 @@ function posLabel(p){
 }
 
 function buildCard(post, idx){
-  const c = AV_C[post.uid]||'#a084fd';
-  const isMe = post.isMe;
+  const c    = AV_C[post.uid] || userColor(post.user_id);
+  const isMe = !!post.isMe;
+  const href = post.user_id ? `perfil.html?user=${post.user_id}` : `perfil.html?user=${post.uid}`;
+  const mapa = post.rota_svg || (ROTAS[post.uid] || ROTAS['JS']);
   return `
-  <div class="card${isMe?' mine':''}" style="animation-delay:${idx*80}ms">
+  <div class="card${isMe?' mine':''}" style="animation-delay:${idx*80}ms" data-id="${post.id||''}">
     <div class="card-head">
-      <a href="perfil.html?user=${post.uid}" style="text-decoration:none">
+      <a href="${href}" style="text-decoration:none">
         <div class="card-av" style="background:${c}18;color:${c};border-color:${c}50;">${post.uid}</div>
       </a>
       <div class="card-meta">
         <div class="card-nome">
-          <a href="perfil.html?user=${post.uid}" style="color:inherit;text-decoration:none">${post.nome}</a>
+          <a href="${href}" style="color:inherit;text-decoration:none">${post.nome}</a>
           ${isMe?'<span class="card-lv">Você</span>':'<span class="card-lv">Nv '+post.lv+'</span>'}
         </div>
         <div class="card-sub">
@@ -475,45 +473,30 @@ function buildCard(post, idx){
       <div class="card-tempo">${post.tempo}</div>
     </div>
 
-    <!-- Mapa da rota -->
     <div class="card-map">
-      ${ROTAS[post.uid]||ROTAS['JS']}
-      <div class="map-overlay">
-        ${locIco} ${post.local.split(',')[0]}
-      </div>
+      ${mapa}
+      <div class="map-overlay">${locIco} ${post.local.split(',')[0]}</div>
     </div>
 
-    <!-- Resultado -->
     <div class="card-result">
       ${posLabel(post.pos)}
       <span class="result-pts">${post.pts}</span>
     </div>
 
-    <!-- Stats -->
     <div class="card-stats">
-      <div class="cs">
-        <div class="cs-val">${post.area}</div>
-        <div class="cs-lbl">m² área</div>
-      </div>
-      <div class="cs">
-        <div class="cs-val">${post.km} km</div>
-        <div class="cs-lbl">distância</div>
-      </div>
-      <div class="cs">
-        <div class="cs-val">${post.dur}</div>
-        <div class="cs-lbl">tempo</div>
-      </div>
+      <div class="cs"><div class="cs-val">${post.area}</div><div class="cs-lbl">m² área</div></div>
+      <div class="cs"><div class="cs-val">${post.km} km</div><div class="cs-lbl">distância</div></div>
+      <div class="cs"><div class="cs-val">${post.dur}</div><div class="cs-lbl">tempo</div></div>
     </div>
 
-    <!-- Reações -->
     <div class="card-react">
-      <button class="react-btn" id="like-${idx}" onclick="toggleLike(${idx})">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+      <button class="react-btn${post.liked?' liked':''}" id="like-${idx}" onclick="toggleLike(${idx})">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="${post.liked?'currentColor':'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
         <span id="like-count-${idx}">${post.likes}</span>
       </button>
       <button class="react-btn" onclick="showToast('Comentários em breve!')">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
-        ${post.coms}
+        0
       </button>
       <div class="react-sep"></div>
       <button class="react-btn" onclick="showToast('Link copiado!')">
@@ -524,18 +507,96 @@ function buildCard(post, idx){
   </div>`;
 }
 
-/* Renderiza feed */
-const feedEl = document.getElementById('feed');
-POSTS.forEach((p,i) => { feedEl.innerHTML += buildCard(p,i); });
+function renderFeed(posts) {
+  const feedEl = document.getElementById('feed');
+  feedEl.innerHTML = '';
+  if (!posts.length) {
+    feedEl.innerHTML = '<p style="text-align:center;color:var(--t2);padding:40px 0;">Nenhuma corrida ainda. Seja o primeiro!</p>';
+    return;
+  }
+  posts.forEach((p, i) => { feedEl.innerHTML += buildCard(p, i); });
+}
 
-/* Toggle curtida */
-function toggleLike(idx){
+/* converte resposta da API para o formato dos cards */
+function apiParaPost(c, meId) {
+  const nome    = c.nome || '';
+  const iniciais = nome.trim().split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
+  return {
+    id:      c.id,
+    user_id: c.user_id,
+    uid:     iniciais,
+    nome,
+    lv:      c.nivel,
+    local:   c.cidade || 'Brasil',
+    tempo:   tempoRelativo(c.criada_em),
+    pos:     c.posicao,
+    area:    fmtM2(c.m2),
+    km:      parseFloat(c.km).toFixed(1),
+    dur:     fmtDuracao(parseInt(c.duracao)),
+    likes:   c.curtidas || 0,
+    liked:   !!c.curtida_por_mim,
+    pts:     '+' + (c.xp_ganho || 0) + ' XP',
+    rota_svg: c.rota_svg || null,
+    isMe:    c.user_id === meId,
+  };
+}
+
+/* Toggle curtida — chama API se autenticado, senão só visual */
+async function toggleLike(idx) {
   const post = POSTS[idx];
-  post.liked = !post.liked;
-  post.likes += post.liked ? 1 : -1;
-  const btn = document.getElementById(`like-${idx}`);
+  const token = RC.getToken();
+  const btn   = document.getElementById(`like-${idx}`);
+
+  if (token && post.id) {
+    const method = post.liked ? 'DELETE' : 'POST';
+    try {
+      const res = await fetch(`/api/corridas/${post.id}/curtir`, {
+        method,
+        headers: { Authorization: 'Bearer ' + token },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        post.liked  = !post.liked;
+        post.likes  = data.curtidas;
+      }
+    } catch {}
+  } else {
+    post.liked  = !post.liked;
+    post.likes += post.liked ? 1 : -1;
+  }
+
   btn.classList.toggle('liked', post.liked);
   document.getElementById(`like-count-${idx}`).textContent = post.likes;
+}
+
+/* Mock para fallback quando não há banco */
+const POSTS_MOCK = [
+  { uid:'AC', nome:'Ana Costa',    lv:12, local:'São Paulo, SP', tempo:'2h atrás', pos:1, area:'14.8k', km:'8.2', dur:'41:20', likes:23, liked:false, pts:'+320 XP' },
+  { uid:'TB', nome:'Thiago Brum',  lv:7,  local:'São Paulo, SP', tempo:'5h atrás', pos:1, area:'9.8k',  km:'6.1', dur:'32:45', likes:11, liked:false, pts:'+210 XP' },
+  { uid:'JS', nome:'João Silva',   lv:5,  local:'São Paulo, SP', tempo:'ontem',    pos:1, area:'2.69k', km:'3.8', dur:'19:32', likes:18, liked:false, pts:'+185 XP', isMe:true },
+  { uid:'PL', nome:'Pedro Lopes',  lv:9,  local:'São Paulo, SP', tempo:'ontem',    pos:2, area:'10.1k', km:'7.2', dur:'38:10', likes:9,  liked:false, pts:'+180 XP' },
+  { uid:'CM', nome:'Carla Mendes', lv:6,  local:'São Paulo, SP', tempo:'2 dias',   pos:1, area:'8.2k',  km:'5.9', dur:'31:20', likes:14, liked:false, pts:'+195 XP' },
+];
+
+/* Carrega o feed */
+async function carregarFeed() {
+  const meId = RC.getUser()?.id ?? null;
+  try {
+    const headers = {};
+    const token = RC.getToken();
+    if (token) headers.Authorization = 'Bearer ' + token;
+
+    const res = await fetch('/api/corridas/feed', { headers });
+    if (res.ok) {
+      POSTS = (await res.json()).map(c => apiParaPost(c, meId));
+      renderFeed(POSTS);
+      return;
+    }
+  } catch {}
+
+  // fallback mock
+  POSTS = POSTS_MOCK;
+  renderFeed(POSTS);
 }
 
 /* Toast */
@@ -555,6 +616,8 @@ try{
     document.getElementById('avTopo').textContent = _ini;
   }
 }catch(e){}
+
+carregarFeed();
 </script>
 </body>
 </html>
