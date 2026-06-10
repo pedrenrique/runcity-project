@@ -136,6 +136,8 @@
     .f-arrow{color:var(--t2);flex-shrink:0;transition:transform .2s,color .2s;margin-left:2px;}
     .friend-item:hover .f-arrow{transform:translateX(4px);color:var(--p-l);}
     .online-dot{width:7px;height:7px;border-radius:50%;background:var(--ok);flex-shrink:0;box-shadow:0 0 6px rgba(34,197,94,.5);}
+    .f-remove{width:28px;height:28px;border-radius:50%;background:transparent;border:1.5px solid var(--brd);color:var(--t2);font-size:14px;cursor:pointer;flex-shrink:0;transition:all .2s;display:flex;align-items:center;justify-content:center;padding:0;margin-left:4px;}
+    .f-remove:hover{border-color:rgba(239,68,68,.4);color:#ef4444;background:rgba(239,68,68,.08);}
 
     /* NAV */
     .nav{position:absolute;bottom:0;left:0;right:0;height:78px;background:var(--bg);border-top:1px solid var(--brd);display:flex;z-index:100;transition:background .3s,border-color .3s;}
@@ -497,6 +499,9 @@ async function carregarAmigos() {
       if (res.ok) {
         const amigos = await res.json();
         document.getElementById('friendCount').textContent = amigos.length;
+        // Atualiza contador na aba
+        const abaAmigos = document.querySelector('.ptab[onclick*="amigos"]');
+        if (abaAmigos) abaAmigos.innerHTML = `Amigos&nbsp;<span style="opacity:.65;font-size:9px;">(${amigos.length})</span>`;
         fl.innerHTML = '';
         if (!amigos.length) {
           fl.innerHTML = '<p style="text-align:center;color:var(--t2);padding:28px 0;font-size:13px;">Nenhum amigo ainda</p>';
@@ -505,17 +510,21 @@ async function carregarAmigos() {
         amigos.forEach(f => {
           const ini = f.nome.trim().split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
           const cor = AV_C[ini] || '#a084fd';
-          const el  = document.createElement('a');
+          const el  = document.createElement('div');
           el.className = 'friend-item';
-          el.href = `perfil.html?user=${f.id}`;
+          el.style.cursor = 'default';
           el.innerHTML = `
-            <div class="f-av" style="background:${cor}1e;color:${cor};border-color:${cor};">${ini}</div>
-            <div class="f-info">
-              <div class="f-name">${f.nome}</div>
-              ${f.username ? `<div class="f-username">@${f.username}</div>` : ''}
-              <div class="f-sub">${locIco} ${(f.cidade || 'Brasil').split(',')[0]} · Nível ${f.nivel}</div>
-            </div>
-            <div class="f-arrow">${arrowIco}</div>`;
+            <a href="perfil.html?user=${f.id}" style="display:flex;align-items:center;gap:12px;flex:1;min-width:0;text-decoration:none;">
+              <div class="f-av" style="background:${cor}1e;color:${cor};border-color:${cor};">${ini}</div>
+              <div class="f-info">
+                <div class="f-name">${f.nome}</div>
+                ${f.username ? `<div class="f-username">@${f.username}</div>` : ''}
+                <div class="f-sub">${locIco} ${(f.cidade || 'Brasil').split(',')[0]} · Nível ${f.nivel}</div>
+              </div>
+            </a>
+            <button class="f-remove" onclick="removerAmigo(${f.id}, this)" title="Remover amigo">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+            </button>`;
           fl.appendChild(el);
         });
         return;
@@ -524,6 +533,28 @@ async function carregarAmigos() {
   }
   document.getElementById('friendCount').textContent = '0';
   fl.innerHTML = '<p style="text-align:center;color:var(--t2);padding:28px 0;font-size:13px;">Nenhum amigo ainda</p>';
+}
+
+async function removerAmigo(id, btn) {
+  const token = RC.getToken();
+  if (!token) return;
+  btn.disabled = true;
+  try {
+    const res = await fetch(`/api/amigos/${id}`, {
+      method: 'DELETE',
+      headers: { Authorization: 'Bearer ' + token },
+    });
+    if (res.ok) {
+      showToast('Amigo removido.');
+      carregarAmigos();
+    } else {
+      showToast('Erro ao remover amigo.');
+      btn.disabled = false;
+    }
+  } catch {
+    showToast('Sem conexão.');
+    btn.disabled = false;
+  }
 }
 
 /* ── Botão de amizade (perfis de outros utilizadores) ── */
