@@ -185,6 +185,31 @@ router.post('/:codigo/iniciar', auth, async (req, res) => {
   }
 });
 
+// Stats ao vivo por sala (memória — não persiste entre reinícios)
+const raceStats = {};
+
+// PATCH /api/salas/:codigo/race-stats — jogador envia a sua área/km atual
+router.patch('/:codigo/race-stats', auth, async (req, res) => {
+  const codigo = req.params.codigo.toUpperCase();
+  const { m2 = 0, km = 0 } = req.body;
+  if (!raceStats[codigo]) raceStats[codigo] = {};
+  raceStats[codigo][req.user.id] = {
+    id:   req.user.id,
+    nome: (req.user.nome || '').split(' ')[0],
+    m2:   parseFloat(m2) || 0,
+    km:   parseFloat(km) || 0,
+  };
+  res.json({ ok: true });
+});
+
+// GET /api/salas/:codigo/race-stats — ranking ao vivo
+router.get('/:codigo/race-stats', async (req, res) => {
+  const codigo = req.params.codigo.toUpperCase();
+  const ranking = Object.values(raceStats[codigo] || {})
+    .sort((a, b) => b.m2 - a.m2);
+  res.json(ranking);
+});
+
 // POST /api/salas/:codigo/convidar/:userId — envia notificação de convite
 router.post('/:codigo/convidar/:userId', auth, async (req, res) => {
   const amigoId = parseInt(req.params.userId);

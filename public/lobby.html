@@ -897,8 +897,9 @@
       } catch {}
     }
     pararPollSala();
-    const tempo = estado.sala ? estado.sala.tempo : 10;
-    window.location.href = `corrida.html?tempo=${tempo}`;
+    const tempo   = estado.sala ? estado.sala.tempo  : 10;
+    const salaCod = estado.sala ? estado.sala.codigo : '';
+    window.location.href = `corrida.html?tempo=${tempo}${salaCod ? '&sala=' + salaCod : ''}`;
   }
 
   /* ── Convidar amigo ── */
@@ -1135,8 +1136,9 @@
         const sala = await res.json();
         if (sala.status === 'em_jogo') {
           pararPollSala();
-          const tempo = estado.sala?.tempo || sala.tempo || 10;
-          window.location.href = `corrida.html?tempo=${tempo}`;
+          const tempo   = estado.sala?.tempo || sala.tempo || 10;
+          const salaCod = codigo;
+          window.location.href = `corrida.html?tempo=${tempo}${salaCod ? '&sala=' + salaCod : ''}`;
         }
       } catch {}
     }, 3000);

@@ -709,10 +709,56 @@
 
   /* ── Cronômetro ── */
   const params = new URLSearchParams(window.location.search);
-  const minutos = parseInt(params.get('tempo')) || 10;
+  const minutos    = parseInt(params.get('tempo')) || 10;
+  const codigoSala = params.get('sala') || null;
+  const meuId      = RC.getUser()?.id ?? null;
   let segundosRestantes = minutos * 60;
   const totalSegundos = segundosRestantes;
   let pausado = false;
+
+  /* ── Ranking ao vivo ── */
+  let rankingAtual  = [];
+  let _rankingPoll  = null;
+
+  function renderRankingLista(lista) {
+    const ul = document.getElementById('ranking-lista');
+    if (!lista.length) return;
+    rankingAtual = lista;
+    ul.innerHTML = lista.map((j, i) => `
+      <li class="${j.id === meuId ? 'eu' : ''}">
+        <span class="pos">${i + 1}º</span>
+        <span class="nome">${j.nome}</span>
+        <span class="ar">${Math.round(j.m2).toLocaleString('pt-BR')} m²</span>
+      </li>`).join('');
+    const minhaPos = lista.findIndex(j => j.id === meuId);
+    if (minhaPos >= 0) document.getElementById('minha-pos').textContent = (minhaPos + 1) + 'º';
+  }
+
+  async function sincronizarRanking() {
+    if (!codigoSala || !meuId) return;
+    const token = RC.getToken();
+    const area  = Math.round(areaM2(convexHull(trilha)));
+    const km    = Math.round(totalKm * 100) / 100;
+    try {
+      await fetch(`/api/salas/${codigoSala}/race-stats`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ m2: area, km }),
+      });
+      const res = await fetch(`/api/salas/${codigoSala}/race-stats`);
+      if (res.ok) renderRankingLista(await res.json());
+    } catch {}
+  }
+
+  function iniciarPollRanking() {
+    if (!codigoSala) return;
+    sincronizarRanking();
+    _rankingPoll = setInterval(sincronizarRanking, 5000);
+  }
+
+  function pararPollRanking() {
+    if (_rankingPoll) { clearInterval(_rankingPoll); _rankingPoll = null; }
+  }
 
   function atualizarCronometro() {
     const m = Math.floor(segundosRestantes / 60).toString().padStart(2, '0');
@@ -741,6 +787,7 @@
 
   function encerrarCorrida() {
     clearInterval(intervalo);
+    pararPollRanking();
     if (watchId !== null) navigator.geolocation.clearWatch(watchId);
     mostrarResultado();
   }
@@ -751,8 +798,6 @@
     const area = Math.round(areaM2(convexHull(trilha)));
     const km   = Math.round(totalKm * 100) / 100;
     const kcal = Math.round(km * 62);
-    const posicao = 1; // single-player por agora
-
     const mm = Math.floor(tempoUsadoSeg / 60).toString().padStart(2, '0');
     const ss = (tempoUsadoSeg % 60).toString().padStart(2, '0');
 
@@ -760,24 +805,34 @@
     const paceMin = Math.floor(paceSeg / 60);
     const paceRes = (paceSeg % 60).toString().padStart(2, '0');
 
-    document.getElementById('res-vencedor').textContent = meuNome;
-    document.getElementById('res-vencedor-area').textContent = area.toLocaleString('pt-BR');
     document.getElementById('rs-area').textContent  = area.toLocaleString('pt-BR');
     document.getElementById('rs-km').textContent    = km.toFixed(1).replace('.', ',');
     document.getElementById('rs-pace').textContent  = km > 0.01 ? `${paceMin}:${paceRes}` : '--:--';
     document.getElementById('rs-tempo').textContent = `${mm}:${ss}`;
     document.getElementById('rs-kcal').textContent  = kcal;
-    document.getElementById('rs-pos').textContent   = posicao + 'º';
 
     const msg = document.getElementById('res-sub-msg');
-    msg.textContent = area > 0 ? `${area.toLocaleString('pt-BR')} m² conquistados` : 'resultado final';
 
-    document.getElementById('res-rank').innerHTML = `
-      <div class="item eu">
-        <span class="pos">1º</span>
-        <span class="nome">${meuNome}</span>
-        <span class="ar">${area.toLocaleString('pt-BR')} m²</span>
-      </div>`;
+    const finais = rankingAtual.length
+      ? rankingAtual
+      : [{ id: meuId, nome: meuNome, m2: area }];
+
+    const minhaPosFinal = Math.max(0, finais.findIndex(j => j.id === meuId));
+    const vencedor = finais[0];
+    document.getElementById('res-vencedor').textContent = vencedor.nome;
+    document.getElementById('res-vencedor-area').textContent = Math.round(vencedor.m2).toLocaleString('pt-BR');
+    document.getElementById('rs-pos').textContent = (minhaPosFinal + 1) + 'º';
+
+    if (minhaPosFinal === 0)      msg.textContent = 'parabéns, você venceu!';
+    else if (minhaPosFinal === 1) msg.textContent = '2º lugar — quase lá';
+    else                          msg.textContent = area > 0 ? `${area.toLocaleString('pt-BR')} m² conquistados` : 'resultado final';
+
+    document.getElementById('res-rank').innerHTML = finais.map((j, i) => `
+      <div class="item${j.id === meuId ? ' eu' : ''}">
+        <span class="pos">${i + 1}º</span>
+        <span class="nome">${j.nome}</span>
+        <span class="ar">${Math.round(j.m2).toLocaleString('pt-BR')} m²</span>
+      </div>`).join('');
 
     document.getElementById('overlay').classList.remove('escondido');
 
@@ -793,7 +848,7 @@
           m2: area,
           km: km,
           duracao: tempoUsadoSeg,
-          posicao,
+          posicao: minhaPosFinal + 1,
           xp_ganho: xp
         })
       });
@@ -922,6 +977,7 @@
   }
 
   iniciarGPS();
+  iniciarPollRanking();
 
   /* ── Tema ── */
   try {
