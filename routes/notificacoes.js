@@ -43,4 +43,14 @@ router.patch('/ler', auth, async (req, res) => {
   }
 });
 
+// DELETE /api/notificacoes — apaga todas as notificações do utilizador
+router.delete('/', auth, async (req, res) => {
+  try {
+    await pool.query('DELETE FROM notificacoes WHERE user_id = $1', [req.user.id]);
+    res.json({ mensagem: 'Notificações apagadas.' });
+  } catch {
+    res.status(500).json({ erro: 'Erro interno.' });
+  }
+});
+
 module.exports = router;

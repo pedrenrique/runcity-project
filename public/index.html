@@ -305,7 +305,10 @@
         <div class="notif-panel" id="notifPanel" style="display:none">
           <div class="notif-panel-hdr">
             Notificações
-            <a onclick="marcarNotifLidas()">Marcar lidas</a>
+            <div style="display:flex;gap:10px;">
+              <a onclick="marcarNotifLidas()">Marcar lidas</a>
+              <a onclick="limparNotificacoes()" style="color:var(--err)">Limpar</a>
+            </div>
           </div>
           <div id="notifList"><div class="notif-vazia">Carregando…</div></div>
         </div>
@@ -1090,6 +1093,16 @@ async function responderAmizade(solicitanteId, acao, notifId, btn) {
     showToast('Erro ao processar. Tente novamente.');
     btn.closest('.notif-acoes').querySelectorAll('button').forEach(b => b.disabled = false);
   }
+}
+
+async function limparNotificacoes() {
+  const token = RC.getToken();
+  if (!token) return;
+  try {
+    await fetch('/api/notificacoes', { method:'DELETE', headers:{ Authorization:'Bearer '+token } });
+    document.getElementById('notifList').innerHTML = '<div class="notif-vazia">Nenhuma notificação ainda</div>';
+    document.getElementById('notifDot').style.display = 'none';
+  } catch {}
 }
 
 async function marcarNotifLidas() {
