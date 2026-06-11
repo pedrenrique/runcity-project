@@ -796,6 +796,7 @@
         });
       } catch {}
     }
+    pararPollSala();
     estado.sala      = null;
     estado.ehCriador = false;
     estado.jogadores = [{ nome: meuNome, pronto: false, eu: true }];
@@ -895,6 +896,7 @@
         });
       } catch {}
     }
+    pararPollSala();
     const tempo = estado.sala ? estado.sala.tempo : 10;
     window.location.href = `corrida.html?tempo=${tempo}`;
   }
@@ -1038,6 +1040,7 @@
             eu: j.user_id === meId,
           }));
           atualizarBarra();
+          iniciarPollSala();
           return;
         }
         const err = await res.json().catch(() => ({}));
@@ -1100,6 +1103,7 @@
             eu: j.user_id === meId,
           }));
           atualizarBarra();
+          iniciarPollSala();
           document.getElementById('input-nome-sala').value = '';
           toast('Sala criada · ' + sala.codigo);
           return;
@@ -1115,6 +1119,31 @@
     atualizarBarra();
     document.getElementById('input-nome-sala').value = '';
     toast('Sala criada · código ' + codigo);
+  }
+
+  /* ── Poll sala (detetar início da corrida) ── */
+  let _pollSala = null;
+
+  function iniciarPollSala() {
+    pararPollSala();
+    _pollSala = setInterval(async () => {
+      const codigo = estado.sala?.codigo;
+      if (!codigo) { pararPollSala(); return; }
+      try {
+        const res = await fetch(`/api/salas/${codigo}`);
+        if (!res.ok) return;
+        const sala = await res.json();
+        if (sala.status === 'em_jogo') {
+          pararPollSala();
+          const tempo = estado.sala?.tempo || sala.tempo || 10;
+          window.location.href = `corrida.html?tempo=${tempo}`;
+        }
+      } catch {}
+    }, 3000);
+  }
+
+  function pararPollSala() {
+    if (_pollSala !== null) { clearInterval(_pollSala); _pollSala = null; }
   }
 
   /* ── Toast ── */
