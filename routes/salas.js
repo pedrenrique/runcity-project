@@ -185,4 +185,32 @@ router.post('/:codigo/iniciar', auth, async (req, res) => {
   }
 });
 
+// POST /api/salas/:codigo/convidar/:userId — envia notificação de convite
+router.post('/:codigo/convidar/:userId', auth, async (req, res) => {
+  const amigoId = parseInt(req.params.userId);
+  if (isNaN(amigoId)) return res.status(400).json({ erro: 'ID inválido.' });
+
+  try {
+    const { rows } = await pool.query(
+      "SELECT id, nome, codigo FROM salas WHERE codigo = $1 AND status = 'aguardando'",
+      [req.params.codigo.toUpperCase()]
+    );
+    if (!rows[0]) return res.status(404).json({ erro: 'Sala não encontrada.' });
+    const sala = rows[0];
+
+    const { rows: rem } = await pool.query('SELECT nome FROM users WHERE id = $1', [req.user.id]);
+    const nomeRem = rem[0]?.nome?.split(' ')[0] || 'Alguém';
+
+    await pool.query(
+      `INSERT INTO notificacoes (user_id, tipo, mensagem, ref_id)
+       VALUES ($1, 'convite_sala', $2, $3)`,
+      [amigoId, `${nomeRem} te convidou para a sala "${sala.nome}" · Código: ${sala.codigo}`, req.user.id]
+    );
+
+    res.json({ mensagem: 'Convite enviado.' });
+  } catch {
+    res.status(500).json({ erro: 'Erro interno.' });
+  }
+});
+
 module.exports = router;
