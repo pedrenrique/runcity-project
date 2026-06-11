@@ -741,132 +741,187 @@
 
   function encerrarCorrida() {
     clearInterval(intervalo);
+    if (watchId !== null) navigator.geolocation.clearWatch(watchId);
     mostrarResultado();
   }
 
   /* ── Resultado ── */
-  function mostrarResultado() {
-    // mock dos jogadores — virão do backend depois
-    const finais = [
-      { nome: meuNome,     m2: 1420, eu: true },
-      { nome: 'Jogador 2', m2: 980 },
-      { nome: 'Jogador 3', m2: 640 },
-    ].sort((a, b) => b.m2 - a.m2);
-
-    const venc = finais[0];
-    document.getElementById('res-vencedor').textContent = venc.nome;
-    document.getElementById('res-vencedor-area').textContent = venc.m2.toLocaleString('pt-BR');
-
-    // estatísticas pessoais — calculadas a partir do que rodou
-    const eu = finais.find(j => j.eu);
-    const minhaPos = finais.indexOf(eu) + 1;
+  async function mostrarResultado() {
     const tempoUsadoSeg = totalSegundos - segundosRestantes;
-    const m = Math.floor(tempoUsadoSeg / 60).toString().padStart(2, '0');
-    const s = (tempoUsadoSeg % 60).toString().padStart(2, '0');
+    const area = Math.round(areaM2(convexHull(trilha)));
+    const km   = Math.round(totalKm * 100) / 100;
+    const kcal = Math.round(km * 62);
+    const posicao = 1; // single-player por agora
 
-    // mock plausível (até termos GPS real, deduzo a partir do tempo + área)
-    const km = (tempoUsadoSeg / 60 * 0.18); // ~0.18 km/min de média a passo trote
-    const paceSeg = km > 0 ? Math.round(tempoUsadoSeg / km) : 0;
+    const mm = Math.floor(tempoUsadoSeg / 60).toString().padStart(2, '0');
+    const ss = (tempoUsadoSeg % 60).toString().padStart(2, '0');
+
+    const paceSeg = km > 0.01 ? Math.round(tempoUsadoSeg / km) : 0;
     const paceMin = Math.floor(paceSeg / 60);
     const paceRes = (paceSeg % 60).toString().padStart(2, '0');
-    const kcal = Math.round(km * 62); // ~62 kcal por km
 
-    document.getElementById('rs-area').textContent  = eu.m2.toLocaleString('pt-BR');
+    document.getElementById('res-vencedor').textContent = meuNome;
+    document.getElementById('res-vencedor-area').textContent = area.toLocaleString('pt-BR');
+    document.getElementById('rs-area').textContent  = area.toLocaleString('pt-BR');
     document.getElementById('rs-km').textContent    = km.toFixed(1).replace('.', ',');
-    document.getElementById('rs-pace').textContent  = km > 0 ? `${paceMin}:${paceRes}` : '--:--';
-    document.getElementById('rs-tempo').textContent = `${m}:${s}`;
+    document.getElementById('rs-pace').textContent  = km > 0.01 ? `${paceMin}:${paceRes}` : '--:--';
+    document.getElementById('rs-tempo').textContent = `${mm}:${ss}`;
     document.getElementById('rs-kcal').textContent  = kcal;
-    document.getElementById('rs-pos').textContent   = minhaPos + 'º';
+    document.getElementById('rs-pos').textContent   = posicao + 'º';
 
-    // mensagem de cabeçalho ajustada conforme o resultado
     const msg = document.getElementById('res-sub-msg');
-    if (minhaPos === 1)      msg.textContent = 'parabéns, você venceu!';
-    else if (minhaPos === 2) msg.textContent = '2º lugar — quase lá';
-    else                     msg.textContent = 'continue treinando';
+    msg.textContent = area > 0 ? `${area.toLocaleString('pt-BR')} m² conquistados` : 'resultado final';
 
-    const html = finais.map((j, i) => {
-      const medalha = ['🥇','🥈','🥉'][i] || (i + 1) + 'º';
-      return `
-        <div class="item${j.eu ? ' eu' : ''}">
-          <span class="pos">${medalha}</span>
-          <span class="nome">${j.nome}</span>
-          <span class="ar">${j.m2.toLocaleString('pt-BR')} m²</span>
-        </div>`;
-    }).join('');
-    document.getElementById('res-rank').innerHTML = html;
+    document.getElementById('res-rank').innerHTML = `
+      <div class="item eu">
+        <span class="pos">1º</span>
+        <span class="nome">${meuNome}</span>
+        <span class="ar">${area.toLocaleString('pt-BR')} m²</span>
+      </div>`;
 
     document.getElementById('overlay').classList.remove('escondido');
+
+    try {
+      const xp = Math.round(area / 100) + Math.round(km * 10);
+      await fetch('/api/corridas', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${RC.getToken()}`
+        },
+        body: JSON.stringify({
+          m2: area,
+          km: km,
+          duracao: tempoUsadoSeg,
+          posicao,
+          xp_ganho: xp
+        })
+      });
+    } catch (e) {
+      console.warn('Não foi possível salvar a corrida:', e.message);
+    }
   }
 
   /* ── Mapa ── */
   const mapa = L.map('mapa', { zoomControl: false, attributionControl: true })
-    .setView([-19.9167, -43.9345], 16);
+    .setView([-19.9167, -43.9345], 17);
 
-  // tile escuro pra combinar com o tema
   L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
     attribution: '© OpenStreetMap, © CARTO',
-    subdomains: 'abcd',
-    maxZoom: 19
+    subdomains: 'abcd', maxZoom: 19
   }).addTo(mapa);
 
-  // territórios mockados — cada jogador com sua cor.
-  // Quando o backend mandar dados de partida, isso vira dinâmico.
-  const territorios = [
-    {
-      nome: meuNome, eu: true, cor: '#7c5cfc', m2: 1420,
-      coords: [
-        [-19.9162, -43.9352],
-        [-19.9159, -43.9344],
-        [-19.9162, -43.9337],
-        [-19.9168, -43.9338],
-        [-19.9170, -43.9347],
-        [-19.9166, -43.9354]
-      ]
-    },
-    {
-      nome: 'Jogador 2', cor: '#fb923c', m2: 980,
-      coords: [
-        [-19.9170, -43.9333],
-        [-19.9168, -43.9325],
-        [-19.9176, -43.9326],
-        [-19.9178, -43.9335]
-      ]
-    },
-    {
-      nome: 'Jogador 3', cor: '#22d3ee', m2: 640,
-      coords: [
-        [-19.9180, -43.9352],
-        [-19.9176, -43.9347],
-        [-19.9181, -43.9342],
-        [-19.9186, -43.9348]
-      ]
+  document.getElementById('legenda').innerHTML = `
+    <span class="leg-item eu">
+      <span class="leg-dot" style="background:#7c5cfc"></span>Você
+    </span>`;
+
+  /* ── GPS ── */
+  let trilha       = [];
+  let totalKm      = 0;
+  let posAnterior  = null;
+  let marcador     = null;
+  let poligono     = null;
+  let watchId      = null;
+
+  function haversineKm(a, b) {
+    const R = 6371, rad = Math.PI / 180;
+    const dLat = (b.lat - a.lat) * rad;
+    const dLng = (b.lng - a.lng) * rad;
+    const x = Math.sin(dLat/2)**2 +
+              Math.cos(a.lat*rad) * Math.cos(b.lat*rad) * Math.sin(dLng/2)**2;
+    return R * 2 * Math.atan2(Math.sqrt(x), Math.sqrt(1-x));
+  }
+
+  function areaM2(pts) {
+    if (pts.length < 3) return 0;
+    const mLat = 111320;
+    const mLng = 111320 * Math.cos(pts[0].lat * Math.PI / 180);
+    let area = 0;
+    for (let i = 0; i < pts.length; i++) {
+      const j = (i + 1) % pts.length;
+      area += (pts[i].lat - pts[0].lat) * mLat * ((pts[j].lng - pts[0].lng) * mLng);
+      area -= (pts[j].lat - pts[0].lat) * mLat * ((pts[i].lng - pts[0].lng) * mLng);
     }
-  ];
+    return Math.abs(area) / 2;
+  }
 
-  territorios.forEach(t => {
-    L.polygon(t.coords, {
-      color: t.cor,
-      weight: 2.5,
-      fillColor: t.cor,
-      fillOpacity: t.eu ? 0.42 : 0.28
-    }).addTo(mapa).bindPopup(`<strong>${t.nome}</strong><br>${t.m2.toLocaleString('pt-BR')} m²`);
-  });
+  function convexHull(pts) {
+    if (pts.length < 3) return pts;
+    const s = [...pts].sort((a, b) => a.lat - b.lat || a.lng - b.lng);
+    const cross = (O, A, B) => (A.lat-O.lat)*(B.lng-O.lng) - (A.lng-O.lng)*(B.lat-O.lat);
+    const lower = [], upper = [];
+    for (const p of s) {
+      while (lower.length >= 2 && cross(lower[lower.length-2], lower[lower.length-1], p) <= 0) lower.pop();
+      lower.push(p);
+    }
+    for (let i = s.length-1; i >= 0; i--) {
+      const p = s[i];
+      while (upper.length >= 2 && cross(upper[upper.length-2], upper[upper.length-1], p) <= 0) upper.pop();
+      upper.push(p);
+    }
+    upper.pop(); lower.pop();
+    return [...lower, ...upper];
+  }
 
-  // marcador da minha posição atual
-  L.circleMarker([-19.9165, -43.9344], {
-    radius: 7,
-    color: '#fff',
-    weight: 2,
-    fillColor: '#7c5cfc',
-    fillOpacity: 1
-  }).addTo(mapa);
+  function atualizarStats() {
+    const area = Math.round(areaM2(convexHull(trilha)));
+    document.getElementById('area').textContent = area.toLocaleString('pt-BR');
+    document.getElementById('distancia').textContent = totalKm.toFixed(2).replace('.', ',');
+    const tempoDecorrido = totalSegundos - segundosRestantes;
+    const kcal = Math.round(totalKm * 62);
+    document.getElementById('kcal').textContent = kcal;
+    if (totalKm > 0.01) {
+      const paceSeg = Math.round(tempoDecorrido / totalKm);
+      document.getElementById('ritmo-medio').textContent =
+        `${Math.floor(paceSeg/60)}:${String(paceSeg%60).padStart(2,'0')}`;
+    }
+  }
 
-  // legenda de cores
-  const legendaHtml = territorios.map(t => `
-    <span class="leg-item${t.eu ? ' eu' : ''}">
-      <span class="leg-dot" style="background:${t.cor}"></span>${t.eu ? 'Você' : t.nome}
-    </span>`).join('');
-  document.getElementById('legenda').innerHTML = legendaHtml;
+  function onPosicao(pos) {
+    if (pausado) return;
+    const nova = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+
+    if (!marcador) {
+      mapa.setView([nova.lat, nova.lng], 17);
+      marcador = L.circleMarker([nova.lat, nova.lng], {
+        radius: 8, color: '#fff', weight: 2.5, fillColor: '#7c5cfc', fillOpacity: 1
+      }).addTo(mapa);
+    } else {
+      marcador.setLatLng([nova.lat, nova.lng]);
+    }
+
+    if (posAnterior) {
+      const dist = haversineKm(posAnterior, nova);
+      if (dist * 1000 < 3) return; // ignora ruído < 3m
+      totalKm += dist;
+    }
+    posAnterior = nova;
+    trilha.push(nova);
+
+    if (trilha.length >= 3) {
+      const coords = convexHull(trilha).map(p => [p.lat, p.lng]);
+      if (poligono) poligono.setLatLngs(coords);
+      else poligono = L.polygon(coords, {
+        color: '#7c5cfc', weight: 2, fillColor: '#7c5cfc', fillOpacity: 0.35
+      }).addTo(mapa);
+    }
+
+    atualizarStats();
+  }
+
+  function iniciarGPS() {
+    if (!navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(p => {
+      mapa.setView([p.coords.latitude, p.coords.longitude], 17);
+    }, () => {}, { enableHighAccuracy: true });
+    watchId = navigator.geolocation.watchPosition(onPosicao,
+      e => console.warn('GPS:', e.message),
+      { enableHighAccuracy: true, maximumAge: 2000, timeout: 15000 }
+    );
+  }
+
+  iniciarGPS();
 
   /* ── Tema ── */
   try {
