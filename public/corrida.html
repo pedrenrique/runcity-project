@@ -717,8 +717,9 @@
   let pausado = false;
 
   /* ── Ranking ao vivo ── */
-  let rankingAtual  = [];
-  let _rankingPoll  = null;
+  let rankingAtual     = [];
+  let _rankingPoll     = null;
+  let corridaEncerrada = false;
 
   function renderRankingLista(lista) {
     const ul = document.getElementById('ranking-lista');
@@ -749,9 +750,10 @@
       });
       const res = await fetch(`/api/salas/${codigoSala}/race-stats`);
       if (res.ok) {
-        const lista = await res.json();
-        renderRankingLista(lista);
-        renderizarAdversarios(lista);
+        const data = await res.json();
+        renderRankingLista(data.ranking);
+        renderizarAdversarios(data.ranking);
+        if (data.encerrada && !corridaEncerrada) encerrarCorrida();
       }
     } catch {}
   }
@@ -843,7 +845,15 @@
   }
 
   function encerrarCorrida() {
+    if (corridaEncerrada) return;
+    corridaEncerrada = true;
     clearInterval(intervalo);
+    if (codigoSala) {
+      fetch(`/api/salas/${codigoSala}/encerrar-corrida`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${RC.getToken()}` },
+      }).catch(() => {});
+    }
     pararPollRanking();
     if (watchId !== null) navigator.geolocation.clearWatch(watchId);
     mostrarResultado();

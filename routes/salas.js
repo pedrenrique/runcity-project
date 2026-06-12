@@ -187,6 +187,7 @@ router.post('/:codigo/iniciar', auth, async (req, res) => {
 
 // Stats ao vivo por sala (memória — não persiste entre reinícios)
 const raceStats = {};
+const raceFlags = {}; // { [codigo]: { encerrada: bool } }
 
 // PATCH /api/salas/:codigo/race-stats — jogador envia a sua área/km/posição atual
 router.patch('/:codigo/race-stats', auth, async (req, res) => {
@@ -214,9 +215,16 @@ router.patch('/:codigo/race-stats', auth, async (req, res) => {
 // GET /api/salas/:codigo/race-stats — ranking ao vivo
 router.get('/:codigo/race-stats', async (req, res) => {
   const codigo = req.params.codigo.toUpperCase();
-  const ranking = Object.values(raceStats[codigo] || {})
-    .sort((a, b) => b.m2 - a.m2);
-  res.json(ranking);
+  const ranking = Object.values(raceStats[codigo] || {}).sort((a, b) => b.m2 - a.m2);
+  res.json({ encerrada: raceFlags[codigo]?.encerrada || false, ranking });
+});
+
+// POST /api/salas/:codigo/encerrar-corrida — sinaliza fim da corrida para todos
+router.post('/:codigo/encerrar-corrida', auth, async (req, res) => {
+  const codigo = req.params.codigo.toUpperCase();
+  if (!raceFlags[codigo]) raceFlags[codigo] = {};
+  raceFlags[codigo].encerrada = true;
+  res.json({ ok: true });
 });
 
 // POST /api/salas/:codigo/convidar/:userId — envia notificação de convite
