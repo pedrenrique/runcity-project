@@ -188,16 +188,25 @@ router.post('/:codigo/iniciar', auth, async (req, res) => {
 // Stats ao vivo por sala (memória — não persiste entre reinícios)
 const raceStats = {};
 
-// PATCH /api/salas/:codigo/race-stats — jogador envia a sua área/km atual
+// PATCH /api/salas/:codigo/race-stats — jogador envia a sua área/km/posição atual
 router.patch('/:codigo/race-stats', auth, async (req, res) => {
   const codigo = req.params.codigo.toUpperCase();
-  const { m2 = 0, km = 0 } = req.body;
+  const { m2 = 0, km = 0, lat, lng } = req.body;
   if (!raceStats[codigo]) raceStats[codigo] = {};
+
+  const prev    = raceStats[codigo][req.user.id];
+  const novoPt  = (lat != null && lng != null)
+    ? { lat: parseFloat(lat), lng: parseFloat(lng) } : null;
+  const caminho = novoPt
+    ? [...(prev?.caminho || []), novoPt].slice(-50)
+    : (prev?.caminho || []);
+
   raceStats[codigo][req.user.id] = {
-    id:   req.user.id,
-    nome: (req.user.nome || '').split(' ')[0],
-    m2:   parseFloat(m2) || 0,
-    km:   parseFloat(km) || 0,
+    id:      req.user.id,
+    nome:    (req.user.nome || '').split(' ')[0],
+    m2:      parseFloat(m2) || 0,
+    km:      parseFloat(km) || 0,
+    caminho,
   };
   res.json({ ok: true });
 });
