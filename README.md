@@ -1,8 +1,6 @@
 # RunCity
 
-Um app de corrida com cara de jogo. A ideia surgiu quando começamos a brincar com o conceito do Strava (tracking de corrida, pace, distância) misturado com uma camada de competição de território, você corre na cidade, fecha uma área no mapa, e aquele pedaço passa a ser seu. Se outra pessoa correr por cima do seu território, ela rouba.
-
-O nome veio fácil: RunCity. Você corre pela cidade pra dominar a cidade.
+Um app de corrida com cara de jogo. A ideia surgiu quando começamos a brincar com o conceito do Strava (tracking de corrida, pace, distância) misturado com uma camada de competição de território, você corre na cidade, fecha uma área no mapa, e aquele pedaço passa a ser seu. Quem fizer a maior área, leva o jogo.
 
 ## A ideia
 
@@ -18,26 +16,31 @@ O ranking junta tudo. Tem por cidade, geral e entre amigos, e dá pra filtrar po
 
 Tudo navegável no front:
 
-- **Login / Cadastro** com opção de "esqueci a senha" e botão pra entrar com Google (visual por enquanto, sem fluxo OAuth real)
-- **Home/Dashboard** com seu nível, XP, stats principais e os botões dos dois modos
+- **Login / Cadastro** com opção de "esqueci a senha".
+- **Home/Dashboard** com seu nível, XP, stats principais e os botões dos modos
 - **Lobby** pra criar sala, entrar por código ou olhar salas abertas
 - **Partida ativa** mostrando os territórios de cada jogador em cores diferentes, ranking ao vivo e cronômetro
 - **Tela de resultado** com pódio, pace, km, área conquistada e quantidade de áreas fechadas
 - **Ranking** com top 3 em destaque e lista paginada
-- **Mapa da cidade** que mostra todos os territórios dominados, clica em qualquer um e vê o dono, área, data de captura e info de roubo (de quem foi tomado, quando)
+- **Mapa da cidade** que mostra todos os territórios dominados por cada jogador
 - **Perfil** o seu ou de outro jogador (`?id=X`), com aba de stats, conquistas e histórico
 
 ## Tecnologia
 
-HTML, CSS e JavaScript puros. Sem framework, sem build step, nada de webpack. O servidor é um Express minimalista só pra servir os arquivos da pasta `public/`. O mapa usa [Leaflet](https://leafletjs.com/) com tiles dark do CARTO pra combinar com o tema do app.
+HTML, CSS e JavaScript. O servidor é um Express minimalista só pra servir os arquivos da pasta `public/`. O mapa usa [Leaflet](https://leafletjs.com/) com tiles dark do CARTO pra combinar com o tema do app.
 
-A camada de autenticação no front (cadastro, login, sessão) está rodando 100% local via `localStorage`, sem comunicar com servidor, o backend de verdade ainda vai vir. As funções de fetch já estão escritas no padrão certo pra trocar depois, é só plugar os endpoints.
+A camada de autenticação no front (cadastro, login, sessão) está roda no back-end, comunicando com o servidor.
 
-## Como rodar
+## Como jogar
 
-```
-npm install
-node index.js
-```
+Basta acessar o link: https://runcity-project-production.up.railway.app/login.html
 
-Abre `http://localhost:3000` no navegador. Funciona melhor em viewport de celular (o app é todo pensado em mobile-first, com moldura simulada quando a tela é maior).
+Criamos dois usuários para testar a corrida em conjunto, e a conexão entre as contas.
+
+1º conta:
+Professor
+professor@gmail.com
+
+2º conta:
+Amigo
+amigo@gmail.com
