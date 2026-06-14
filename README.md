@@ -39,8 +39,10 @@ Criamos dois usuários para testar a corrida em conjunto, e a conexão entre as 
 
 1º conta:
 Professor
-professor@gmail.com
+e-mail: professor@gmail.com
+senha: 123456
 
 2º conta:
 Amigo
-amigo@gmail.com
+e-mail: amigo@gmail.com
+senha: 654321
