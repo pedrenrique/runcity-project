@@ -27,8 +27,7 @@ Tudo navegável no front:
 
 ## Tecnologia
 
-HTML, CSS e JavaScript. O servidor é um Express minimalista só pra servir os arquivos da pasta `public/`. O mapa usa [Leaflet](https://leafletjs.com/) com tiles dark do CARTO pra combinar com o tema do app.
-
+HTML, CSS e JavaScript. Todo o programa está rodando no servidor gratuíto do Railway, tanto a aplicação quanto o banco de dados e o mapa usa [Leaflet](https://leafletjs.com/).
 A camada de autenticação no front (cadastro, login, sessão) está roda no back-end, comunicando com o servidor.
 
 ## Como jogar
