@@ -184,76 +184,6 @@
 /* ── COR DOS AVATARES ── */
 const AV_C = { JS:'#a084fd',AC:'#e8a020',PL:'#fb923c',TB:'#38bdf8',CM:'#c084fc',FG:'#f97316',LP:'#2dd4bf',KS:'#ef4444',MR:'#f472b6',RT:'#f97316',LN:'#2dd4bf',MS:'#f472b6',BC:'#a78bfa',SA:'#38bdf8',ML:'#c084fc',DP:'#38bdf8' };
 
-/* ── DATASETS ──
-   Cada escopo tem variantes por período (diario / semana / mes / total).
-   Para manter o exemplo manejável os dados variam principalmente em m² e posição.
-─────────────────────────────────────────────────────────────────────────────── */
-function mkCidade(period){
-  const mult = {diario:.12, semana:1, mes:4.2, total:18};
-  const m = mult[period]||1;
-  const fmt = v => v>=1000 ? (v/1000).toFixed(1)+'k' : v+'';
-  return {
-    label:'São Paulo, SP',
-    podium:[
-      {av:'PL',name:'Pedro\nLopes', score:fmt(Math.round(98200*m)), city:'SP', isMe:false, uid:'PL'},
-      {av:'AC',name:'Ana\nCosta',   score:fmt(Math.round(127400*m)),city:'SP', isMe:false, uid:'AC'},
-      {av:'JS',name:'João\nSilva',  score:fmt(Math.round(48300*m)), city:'SP', isMe:true,  uid:'JS'}
-    ],
-    list:[
-      {pos:4,n:'Carlos Melo',   uid:'CM',city:'SP',m2:fmt(Math.round(39800*m)),km:Math.round(98*m) ,wins:Math.round(7*m) ,av:'CM',t:'up', username:'carlosmelo'},
-      {pos:5,n:'Rafael Torres', uid:'RT',city:'SP',m2:fmt(Math.round(28400*m)),km:Math.round(65*m) ,wins:Math.round(4*m) ,av:'RT',t:'dn', username:'rafaeltorres'},
-      {pos:6,n:'Luiza Neves',   uid:'LN',city:'SP',m2:fmt(Math.round(21000*m)),km:Math.round(52*m) ,wins:Math.round(3*m) ,av:'LN',t:'up', username:'luizaneves'},
-      {pos:7,n:'Marina Santos', uid:'MS',city:'SP',m2:fmt(Math.round(18200*m)),km:Math.round(44*m) ,wins:Math.round(2*m) ,av:'MS',t:'dn', username:'marinasantos'},
-      {pos:8,n:'Bruno Carvalho',uid:'BC',city:'SP',m2:fmt(Math.round(15600*m)),km:Math.round(38*m) ,wins:Math.round(2*m) ,av:'BC',t:'up', username:'brunocarvalho'},
-    ],
-    myPos:3, myTrend:'up'
-  };
-}
-
-function mkGlobal(period){
-  const mult = {diario:.05, semana:1, mes:4.2, total:18};
-  const m = mult[period]||1;
-  const fmt = v => v>=1000 ? (v/1000).toFixed(1)+'k' : v+'';
-  return {
-    label:'Mundo todo',
-    podium:[
-      {av:'SA',name:'Sofia\nAndrade', score:fmt(Math.round(341700*m)),city:'Lisboa',  isMe:false,uid:'SA'},
-      {av:'KS',name:'Kim\nSung-jin',  score:fmt(Math.round(482100*m)),city:'Seul',    isMe:false,uid:'KS'},
-      {av:'ML',name:'Mei\nLin',       score:fmt(Math.round(298400*m)),city:'Xangai',  isMe:false,uid:'ML'}
-    ],
-    list:[
-      {pos:4, n:'Ana Costa',    uid:'AC',city:'SP',      m2:fmt(Math.round(127400*m)),km:Math.round(312*m),wins:Math.round(45*m),av:'AC',t:'up', username:'anacosta'},
-      {pos:5, n:'David Park',   uid:'DP',city:'Nova York',m2:fmt(Math.round(118200*m)),km:Math.round(290*m),wins:Math.round(38*m),av:'DP',t:'dn', username:'davidpark'},
-      {pos:6, n:'Emma Weber',   uid:'EW',city:'Berlim',  m2:fmt(Math.round(109600*m)),km:Math.round(270*m),wins:Math.round(31*m),av:'EW',t:'up', username:'emmaweber'},
-      {pos:7, n:'Pedro Lopes',  uid:'PL',city:'SP',      m2:fmt(Math.round(98200*m)), km:Math.round(241*m),wins:Math.round(27*m),av:'PL',t:'dn', username:'pedrolopes'},
-      {pos:8, n:'Yuki Tanaka',  uid:'YT',city:'Tóquio', m2:fmt(Math.round(91000*m)), km:Math.round(218*m),wins:Math.round(24*m),av:'YT',t:'up', username:'yukitanaka'},
-    ],
-    myPos:21, myTrend:'up'
-  };
-}
-
-function mkAmigos(period){
-  const mult = {diario:.12, semana:1, mes:4.2, total:18};
-  const m = mult[period]||1;
-  const fmt = v => v>=1000 ? (v/1000).toFixed(1)+'k' : v+'';
-  return {
-    label:'Seus amigos',
-    podium:[
-      {av:'CM',name:'Carla\nMendes', score:fmt(Math.round(72800*m)),city:'SP',isMe:false,uid:'CM'},
-      {av:'TB',name:'Thiago\nBrum',  score:fmt(Math.round(95200*m)),city:'SP',isMe:false,uid:'TB'},
-      {av:'JS',name:'João\nSilva',   score:fmt(Math.round(48300*m)),city:'SP',isMe:true, uid:'JS'}
-    ],
-    list:[
-      {pos:4,n:'Felipe Gomes',uid:'FG',city:'SP',m2:fmt(Math.round(34700*m)),km:Math.round(82*m),wins:Math.round(5*m),av:'FG',t:'up', username:'felipegomes'},
-      {pos:5,n:'Lucas Pinto', uid:'LP',city:'RJ',m2:fmt(Math.round(27100*m)),km:Math.round(64*m),wins:Math.round(3*m),av:'LP',t:'dn', username:'lucaspinto'},
-      {pos:6,n:'Ana Costa',   uid:'AC',city:'SP',m2:fmt(Math.round(19300*m)),km:Math.round(45*m),wins:Math.round(2*m),av:'AC',t:'up', username:'anacosta'},
-    ],
-    myPos:3, myTrend:'up'
-  };
-}
-
-const BUILDERS = { cidade:mkCidade, global:mkGlobal, amigos:mkAmigos };
-
 const PALETTE = ['#a084fd','#e8a020','#fb923c','#38bdf8','#c084fc','#f97316','#2dd4bf','#ef4444','#f472b6','#22c55e'];
 function userColor(id){ return PALETTE[(id||0) % PALETTE.length]; }
 function fmtM2(v){ return v >= 1000 ? (v/1000).toFixed(1)+'k' : String(Math.round(v)); }
@@ -333,30 +263,7 @@ function renderList(listData){
   });
 }
 
-/* ── RENDER MINHA POSIÇÃO (mock fallback) ── */
-function renderMyPos(pos,trend){
-  const u = (typeof RC !== 'undefined') ? RC.getUser() : null;
-  const ini = u ? u.nome.trim().split(' ').filter(Boolean).map(w=>w[0]).slice(0,2).join('').toUpperCase() : 'JS';
-  const nome = u ? u.nome : 'João Silva';
-  const usernameHtml = u?.username ? `<div class="rusername">@${u.username}</div>` : '';
-  document.getElementById('myPosItem').innerHTML=`
-    <a class="ritem me" href="perfil.html">
-      <div class="rpos" style="color:var(--p-l);">${pos}</div>
-      <div class="rav" style="background:var(--p-dim);color:var(--p-l);border-color:var(--p);">${ini}</div>
-      <div class="rinfo">
-        <div class="rname">${nome} <span class="you-tag">Você</span></div>
-        ${usernameHtml}
-        <div class="rsub">${locIco} ${u?.cidade||'São Paulo'} · 0 corridas</div>
-      </div>
-      <div class="rmeta">
-        <div class="rm2">0 m²</div>
-        <div class="rkm">0 km</div>
-      </div>
-      <div class="trend ${trend}">${trend==='up'?'↑':'↓'}</div>
-    </a>`;
-}
-
-/* ── RENDER MINHA POSIÇÃO (dados reais) ── */
+/* ── RENDER MINHA POSIÇÃO ── */
 function renderMyPosReal(myItem){
   const ion = document.getElementById('myPosItem');
   if (!myItem) {
@@ -504,15 +411,7 @@ async function renderRanking(scope, period){
       renderList(rest);
       renderMyPosReal(apiItems.find(r => r.isMe) || null);
     }
-  } else if (!token) {
-    // Sem login e sem resposta — exibe mock como demonstração
-    const data = BUILDERS[scope](period);
-    document.getElementById('scopeLabel').textContent = data.label;
-    renderPodium(data.podium);
-    renderList(data.list);
-    renderMyPos(data.myPos, data.myTrend);
   } else {
-    // Erro de rede com login — mensagem de erro
     document.getElementById('podium').innerHTML = '';
     document.getElementById('rankList').innerHTML =
       '<p style="text-align:center;color:var(--t2);padding:32px 0;font-size:13px;">Erro ao carregar ranking. Tente novamente.</p>';

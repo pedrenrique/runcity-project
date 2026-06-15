@@ -281,17 +281,6 @@
 const AV_C = { JS:'#a084fd',AC:'#e8a020',PL:'#fb923c',TB:'#38bdf8',CM:'#c084fc',FG:'#f97316',LP:'#2dd4bf',KS:'#ef4444',MR:'#f472b6',RT:'#f97316',LN:'#2dd4bf',MS:'#f472b6',BC:'#a78bfa',SA:'#38bdf8',ML:'#c084fc',DP:'#38bdf8' };
 const AV_BG = k => `${AV_C[k]||'#a084fd'}1e`;
 
-const USERS = {
-  JS:{ av:'JS',name:'JOÃO SILVA',role:'Corredor Urbano',city:'São Paulo, SP',lv:5,xpCur:6500,xpMax:10000,stats:{m2:'48.3k',corridas:15,vitorias:8,km:'87km'},bestGame:'5.12k m²',bestGameSub:'24 Mar 2026 · Partida',maxArea:'2.4k m²',maxAreaSub:'Vila Madalena',winRate:'53%',winRateSub:'8 de 15 partidas',historico:[{data:'22 Mar 2026',m2:'2.690 m²',res:{txt:'1º lugar',cls:'gold'}},{data:'18 Mar 2026',m2:'1.800 m²',res:{txt:'3º lugar',cls:'purple'}},{data:'10 Mar 2026',m2:'3.120 m²',res:{txt:'2º lugar',cls:'silver'}},{data:'02 Mar 2026',m2:'980 m²',res:{txt:'5º lugar',cls:'purple'}}],friends:['AC','PL','TB','CM','FG','LP'],isMe:true },
-  AC:{ av:'AC',name:'ANA COSTA',role:'Dominadora Urbana',city:'São Paulo, SP',lv:12,xpCur:8200,xpMax:15000,stats:{m2:'127.4k',corridas:63,vitorias:45,km:'312km'},bestGame:'14.8k m²',bestGameSub:'15 Mar 2026 · Partida',maxArea:'9.2k m²',maxAreaSub:'Pinheiros',winRate:'71%',winRateSub:'45 de 63 partidas',historico:[{data:'23 Mar 2026',m2:'14.800 m²',res:{txt:'1º lugar',cls:'gold'}},{data:'19 Mar 2026',m2:'11.200 m²',res:{txt:'1º lugar',cls:'gold'}},{data:'14 Mar 2026',m2:'9.400 m²',res:{txt:'2º lugar',cls:'silver'}}],friends:['JS','PL','KS'],isMe:false },
-  PL:{ av:'PL',name:'PEDRO LOPES',role:'Explorador de Rota',city:'São Paulo, SP',lv:9,xpCur:4100,xpMax:12000,stats:{m2:'98.2k',corridas:45,vitorias:27,km:'241km'},bestGame:'10.1k m²',bestGameSub:'20 Mar 2026 · Partida',maxArea:'6.8k m²',maxAreaSub:'Itaim Bibi',winRate:'60%',winRateSub:'27 de 45 partidas',historico:[{data:'21 Mar 2026',m2:'10.100 m²',res:{txt:'1º lugar',cls:'gold'}},{data:'17 Mar 2026',m2:'7.300 m²',res:{txt:'2º lugar',cls:'silver'}},{data:'11 Mar 2026',m2:'5.900 m²',res:{txt:'1º lugar',cls:'gold'}}],friends:['JS','AC'],isMe:false },
-  TB:{ av:'TB',name:'THIAGO BRUM',role:'Corredor Noturno',city:'São Paulo, SP',lv:7,xpCur:2800,xpMax:10000,stats:{m2:'95.2k',corridas:38,vitorias:18,km:'196km'},bestGame:'9.8k m²',bestGameSub:'18 Mar 2026 · Partida',maxArea:'5.5k m²',maxAreaSub:'Vila Mariana',winRate:'48%',winRateSub:'18 de 38 partidas',historico:[{data:'20 Mar 2026',m2:'9.800 m²',res:{txt:'1º lugar',cls:'gold'}},{data:'15 Mar 2026',m2:'6.200 m²',res:{txt:'2º lugar',cls:'silver'}},{data:'08 Mar 2026',m2:'4.400 m²',res:{txt:'4º lugar',cls:'purple'}}],friends:['JS','CM'],isMe:false },
-  CM:{ av:'CM',name:'CARLA MENDES',role:'Maratonista Urbana',city:'São Paulo, SP',lv:6,xpCur:7200,xpMax:10000,stats:{m2:'72.8k',corridas:32,vitorias:14,km:'159km'},bestGame:'8.2k m²',bestGameSub:'16 Mar 2026 · Partida',maxArea:'4.3k m²',maxAreaSub:'Moema',winRate:'44%',winRateSub:'14 de 32 partidas',historico:[{data:'22 Mar 2026',m2:'8.200 m²',res:{txt:'1º lugar',cls:'gold'}},{data:'16 Mar 2026',m2:'5.700 m²',res:{txt:'3º lugar',cls:'purple'}}],friends:['JS','TB'],isMe:false },
-  FG:{ av:'FG',name:'FELIPE GOMES',role:'Velocista Urbano',city:'São Paulo, SP',lv:4,xpCur:5500,xpMax:8000,stats:{m2:'34.7k',corridas:18,vitorias:5,km:'82km'},bestGame:'4.1k m²',bestGameSub:'19 Mar 2026 · Partida',maxArea:'2.8k m²',maxAreaSub:'Liberdade',winRate:'28%',winRateSub:'5 de 18 partidas',historico:[{data:'19 Mar 2026',m2:'4.100 m²',res:{txt:'1º lugar',cls:'gold'}},{data:'12 Mar 2026',m2:'2.300 m²',res:{txt:'4º lugar',cls:'purple'}}],friends:['JS'],isMe:false },
-  LP:{ av:'LP',name:'LUCAS PINTO',role:'Fim de Semana',city:'Rio de Janeiro, RJ',lv:3,xpCur:1900,xpMax:6000,stats:{m2:'27.1k',corridas:14,vitorias:3,km:'64km'},bestGame:'3.4k m²',bestGameSub:'14 Mar 2026 · Partida',maxArea:'2.1k m²',maxAreaSub:'Botafogo',winRate:'21%',winRateSub:'3 de 14 partidas',historico:[{data:'14 Mar 2026',m2:'3.400 m²',res:{txt:'2º lugar',cls:'silver'}},{data:'07 Mar 2026',m2:'1.800 m²',res:{txt:'5º lugar',cls:'purple'}}],friends:['JS'],isMe:false },
-  KS:{ av:'KS',name:'KIM SUNG-JIN',role:'Campeão Global',city:'Seul, Coreia do Sul',lv:28,xpCur:9800,xpMax:50000,stats:{m2:'482.1k',corridas:182,vitorias:145,km:'1.240km'},bestGame:'38.5k m²',bestGameSub:'20 Mar 2026 · Partida',maxArea:'22.4k m²',maxAreaSub:'Gangnam',winRate:'80%',winRateSub:'145 de 182 partidas',historico:[{data:'20 Mar 2026',m2:'38.500 m²',res:{txt:'1º lugar',cls:'gold'}},{data:'17 Mar 2026',m2:'29.100 m²',res:{txt:'1º lugar',cls:'gold'}},{data:'13 Mar 2026',m2:'24.700 m²',res:{txt:'1º lugar',cls:'gold'}}],friends:['AC'],isMe:false },
-  MR:{ av:'MR',name:'MARIANA ROCHA',role:'Guerreira das Ruas',city:'Belo Horizonte, MG',lv:8,xpCur:6100,xpMax:11000,stats:{m2:'45.1k',corridas:30,vitorias:12,km:'134km'},bestGame:'7.2k m²',bestGameSub:'21 Mar 2026 · Partida',maxArea:'4.0k m²',maxAreaSub:'Savassi',winRate:'40%',winRateSub:'12 de 30 partidas',historico:[{data:'21 Mar 2026',m2:'7.200 m²',res:{txt:'1º lugar',cls:'gold'}},{data:'15 Mar 2026',m2:'4.900 m²',res:{txt:'2º lugar',cls:'silver'}}],friends:['PL'],isMe:false }
-};
 
 function toTitleCase(s){ return s.split(' ').map(w=>w[0]+w.slice(1).toLowerCase()).join(' '); }
 
@@ -390,9 +379,7 @@ async function carregarPerfil() {
     } catch {}
   }
 
-  // fallback para dados mock (IDs antigos baseados em iniciais)
-  const userId = userParam.toUpperCase();
-  renderProfile(USERS[userId] || USERS['JS']);
+  window.location.replace('index.html');
 }
 
 /* ── RENDERIZA ── */

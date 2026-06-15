@@ -365,118 +365,6 @@ const AV_C = {
   PL:'#fb923c', CM:'#c084fc', FG:'#f97316', LP:'#2dd4bf'
 };
 
-// Rotas SVG — paths únicos para cada post (simulam traçado GPS)
-const ROTAS = {
-  AC: `
-    <svg viewBox="0 0 390 140" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-      <!-- Grid de fundo -->
-      <defs>
-        <pattern id="gA" x="0" y="0" width="30" height="30" patternUnits="userSpaceOnUse">
-          <path d="M30,0 L0,0 0,30" fill="none" stroke="rgba(255,255,255,.04)" stroke-width=".8"/>
-        </pattern>
-        <filter id="glA"><feGaussianBlur stdDeviation="2"/></filter>
-      </defs>
-      <rect width="390" height="140" fill="#0d0b22"/>
-      <rect width="390" height="140" fill="url(#gA)"/>
-      <!-- Área capturada (fill suave) -->
-      <path d="M80,120 C100,95 110,70 130,50 C155,28 190,22 225,35 C258,48 278,80 272,108 C260,112 240,115 210,110 C180,105 155,115 130,118 Z"
-            fill="#e8a02012" stroke="none"/>
-      <!-- Rota (glow) -->
-      <path d="M80,120 C100,95 110,70 130,50 C155,28 190,22 225,35 C258,48 278,80 272,108 C260,112 240,115 210,110 C180,105 155,115 130,118"
-            fill="none" stroke="#e8a020" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" opacity=".25" filter="url(#glA)"/>
-      <path d="M80,120 C100,95 110,70 130,50 C155,28 190,22 225,35 C258,48 278,80 272,108 C260,112 240,115 210,110 C180,105 155,115 130,118"
-            fill="none" stroke="#e8a020" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-      <!-- Ponto de início -->
-      <circle cx="80" cy="120" r="5" fill="#e8a020"/>
-      <circle cx="80" cy="120" r="9" fill="none" stroke="#e8a020" stroke-width="1.5" opacity=".4"/>
-      <!-- Ponto de fim -->
-      <circle cx="130" cy="118" r="4" fill="#e8a020" opacity=".7"/>
-    </svg>`,
-
-  TB: `
-    <svg viewBox="0 0 390 140" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <pattern id="gB" x="0" y="0" width="30" height="30" patternUnits="userSpaceOnUse">
-          <path d="M30,0 L0,0 0,30" fill="none" stroke="rgba(255,255,255,.04)" stroke-width=".8"/>
-        </pattern>
-        <filter id="glB"><feGaussianBlur stdDeviation="2"/></filter>
-      </defs>
-      <rect width="390" height="140" fill="#0d0b22"/>
-      <rect width="390" height="140" fill="url(#gB)"/>
-      <path d="M70,115 L95,90 L115,72 L140,58 L170,48 L205,45 L235,55 L258,72 L268,94 L255,112 L230,118 L200,112 L170,115 L140,118 Z"
-            fill="#38bdf812" stroke="none"/>
-      <path d="M70,115 L95,90 L115,72 L140,58 L170,48 L205,45 L235,55 L258,72 L268,94 L255,112 L230,118 L200,112 L170,115 L140,118"
-            fill="none" stroke="#38bdf8" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" opacity=".22" filter="url(#glB)"/>
-      <path d="M70,115 L95,90 L115,72 L140,58 L170,48 L205,45 L235,55 L258,72 L268,94 L255,112 L230,118 L200,112 L170,115 L140,118"
-            fill="none" stroke="#38bdf8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-      <circle cx="70" cy="115" r="5" fill="#38bdf8"/>
-      <circle cx="70" cy="115" r="9" fill="none" stroke="#38bdf8" stroke-width="1.5" opacity=".4"/>
-      <circle cx="140" cy="118" r="4" fill="#38bdf8" opacity=".7"/>
-    </svg>`,
-
-  JS: `
-    <svg viewBox="0 0 390 140" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <pattern id="gC" x="0" y="0" width="30" height="30" patternUnits="userSpaceOnUse">
-          <path d="M30,0 L0,0 0,30" fill="none" stroke="rgba(255,255,255,.06)" stroke-width=".8"/>
-        </pattern>
-        <filter id="glC"><feGaussianBlur stdDeviation="2.5"/></filter>
-      </defs>
-      <rect width="390" height="140" fill="#100828"/>
-      <rect width="390" height="140" fill="url(#gC)"/>
-      <path d="M90,112 C105,92 118,74 138,60 C160,44 185,40 208,50 C228,60 238,80 230,98 C220,108 205,112 185,108 C162,102 140,108 115,112 Z"
-            fill="#7c5cfc18" stroke="none"/>
-      <path d="M90,112 C105,92 118,74 138,60 C160,44 185,40 208,50 C228,60 238,80 230,98 C220,108 205,112 185,108 C162,102 140,108 115,112"
-            fill="none" stroke="#a084fd" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" opacity=".28" filter="url(#glC)"/>
-      <path d="M90,112 C105,92 118,74 138,60 C160,44 185,40 208,50 C228,60 238,80 230,98 C220,108 205,112 185,108 C162,102 140,108 115,112"
-            fill="none" stroke="#a084fd" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-      <circle cx="90" cy="112" r="5" fill="#7c5cfc"/>
-      <circle cx="90" cy="112" r="9" fill="none" stroke="#7c5cfc" stroke-width="1.5" opacity=".5"/>
-      <circle cx="115" cy="112" r="4" fill="#a084fd" opacity=".8"/>
-    </svg>`,
-
-  PL: `
-    <svg viewBox="0 0 390 140" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <pattern id="gD" x="0" y="0" width="30" height="30" patternUnits="userSpaceOnUse">
-          <path d="M30,0 L0,0 0,30" fill="none" stroke="rgba(255,255,255,.04)" stroke-width=".8"/>
-        </pattern>
-        <filter id="glD"><feGaussianBlur stdDeviation="2"/></filter>
-      </defs>
-      <rect width="390" height="140" fill="#0d0b22"/>
-      <rect width="390" height="140" fill="url(#gD)"/>
-      <path d="M65,105 C80,85 95,68 118,52 C142,36 170,30 198,40 C222,50 240,72 238,95 C225,110 205,114 182,108 C158,102 138,106 112,110 Z"
-            fill="#fb923c12" stroke="none"/>
-      <path d="M65,105 C80,85 95,68 118,52 C142,36 170,30 198,40 C222,50 240,72 238,95 C225,110 205,114 182,108 C158,102 138,106 112,110"
-            fill="none" stroke="#fb923c" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" opacity=".22" filter="url(#glD)"/>
-      <path d="M65,105 C80,85 95,68 118,52 C142,36 170,30 198,40 C222,50 240,72 238,95 C225,110 205,114 182,108 C158,102 138,106 112,110"
-            fill="none" stroke="#fb923c" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-      <circle cx="65" cy="105" r="5" fill="#fb923c"/>
-      <circle cx="65" cy="105" r="9" fill="none" stroke="#fb923c" stroke-width="1.5" opacity=".4"/>
-      <circle cx="112" cy="110" r="4" fill="#fb923c" opacity=".7"/>
-    </svg>`,
-
-  CM: `
-    <svg viewBox="0 0 390 140" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <pattern id="gE" x="0" y="0" width="30" height="30" patternUnits="userSpaceOnUse">
-          <path d="M30,0 L0,0 0,30" fill="none" stroke="rgba(255,255,255,.04)" stroke-width=".8"/>
-        </pattern>
-        <filter id="glE"><feGaussianBlur stdDeviation="2"/></filter>
-      </defs>
-      <rect width="390" height="140" fill="#0d0b22"/>
-      <rect width="390" height="140" fill="url(#gE)"/>
-      <path d="M75,110 L100,90 L120,74 L148,62 L175,55 L202,60 L222,76 L228,95 L215,110 L190,116 L162,112 L135,114 L105,116 Z"
-            fill="#c084fc12" stroke="none"/>
-      <path d="M75,110 L100,90 L120,74 L148,62 L175,55 L202,60 L222,76 L228,95 L215,110 L190,116 L162,112 L135,114 L105,116"
-            fill="none" stroke="#c084fc" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" opacity=".22" filter="url(#glE)"/>
-      <path d="M75,110 L100,90 L120,74 L148,62 L175,55 L202,60 L222,76 L228,95 L215,110 L190,116 L162,112 L135,114 L105,116"
-            fill="none" stroke="#c084fc" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-      <circle cx="75" cy="110" r="5" fill="#c084fc"/>
-      <circle cx="75" cy="110" r="9" fill="none" stroke="#c084fc" stroke-width="1.5" opacity=".4"/>
-      <circle cx="105" cy="116" r="4" fill="#c084fc" opacity=".7"/>
-    </svg>`
-};
 
 const locIco = `<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>`;
 
@@ -516,7 +404,7 @@ function buildCard(post, idx){
   const c    = AV_C[post.uid] || userColor(post.user_id);
   const isMe = !!post.isMe;
   const href = post.user_id ? `perfil.html?user=${post.user_id}` : `perfil.html?user=${post.uid}`;
-  const mapa = post.rota_svg || (ROTAS[post.uid] || ROTAS['JS']);
+  const mapa = post.rota_svg || '';
   return `
   <div class="card${isMe?' mine':''}" style="animation-delay:${idx*80}ms" data-id="${post.id||''}">
     <div class="card-head">
@@ -650,14 +538,6 @@ async function toggleLike(idx) {
   document.getElementById(`like-count-${idx}`).textContent = post.likes;
 }
 
-/* Mock para fallback quando não há banco */
-const POSTS_MOCK = [
-  { uid:'AC', nome:'Ana Costa',    lv:12, local:'São Paulo, SP', tempo:'2h atrás', pos:1, area:'14.8k', km:'8.2', dur:'41:20', likes:23, liked:false, pts:'+320 XP' },
-  { uid:'TB', nome:'Thiago Brum',  lv:7,  local:'São Paulo, SP', tempo:'5h atrás', pos:1, area:'9.8k',  km:'6.1', dur:'32:45', likes:11, liked:false, pts:'+210 XP' },
-  { uid:'JS', nome:'João Silva',   lv:5,  local:'São Paulo, SP', tempo:'ontem',    pos:1, area:'2.69k', km:'3.8', dur:'19:32', likes:18, liked:false, pts:'+185 XP', isMe:true },
-  { uid:'PL', nome:'Pedro Lopes',  lv:9,  local:'São Paulo, SP', tempo:'ontem',    pos:2, area:'10.1k', km:'7.2', dur:'38:10', likes:9,  liked:false, pts:'+180 XP' },
-  { uid:'CM', nome:'Carla Mendes', lv:6,  local:'São Paulo, SP', tempo:'2 dias',   pos:1, area:'8.2k',  km:'5.9', dur:'31:20', likes:14, liked:false, pts:'+195 XP' },
-];
 
 /* Carrega o feed */
 async function carregarFeed() {
@@ -685,14 +565,8 @@ async function carregarFeed() {
     }
   } catch {}
 
-  if (!token) {
-    // Sem login — exibe mock como demonstração
-    POSTS = POSTS_MOCK;
-    renderFeed(POSTS);
-  } else {
-    document.getElementById('feed').innerHTML =
-      '<p style="text-align:center;color:var(--t2);padding:40px 0;">Erro ao carregar o feed. Tente novamente.</p>';
-  }
+  document.getElementById('feed').innerHTML =
+    '<p style="text-align:center;color:var(--t2);padding:40px 0;">Erro ao carregar o feed. Tente novamente.</p>';
 }
 
 /* Comentários */

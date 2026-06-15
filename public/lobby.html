@@ -710,19 +710,6 @@
     convidados: []
   };
 
-  /* mock só pra mexer no front sem servidor de salas */
-  const amigosOnline = ['Ana', 'Bruno', 'Carlos', 'Diana'];
-  const salasPublicas = [
-    { codigo: 'JOAO-1234', nome: 'Sala do João',      tempo: 10, jogadores: 2, max: 4 },
-    { codigo: 'TARD-5678', nome: 'Corrida da Tarde',  tempo: 5,  jogadores: 1, max: 4 },
-    { codigo: 'URBA-9012', nome: 'Maratona Urbana',   tempo: 15, jogadores: 3, max: 6 },
-    { codigo: 'NOIT-3456', nome: 'Run Noturno',       tempo: 20, jogadores: 2, max: 4 },
-    { codigo: 'CENT-7890', nome: 'Centro Velho',      tempo: 10, jogadores: 4, max: 8 },
-    { codigo: 'IPIR-1122', nome: 'Pampulha Sprint',   tempo: 5,  jogadores: 1, max: 2 },
-    { codigo: 'BIRA-3344', nome: 'Bairro a Bairro',   tempo: 30, jogadores: 5, max: 6 },
-    { codigo: 'PRAC-5566', nome: 'Praça Liberdade',   tempo: 10, jogadores: 2, max: 4 },
-  ];
-
   /* ── Mapa ── */
   const mapa = L.map('mapa-lobby', {
     zoomControl: false,
@@ -969,10 +956,7 @@
     if (el.dataset.aba === 'abertas') renderizarSalasAbertas();
   }
 
-  /* ── Salas Abertas (com paginação) ── */
-  const SALAS_POR_PAG = 5;
-  let pagSalas = 0;
-
+  /* ── Salas Abertas ── */
   async function renderizarSalasAbertas() {
     const lista = document.getElementById('lista-salas-abertas');
     lista.innerHTML = '<li style="padding:12px;color:var(--t2,#888);text-align:center;font-size:13px;">Carregando…</li>';
@@ -998,28 +982,7 @@
         return;
       }
     } catch {}
-
-    // fallback mock
-    const total    = salasPublicas.length;
-    const totalPag = Math.max(1, Math.ceil(total / SALAS_POR_PAG));
-    if (pagSalas >= totalPag) pagSalas = totalPag - 1;
-    const slice = salasPublicas.slice(pagSalas * SALAS_POR_PAG, (pagSalas + 1) * SALAS_POR_PAG);
-    lista.innerHTML = slice.map(s => `
-      <li class="item-popup">
-        <div>
-          <strong>${s.nome}</strong>
-          <small>${s.tempo} min · ${s.jogadores}/${s.max} jogadores</small>
-        </div>
-        <button class="btn-acao-lista" onclick="entrarSala('${s.codigo}')">Entrar</button>
-      </li>`).join('');
-    document.getElementById('pagInfoSala').textContent = `Página ${pagSalas + 1} de ${totalPag}`;
-    document.getElementById('btnPrevSala').disabled = pagSalas === 0;
-    document.getElementById('btnNextSala').disabled = pagSalas >= totalPag - 1;
-  }
-  function paginaPrevSala() { if (pagSalas > 0) { pagSalas--; renderizarSalasAbertas(); } }
-  function paginaNextSala() {
-    const t = Math.ceil(salasPublicas.length / SALAS_POR_PAG);
-    if (pagSalas < t - 1) { pagSalas++; renderizarSalasAbertas(); }
+    lista.innerHTML = '<li style="padding:12px;color:var(--t2,#888);text-align:center;font-size:13px;">Erro ao carregar salas</li>';
   }
 
   async function entrarSala(codigo) {
@@ -1046,19 +1009,10 @@
         }
         const err = await res.json().catch(() => ({}));
         toast(err.erro || 'Não foi possível entrar na sala');
-        return;
-      } catch {}
+      } catch {
+        toast('Erro ao entrar na sala');
+      }
     }
-    // fallback mock
-    const sala = salasPublicas.find(s => s.codigo === codigo);
-    if (!sala) { toast('Sala não encontrada'); return; }
-    estado.sala      = { nome: sala.nome, tempo: sala.tempo, codigo: sala.codigo, max: sala.max };
-    estado.ehCriador = false;
-    estado.jogadores = [
-      ...Array.from({ length: sala.jogadores }, (_, k) => ({ nome: `Jogador ${k + 1}`, pronto: false })),
-      { nome: meuNome, pronto: false, eu: true },
-    ];
-    atualizarBarra();
   }
 
   /* ── Entrar por Código ── */
@@ -1070,16 +1024,6 @@
   }
 
   /* ── Criar sala ── */
-  function gerarCodigo() {
-    const letras = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
-    const num = '0123456789';
-    let s = '';
-    for (let i = 0; i < 4; i++) s += letras[Math.floor(Math.random() * letras.length)];
-    s += '-';
-    for (let i = 0; i < 4; i++) s += num[Math.floor(Math.random() * num.length)];
-    return s;
-  }
-
   async function criarSala() {
     const nome  = document.getElementById('input-nome-sala').value.trim() || 'Minha sala';
     const tempo = parseInt(document.getElementById('select-tempo-sala').value);
@@ -1111,15 +1055,7 @@
         }
       } catch {}
     }
-
-    // fallback mock
-    const codigo = gerarCodigo();
-    estado.sala      = { nome, tempo, codigo, max };
-    estado.ehCriador = true;
-    estado.jogadores = [{ nome: meuNome, pronto: false, eu: true }];
-    atualizarBarra();
-    document.getElementById('input-nome-sala').value = '';
-    toast('Sala criada · código ' + codigo);
+    toast('Erro ao criar sala');
   }
 
   /* ── Poll sala (atualiza jogadores e deteta início da corrida) ── */
